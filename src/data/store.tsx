@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Account, AppNotification, Chat, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, User } from '../lib/types'
 import { relationTo, type Relation } from '../lib/circles'
-import { DAY, FREE_PER_MONTH, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, listingsThisMonth, referralBonus, renewalReminder } from '../lib/pricing'
+import { DAY, FREE_PER_MONTH, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, referralBonus, renewalReminder } from '../lib/pricing'
 import { town } from '../lib/geo'
 import { zl } from '../lib/money'
 import { localeOf, translator } from '../i18n'
@@ -26,9 +26,10 @@ export interface Toast {
   link?: string
 }
 
-const KEY = 'obok:v3'
+const KEY = 'orbifolk:v4'
 
-export const DEFAULT_NOTIF: NotificationPrefs = { friendsNew: true, messages: true, orders: true, fofNew: false, nearby: false, quiet: true }
+/** Wszystko włączone (sugerowane); cisza nocna chroni przed nadmiarem. */
+export const DEFAULT_NOTIF: NotificationPrefs = { friendsNew: true, messages: true, orders: true, fofNew: true, nearby: true, quiet: true }
 
 function initial(): State {
   const now = Date.now()
@@ -47,7 +48,7 @@ function initial(): State {
       place: users[0].place,
       interests: [],
       plan: 'free',
-      renewalDue: now + YEAR,
+      refreshDue: now + YEAR,
       kyc: 'none',
       restricted: false,
       trusted: [],
@@ -168,7 +169,8 @@ function useStoreValue() {
 
   const buyPlan = (p: Exclude<Plan, 'free'>) =>
     patchAccount({ plan: p, planUntil: Math.max(Date.now(), effectivePlan(state.account) === p ? state.account.planUntil ?? 0 : 0) + YEAR })
-  const renewFree = () => patchAccount({ renewalDue: Date.now() + YEAR })
+  /** Odświeżenie darmowego konta na kolejny rok (10 zł). */
+  const refresh = () => patchAccount({ refreshDue: Math.max(Date.now(), state.account.refreshDue) + YEAR })
 
   /* --- konto ------------------------------------------------------------- */
 
@@ -230,7 +232,8 @@ function useStoreValue() {
 
   const mine = state.listings.filter((l) => l.ownerId === ME && l.status !== 'removed')
   const addedThisMonth = listingsThisMonth(mine)
-  const canAdd = !state.account.restricted && canPublish(plan, addedThisMonth)
+  const mustRefresh = needsRefresh(plan, state.account.refreshDue)
+  const canAdd = !state.account.restricted && canPublish(plan, addedThisMonth, state.account.refreshDue)
 
   const addListing = (l: Omit<Listing, 'id' | 'createdAt' | 'ownerId' | 'status'>): string | null => {
     if (!canAdd) return null
@@ -363,7 +366,7 @@ function useStoreValue() {
   const visibleListings = useMemo(() => {
     const muted = new Set(state.account.muted)
     return state.listings
-      .filter((l) => l.ownerId !== ME && l.status !== 'removed' && l.status !== 'sold' && !users[l.ownerId]?.restricted && !muted.has(l.ownerId))
+      .filter((l) => l.ownerId !== ME && isShown(l) && !users[l.ownerId]?.restricted && !muted.has(l.ownerId))
       .filter((l) => !l.hiddenFrom?.includes(ME))
       .map((l) => ({ listing: l, rel: relation(l.ownerId) }))
       .filter(({ listing, rel }) => (listing.incognito ? rel.circle === 3 : rel.circle <= listing.visibility))
@@ -387,6 +390,7 @@ function useStoreValue() {
     addedThisMonth,
     freeLimit: FREE_PER_MONTH,
     canAdd,
+    mustRefresh,
     finishOnboarding,
     setLang,
     setPlace,
@@ -394,7 +398,7 @@ function useStoreValue() {
     setNotif,
     setTrusted,
     buyPlan,
-    renewFree,
+    refresh,
     invite,
     startKyc,
     mute,

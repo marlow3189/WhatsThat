@@ -1,11 +1,13 @@
-# Obok: koncept, model biznesowy, koszty i prawo
+# Orbifolk: koncept, model biznesowy, koszty i prawo
 
+> **Twoja orbita: znajomi i sąsiedzi.** Aplikacja do ogarniania codziennych spraw z ludźmi obok:
+> potrzebujesz piasku, wpisujesz „piasek” i widzisz, kto w okolicy go ma; sąsiad wynajmuje kosiarkę za 20 zł za dzień.
 > Codzienny, lokalny handel między ludźmi: sprzedaż, odsprzedaż, wyprzedaże garażowe, wynajem, usługi,
 > praca dorywcza, wymiana, „szukam” i oddawanie za darmo. Najpierw znajomi z telefonu, potem znajomi znajomych,
 > potem okolica (promień w km, miejscowość, region, kraj). Konto to numer telefonu. Bez haseł, bez prowizji.
 > Startujemy w Polsce, aplikacja jest gotowa na 9 języków i 11 krajów.
 
-Kolejność priorytetów: **UX, potem UI, potem nazwa**. Nazwa robocza siedzi w jednym pliku (`src/config.ts`).
+Kolejność priorytetów: **UX, potem UI, potem nazwa**. Marka siedzi w jednym pliku (`src/config.ts`): **Orbifolk**, `orbifolk.com`.
 
 ---
 
@@ -24,21 +26,19 @@ Nie automatycznie. Aplikację o tej nazwie da się uruchomić. Problem pojawia s
 
 Do tego „what’s that” to zwykła fraza i nazwa wielu aplikacji, więc trudno wygrać w wyszukiwarce.
 
-### Propozycje sprawdzone pod kątem świata
-Sprawdzone wyszukiwarką w październiku 2026 (bez dostępu do baz znaków i domen, to trzeba zrobić osobno):
+### Decyzja: Orbifolk
+**Orbi** (orbita: krąg ludzi wokół Ciebie) + **folk** (ludzie, swojacy). Jedno słowo, dwa człony, które rozumie się
+bez tłumaczenia w większości języków europejskich; wymowa prosta („or-bi-folk”). Pasuje do mechaniki aplikacji:
+znajomi na bliskiej orbicie, ich znajomi na dalszej, sąsiedzi w promieniu kilku km. Hasło: *„Twoja orbita”*.
 
-| Nazwa | Co znaczy | Wymowa w 9 językach | Kolizje znalezione | Ocena |
-|---|---|---|---|---|
-| **Neiby** | od „neighbour”, sąsiad | łatwa wszędzie („nej-bi”) | nie znaleziono | **najlepsza na świat** |
-| **Mamto** | „Mam to” po polsku, „Mám to” po czesku i słowacku | łatwa wszędzie | nie znaleziono | **najlepsza na start w Europie Środkowej** |
-| Obok | „obok, blisko” | łatwa, ale znaczenie tylko po polsku | wtyczka do e-booków, firma IT w USA (inne branże) | dobra na Polskę |
-| Okolo | „około, wokół” | łatwa | **zajęta**: aplikacja łącząca lokalnych producentów z klientami (FR) i rosyjska platforma B2B | odpada |
-| Blizo | „blisko” | łatwa | **zajęta**: dostawy warzyw i owoców | odpada |
-| Blisko | „blisko” | — | **zajęta**: aplikacja samorządowa BLISKO | odpada |
-| Krugo, Obbo | — | — | **zajęte** | odpadają |
+Co sprawdziłem (wyszukiwarka, październik 2026): nie znalazłem aplikacji ani firmy o tej nazwie w handlu lokalnym.
+Strony orbifolk.com z tego środowiska nie da się otworzyć (sieć blokuje domenę), więc jej treści nie widziałem.
+**Do zrobienia przed wydaniem pieniędzy na reklamę:** wyszukanie „ORBIFOLK” w EUIPO TMview i WIPO Global Brand Database
+(klasy 9, 35, 38, 42), sprawdzenie App Store i Google Play, rezerwacja `orbifolk.app`, `.pl`, `.eu` i nazw w social media
+(@orbifolk). Zgłoszenie znaku UE: 850 € za klasę 9 + 50 € za 35 + 150 € za każdą kolejną.
 
-**Rekomendacja:** Neiby, jeśli od początku myślisz o świecie; Mamto, jeśli najpierw Polska, Czechy i Słowacja.
-Przed decyzją: domeny (`.com`, `.app`, `.pl`, `.eu`), EUIPO TMview w klasach 9, 35, 38, 42 i nazwy w App Store / Google Play.
+Odrzucone wcześniej: Obok (znaczenie tylko po polsku, nie podobało się), Neiby, Mamto (zostają jako zapas),
+Okolo, Blizo, Blisko, Krugo, Obbo (zajęte).
 
 ## 2. Konkurencja i co z niej bierzemy
 
@@ -63,19 +63,35 @@ konto zastrzegasz jednym przyciskiem.
 
 **Rejestracja (9 kroków, ok. 1 minuty):** język (PL, EN, DE, UK, CS, SK, HU, IT, ES) → kraj i region
 (w Polsce województwo) → numer telefonu z prefiksem kraju ustawionym automatycznie → kod SMS → imię i opcjonalny e-mail →
-**zainteresowania** → kontakty → powiadomienia (domyślnie: nowe od znajomych, wiadomości, płatności) → zasady w 9 punktach
-z akceptacją (zapisujemy datę).
+**zainteresowania: wszystkie włączone (sugerowane)**, przy każdej kategorii liczba osób z Twojej orbity, która w niej działa,
+a na górze „Twoi znajomi działają w branżach: od rolnika 1, narzędzia i maszyny 1…” → kontakty (widać, kto już jest) →
+powiadomienia (wszystko włączone, cisza nocna) → **5 najważniejszych zasad** z ikonami, link do pełnego regulaminu
+w 9 językach i „Akceptuję regulamin” (zapisujemy datę).
 
-**Główna bez przytłaczania:** „Nowe od znajomych” (avatary i kafelki), potem po jednym rzędzie kafelków na każde
-zainteresowanie. **Pierwszy kafelek w rzędzie zawsze „Polecane”**: firma albo ktoś z drugiej linii znajomych,
+**Sąsiedzi zawsze widoczni.** Oferty z promienia 3 km pokazujemy bez względu na zainteresowania (kosiarka sąsiada,
+przyczepka). Wyłączyć można tylko konkretną osobę („Ukryte osoby”) albo ukryć przed nią własne ogłoszenie.
+
+**Główna:** pasek z miastem i pogodą (Open-Meteo), pytanie „Czego potrzebujesz?” z podpowiedziami AI („Wybrukować podjazd”,
+„Jajka od znajomych”), **„Twoja orbita”** (znajomi, ich znajomi, oferty do 5 km), „Nowe od znajomych”, „Sąsiedzi obok”,
+potem po jednym rzędzie kafelków na każde zainteresowanie. **Pierwszy kafelek w rzędzie zawsze „Polecane”**: firma albo ktoś z drugiej linii znajomych,
 którego nie masz w kontaktach. Na dole wyprzedaże garażowe i karta „Poleć znajomym”.
 
 **Widoczność ogłoszenia:** tylko znajomi · znajomi znajomych · wszyscy (najpierw znajomi, potem okolica) ·
 **incognito** (znajomi nie widzą, obcy widzą bez imienia; serwer nie wysyła obcym identyfikatora sprzedającego) ·
 **ukryj przed wybranymi osobami**. Odbiorca może **nie pokazywać rzeczy danej osoby** albo **zapomnieć kontakt**.
 
+**Planer AI („short road map”):** wpisujesz cel, np. „wybrukować podjazd”, a dostajesz kroki z ofertami pod każdy:
+piasek (skład budowlany), kostka, zagęszczarka (od znajomego Marka), gilotyna do kostki (wypożyczalnia), brukarz
+(znajomy znajomego). Znajomi zawsze pierwsi. Zwykłe słowo („jajka”) daje wyniki pogrupowane: od znajomych,
+od znajomych znajomych, z okolicy. W prototypie plany są gotowe dla najczęstszych spraw (brukowanie, przeprowadzka,
+ogród); w produkcji plan układa Claude (`supabase/functions/plan`, model `claude-opus-5-5`, odpowiedź w schemacie JSON),
+a oferty dobiera baza. Model nie widzi danych użytkowników, tylko tekst celu. Koszt: kilka groszy za plan, więc
+w planie darmowym np. 10 planów miesięcznie, w płatnych bez limitu.
+
 **Kupno, rezerwacja, wynajem:** BLIK, szybki przelew albo gotówka przy odbiorze. **Kto pierwszy zapłaci, ten ma**:
-płatność od razu rezerwuje rzecz albo zmniejsza zapas (sprawdzane po stronie serwera). Dostawa: odbiór osobisty,
+po płatności rzecz pojedyncza od razu znika z oferty jako **„Kupione”** (plakietka wisi jeszcze dobę, potem ogłoszenie
+znika); przy wielu sztukach maleje zapas, a „Kupione” pojawia się dopiero przy zerze; wynajem zajmuje termin
+(sprawdzane po stronie serwera). Dostawa: odbiór osobisty,
 InPost, Orlen Paczka, DPD Pickup, DHL POP, Poczta Polska, kurier, dowolny inny przewoźnik.
 Pod każdą ofertą **szybkie pytania** do czatu i **„Twoje prawa”** w dymku: osobno dla zakupu od osoby prywatnej i od firmy.
 
@@ -105,7 +121,7 @@ podręczną pamięć. Prototyp (bez serwera) zapisuje dane demo w przeglądarce.
 
 | Plan | Cena brutto | Co daje |
 |---|---|---|
-| **Darmowy** | 0 zł | **3 nowe ogłoszenia w miesiącu**, czat, płatności, znajomi bez ograniczeń. Raz w roku odnowienie konta za 1 zł / 1 € / 1 $ (lub równowartość) |
+| **Darmowy** | 0 zł w pierwszym roku, potem **10 zł za rok** · 2,50 € · 2,99 $ | **2 nowe ogłoszenia w miesiącu**, czat, płatności, znajomi bez ograniczeń. Kupowanie, czaty i przeglądanie zawsze za darmo |
 | **Roczny** (osoba prywatna) | **99 zł** · 24 € · 27 $ | bez limitu: auta, nieruchomości, kwatery, cały asortyment rolnika |
 | **Firma** | **499 zł** · 100 € · 119 $ | faktury, profil firmy, kilka osób na koncie: wypożyczalnie, gospodarstwa, kwatery |
 
@@ -115,13 +131,18 @@ podręczną pamięć. Prototyp (bez serwera) zapisuje dane demo w przeglądarce.
   Po wygaśnięciu konto wraca do darmowego, nic nie znika, tylko nowe ogłoszenia mają limit.
 - Ceny w innych walutach (CZK, HUF, UAH, GBP) to zaokrąglone propozycje w `src/lib/pricing.ts`.
 
-**Uwaga do odnowienia za 1 zł:** opłata operatora przy płatności BLIK w Stripe to 1,6% + 1 zł, czyli więcej niż 1 zł.
-Każde takie odnowienie to strata ok. 2 groszy plus koszt obsługi. Jego sens to nie przychód, tylko **czyszczenie martwych
-i fałszywych kont**. Tańsza alternatywa o tym samym efekcie: odnowienie potwierdzane kodem SMS (ok. 0,15 zł kosztu).
+**Dlaczego 10 zł za rok zamiast 1 zł:** przy 1 zł prowizja BLIK w Stripe (1,6% + 1 zł) zjadała całą kwotę.
+Przy 10 zł zostaje ok. 8,80 zł. Ważniejsze jest co innego: **każdy, kto wystawia, staje się płacącym klientem**.
+Dotąd płaciło ok. 2–6% aktywnych (plany 99 i 499 zł); z odświeżeniem płaci też część „darmowych”. Przy 25% aktywnych,
+którzy odświeżają konto, to dodatkowo ok. 2 tys. zł miesięcznie przy 10 tys. aktywnych. Do tego karta albo BLIK
+raz w roku potwierdza, że za kontem stoi prawdziwa osoba (mniej oszustów i martwych kont).
+
+**Dlaczego 2 ogłoszenia, a nie 3:** dwa to rytm „coś co dwa tygodnie”, wystarczy zwykłej osobie. Kto wystawia częściej
+(rolnik, handlarz, wypożyczalnia), szybciej trafia na plan Roczny albo Firma. Ogłoszenia „Szukam” i „Oddam za darmo”
+można w przyszłości zwolnić z limitu, jeśli zabraknie ruchu w okolicy (decyzja po pierwszych danych).
 
 **Po co roczna opłata (po ludzku):** płacisz raz w roku i masz spokój, bez miesięcznych opłat i bez płacenia
-za każde ogłoszenie osobno. Limit 3 darmowych ogłoszeń w miesiącu wystarcza zwykłej osobie, a zatrzymuje spamerów
-i handlarzy, którzy chcieliby wrzucać setki ogłoszeń za darmo.
+za każde ogłoszenie osobno. Limit zatrzymuje spamerów i handlarzy, którzy chcieliby wrzucać setki ogłoszeń za darmo.
 
 ## 5. Jak wygrać z Otodom, nieruchomosci-online i innymi
 
@@ -144,19 +165,24 @@ Ceny dostawców z października 2026: Supabase Pro 25 USD (100 tys. aktywnych, 8
 SMS PRO w Polsce 0,11–0,17 zł netto, Cloudflare R2 0,015 USD/GB bez opłat za transfer, Stripe BLIK 1,6% + 1 zł.
 Model jest w `src/lib/costs.ts` i w panelu operatora w aplikacji.
 
-**Miesięcznie** (8% nowych osób w miesiącu, płatności za plany przez Stripe, bez VAT, ZUS i Twojej pensji):
+**Miesięcznie** (8% nowych osób w miesiącu, 6% na planie 99 zł, 25% odświeża darmowe konto za 10 zł od drugiego roku,
+płatności przez Stripe, bez VAT, ZUS i Twojej pensji):
 
 | Aktywni użytkownicy | 1 000 | 10 000 | 100 000 |
 |---|---|---|---|
 | Baza, logowanie, czat | 93 zł | 93 zł | 278 zł |
 | SMS z kodem | 21 zł | 174 zł | 1 364 zł |
 | Zdjęcia, e-maile, push | 0 zł | 1 zł | 82 zł |
-| Prowizje operatora za plany (6% płaci) | 13 zł | 129 zł | 1 292 zł |
+| Prowizje operatora za plany i odświeżenia | 37 zł | 371 zł | 3 709 zł |
 | Księgowość, domena, sklepy | 445 zł | 445 zł | 445 zł |
 | Obsługa i moderacja | 0 zł (Ty) | 0 zł (Ty) | 8 000 zł |
-| **Koszty razem** | **572 zł** | **841 zł** | **11 461 zł** |
-| Przychód przy 2% płacących | 165 zł | 1 650 zł | 16 500 zł |
-| Przychód przy 6% płacących | 495 zł | 4 950 zł | 49 500 zł |
+| **Koszty razem** | **596 zł** | **1 083 zł** | **13 877 zł** |
+| Przychód: 2% płaci 99 zł + odświeżenia | 373 zł | 3 733 zł | 37 333 zł |
+| Przychód: 6% płaci 99 zł + odświeżenia | 703 zł | 7 033 zł | 70 333 zł |
+| w tym same odświeżenia 10 zł | 208 zł | 2 083 zł | 20 833 zł |
+
+AI w planerze (Claude): ok. 1–3 tys. tokenów na plan; przy 10 tys. aktywnych i 2 planach na osobę miesięcznie to
+rząd kilkuset złotych. Gotowe plany dla najczęstszych celów trzymamy w pamięci podręcznej, więc model liczy tylko nowe.
 
 Wniosek: do ok. 2–3 tys. aktywnych dokładasz kilkaset zł miesięcznie (głównie księgowość). Od ok. 10 tys. aktywnych
 usługa się spina nawet przy 2% płacących. Największy zmienny koszt to SMS; po pierwszym logowaniu przechodzimy na klucze
@@ -198,11 +224,21 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
   Android: Chrome → „Zainstaluj aplikację”, a do Google Play ta sama aplikacja jako Trusted Web Activity.
   Plan kupuje się na stronie, więc nie płacimy Apple ani Google 15–30%.
 - **Komputer: rozszerzenie** do Chrome i Edge (otwiera się w panelu bocznym) oraz Safari (konwersja `npm run safari:extension`,
-  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Obok”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
+  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Orbifolk”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
   do formularza: można wystawić coś, co oglądasz na OLX czy Allegro. Budowanie: `npm run build:extension`.
 - **Etap 2: App Store i Google Play** natywnie (Capacitor), gdy będzie ruch.
 
-## 9. Plan startu
+## 9. Panel okolicy: pogoda i ceny paliw
+
+- **Pogoda (jest):** temperatura i stan nieba w pasku na głównej, ostrzeżenie „jutro opady 70%” (przyda się, gdy ktoś
+  pożycza kosiarkę albo planuje brukowanie). Źródło: Open-Meteo, bez klucza i bez śledzenia; gdy brak sieci, panel znika.
+  Przy ruchu komercyjnym Open-Meteo wymaga płatnego planu (ok. kilkudziesięciu euro miesięcznie) albo własnej instancji.
+- **Ceny paliw (następny krok):** w Polsce nie ma darmowego, oficjalnego API cen ze stacji. Opcje: umowa z serwisem
+  zbierającym ceny (np. e-petrol, AutoCentrum) albo ceny zgłaszane przez użytkowników (jak w Waze: zdjęcie pylonu,
+  potwierdzenie przez drugą osobę). W UE część krajów publikuje ceny oficjalnie (np. Niemcy: Tankerkönig/MTS-K,
+  Włochy: MIMIT, Hiszpania: Geoportal), co ułatwia wejście tam.
+
+## 10. Plan startu
 
 1. **Walidacja (2–4 tygodnie):** strona z listą oczekujących; 20 rozmów z mieszkańcami jednego powiatu, 5 z rolnikami,
    3 z właścicielami kwater.
@@ -212,7 +248,7 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
 
 Marketing i filmy: [MARKETING.md](MARKETING.md).
 
-## 10. Następne kroki w kodzie
+## 11. Następne kroki w kodzie
 
 1. Supabase: logowanie numerem (SMS), tabele, RLS i automaty z `supabase/migrations/0001_init.sql` (schemat nie był
    jeszcze uruchamiany na prawdziwej bazie; przed startem przejść go na projekcie testowym).
@@ -220,3 +256,4 @@ Marketing i filmy: [MARKETING.md](MARKETING.md).
 3. Przewoźnicy: InPost ShipX API albo agregator (Furgonetka, Apaczka) do etykiet i śledzenia.
 4. Web Push + FCM/APNs z tabeli `notifications`; pg_cron dla przypomnień i DAC7.
 5. Publiczne strony ogłoszeń z podglądem, strona `/zastrzez`, generator XML DPI-IS.
+6. Planer AI: wdrożyć `supabase/functions/plan` (sekret `ANTHROPIC_API_KEY`), limit zapytań na konto, pamięć gotowych planów.

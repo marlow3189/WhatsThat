@@ -1,19 +1,20 @@
-# Obok Terms of Service (draft for legal review)
+# Orbifolk Terms of Service (draft for legal review)
 
 Working draft, October 2026. The Polish version prevails. This English text is the source for other translations
 (DE, UK, CS, SK, HU, IT, ES). Items in square brackets are to be filled in.
 
-1. **Operator.** Obok is run by [company name sp. z o.o.], [address], KRS [no.], NIP [no.]. Contact point (DSA
-   Articles 11–12): kontakt@obok.app.
-2. **What Obok is.** A listings platform connecting users who sell, buy, rent, swap, give away or offer services.
+1. **Operator.** Orbifolk is run by [company name sp. z o.o.], [address], KRS [no.], NIP [no.]. Contact point (DSA
+   Articles 11–12): hello@orbifolk.com.
+2. **What Orbifolk is.** A listings platform connecting users who sell, buy, rent, swap, give away or offer services.
    **The Operator is not a party to any deal between users** and does not sell, buy, rent or provide the listed items or services.
 3. **Money.** The Operator never receives or holds users’ funds. In-app payments are processed by a licensed payment
    service provider [name] directly to the seller’s account under that provider’s terms. The Operator is neither a
    deposit holder nor an insurer; deposits, hand-over and return are agreed between users, and the app only records them.
 4. **Account.** One account per person, created with a phone number confirmed by SMS. Users may **block their account**
-   in the app or at obok.app/zastrzez; unblocking requires an SMS code and confirmation from two trusted people.
+   in the app or at orbifolk.com/zastrzez; unblocking requires an SMS code and confirmation from two trusted people.
    Users can delete their account in settings.
-5. **Plans.** Free: 3 new listings per calendar month, renewed yearly for a symbolic fee or SMS confirmation. Annual
+5. **Plans.** Free: 2 new listings per calendar month; the first year is free, after that a yearly refresh of
+   [10 PLN / 2.50 EUR / 2.99 USD] keeps listing enabled. Buying, messaging and browsing are free. Annual
    (private persons): [99 PLN / 24 EUR / 27 USD]. Business: [499 PLN / 100 EUR / 119 USD]. Plans do not renew automatically;
    reminders are sent 30, 7 and 1 day before expiry. **No commission** is charged on deals.
 6. **Listings.** The person posting is responsible for the content, condition, legality and performance of the deal.

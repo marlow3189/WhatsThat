@@ -1,8 +1,8 @@
-/** Nazwa robocza w jednym miejscu. Zmiana marki = zmiana tego pliku. */
+/** Marka w jednym miejscu. Zmiana marki = zmiana tego pliku. */
 export const BRAND = {
-  name: 'Obok',
-  /** domena do sprawdzenia i rejestracji */
-  domain: 'obok.app',
+  name: 'Orbifolk',
+  /** domena główna (aplikacja, linki do ogłoszeń, zaproszenia) */
+  domain: 'orbifolk.com',
   /** punkt kontaktowy DSA (art. 11–12) */
-  email: 'kontakt@obok.app',
+  email: 'hello@orbifolk.com',
 }

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Group, Header, Row, Segmented, Tile, cx } from '../components/ui'
+import { Group, Header, ListingRow, Row, Segmented, Tile, cx, relationText } from '../components/ui'
+import { Link } from 'react-router'
 import { Icon } from '../components/icons'
 import { CATEGORIES, categoryById } from '../lib/categories'
 import { distanceKm, formatDistance, matchesLocation, type Scope } from '../lib/geo'
 import type { Circle, Kind } from '../lib/types'
+import { findRecipe, plan, searchByCircle, type Hit } from '../lib/planner'
 
 const KINDS: Kind[] = ['sell', 'rent', 'service', 'give', 'swap', 'garage', 'wanted']
 const RADII = [2, 5, 10, 25, 50, 100]
@@ -14,9 +16,9 @@ const RADII = [2, 5, 10, 25, 50, 100]
 export function Search() {
   const { t, locale, account, users, visibleListings } = useStore()
   const [params, setParams] = useSearchParams()
-  const [q, setQ] = useState('')
+  const [q, setQ] = useState(() => params.get('q') ?? '')
   const [circle, setCircle] = useState<Circle>(3)
-  const [where, setWhere] = useState('10')
+  const [where, setWhere] = useState('25')
   const [kind, setKind] = useState<Kind | 'all'>('all')
   const cat = params.get('k') ?? ''
   const sub = params.get('p') ?? ''
@@ -26,18 +28,25 @@ export function Search() {
   const scope: Scope = /^\d+$/.test(where) ? 'radius' : (where as Scope)
   const radiusKm = scope === 'radius' ? Number(where) : 0
 
-  const results = useMemo(() => {
-    const needle = q.trim().toLowerCase()
-    return visibleListings
-      .filter(({ rel }) => rel.circle <= circle)
-      .filter(({ listing, rel }) => rel.circle < 3 || matchesLocation(account.place, listing.place, { scope, radiusKm }))
-      .filter(({ listing }) => kind === 'all' || listing.kind === kind)
-      .filter(({ listing }) => !cat || listing.category === cat)
-      .filter(({ listing }) => !sub || listing.sub === sub)
-      .filter(({ listing }) => !needle || `${listing.title} ${listing.description}`.toLowerCase().includes(needle))
-      .map((r) => ({ ...r, km: distanceKm(account.place, r.listing.place) }))
-      .sort((a, b) => a.rel.circle - b.rel.circle || a.km - b.km)
-  }, [visibleListings, circle, account.place, scope, radiusKm, kind, cat, sub, q])
+  /** Wszystko, co pasuje do filtrów; słowa z pola wyszukiwania dopasowuje planer (odmiana, polskie znaki). */
+  const pool = useMemo<Hit[]>(
+    () =>
+      visibleListings
+        .filter(({ rel }) => rel.circle <= circle)
+        .filter(({ listing, rel }) => rel.circle < 3 || matchesLocation(account.place, listing.place, { scope, radiusKm }))
+        .filter(({ listing }) => kind === 'all' || listing.kind === kind)
+        .filter(({ listing }) => !cat || listing.category === cat)
+        .filter(({ listing }) => !sub || listing.sub === sub)
+        .map((r) => ({ ...r, km: distanceKm(account.place, r.listing.place) }))
+        .sort((a, b) => a.rel.circle - b.rel.circle || a.km - b.km),
+    [visibleListings, circle, account.place, scope, radiusKm, kind, cat, sub],
+  )
+  const query = q.trim()
+  const recipe = query ? findRecipe(query) : undefined
+  const steps = recipe ? plan(recipe, pool) : []
+  const groups = query ? searchByCircle(query, pool) : null
+  const results = groups ? [...groups.friends, ...groups.fof, ...groups.nearby] : pool
+  const metaOf = (h: Hit) => (h.rel.circle === 1 ? users[h.listing.ownerId].name.split(' ')[0] : `${relationText(h.rel, users[h.listing.ownerId], users, t, h.listing.incognito)} · ${formatDistance(h.km)}`)
 
   const setCat = (k: string, p = '') => {
     const next = new URLSearchParams()
@@ -46,15 +55,16 @@ export function Search() {
     setParams(next)
   }
   const category = cat ? categoryById(cat) : null
-  const menuCls = 'press min-h-9 max-w-[48%] truncate rounded-full bg-surface pr-8 pl-3.5 text-[15px] shadow-[var(--shadow)] appearance-none'
+  const menuCls = 'press min-h-10 w-full truncate rounded-full bg-surface pr-8 pl-4 text-[15px] font-semibold shadow-[var(--shadow)] appearance-none'
 
   return (
     <div className="flex flex-col gap-4 pb-6">
       {category ? <Header back title={category.label[lang]} /> : <Header large title={t('nav.search')} />}
       <div className="flex flex-col gap-3 px-4">
-        <label className="flex min-h-[44px] items-center gap-2 rounded-[12px] bg-fill-strong/70 px-3 text-muted">
+        <label className="flex min-h-[52px] items-center gap-2 rounded-full bg-surface px-4 text-muted shadow-[var(--shadow)] focus-within:ring-2 focus-within:ring-ink/15">
           <Icon name="search" size={19} />
-          <input id="q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPh')} className="min-w-0 flex-1 bg-transparent text-[17px] text-ink outline-none placeholder:text-muted" />
+          <input id="q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPh')} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-muted focus-visible:outline-none" />
+          {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-lilac px-2.5 py-1 text-[12px] font-bold text-ink"><Icon name="sparkle" size={13} /> AI</span>}
         </label>
         <Segmented<Circle>
           label={t('search.who')}
@@ -63,7 +73,7 @@ export function Search() {
           options={[1, 2, 3].map((c) => ({ value: c as Circle, label: t(`circle.${c as Circle}`) }))}
         />
         <div className="flex gap-2">
-          <div className="relative">
+          <div className="relative min-w-0 flex-1">
             <select id="where" aria-label={t('search.where')} value={where} onChange={(e) => setWhere(e.target.value)} className={menuCls} disabled={circle < 3}>
               {RADII.map((r) => <option key={r} value={r}>{t('scope.radius', { km: r })}</option>)}
               <option value="town">{account.place.town}</option>
@@ -72,7 +82,7 @@ export function Search() {
             </select>
             <Icon name="chevron" size={14} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-muted" />
           </div>
-          <div className="relative">
+          <div className="relative min-w-0 flex-1">
             <select id="kind" aria-label={t('search.what')} value={kind} onChange={(e) => setKind(e.target.value as Kind | 'all')} className={menuCls}>
               <option value="all">{t('search.all')}</option>
               {KINDS.map((k) => <option key={k} value={k}>{t(`kind.${k}`)}</option>)}
@@ -91,14 +101,58 @@ export function Search() {
           {category && (
             <div className="no-scrollbar flex gap-2 overflow-x-auto px-4">
               {[{ id: '', label: t('search.all') }, ...category.subs.map((s) => ({ id: s.id, label: s.label[lang] }))].map((s) => (
-                <button key={s.id || 'all'} type="button" onClick={() => setCat(category.id, s.id)} aria-pressed={sub === s.id} className={cx('press min-h-9 shrink-0 rounded-full px-3.5 text-[15px] whitespace-nowrap', sub === s.id ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+                <button key={s.id || 'all'} type="button" onClick={() => setCat(category.id, s.id)} aria-pressed={sub === s.id} className={cx('press min-h-9 shrink-0 rounded-full px-3.5 text-[15px] whitespace-nowrap', sub === s.id ? 'bg-ink text-white' : 'bg-surface shadow-[var(--shadow)]')}>
                   {s.label}
                 </button>
               ))}
             </div>
           )}
-          <p className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">{t('search.results', { n: results.length })}</p>
-          {results.length ? (
+          {recipe && (
+            <section className="mx-4 flex flex-col gap-3 rounded-[28px] bg-lilac p-4">
+              <div className="flex items-start gap-3">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-white"><Icon name="sparkle" size={20} /></span>
+                <div className="min-w-0">
+                  <p className="text-[12px] font-bold tracking-wide text-ink/60 uppercase">{t('plan.title')}</p>
+                  <h2 className="text-[20px] leading-tight font-extrabold tracking-[-0.02em]">{recipe.goal[lang]}</h2>
+                  <p className="mt-0.5 text-[14px] leading-snug text-ink/70">{t('plan.lead')}</p>
+                </div>
+              </div>
+              <ol className="flex flex-col gap-2.5">
+                {steps.map(({ step, hits }, i) => (
+                  <li key={step.id} className="overflow-hidden rounded-[20px] bg-surface">
+                    <p className="flex items-center gap-2.5 px-4 pt-3 pb-1 text-[15px] font-bold">
+                      <span className="tnum grid size-6 shrink-0 place-items-center rounded-full bg-ink text-[12px] text-white">{i + 1}</span>
+                      {step.title[lang]}
+                    </p>
+                    {hits.length ? (
+                      <div className="[&>*+*]:border-t [&>*+*]:border-line">
+                        {hits.map((h) => <ListingRow key={h.listing.id} listing={h.listing} t={t} locale={locale} meta={metaOf(h)} />)}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-3 px-4 pt-1 pb-3">
+                        <p className="text-[14px] text-muted">{t('plan.none')}</p>
+                        <Link to={`/dodaj?t=${encodeURIComponent(step.title[lang])}`} className="shrink-0 text-[14px] font-bold text-link">{t('plan.wanted')}</Link>
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
+              <p className="px-1 text-[12px] leading-snug text-ink/60">{t('plan.note')}</p>
+            </section>
+          )}
+          {groups && !recipe && results.length > 0 && (
+            <div className="flex flex-col gap-5">
+              {([['search.friends', groups.friends], ['search.fof', groups.fof], ['search.nearby', groups.nearby]] as const).map(([label, hits]) =>
+                hits.length ? (
+                  <Group key={label} label={<span className="flex items-center gap-2">{t(label)} <span className="tnum rounded-full bg-surface px-2 text-[13px] text-muted shadow-[var(--shadow)]">{hits.length}</span></span>}>
+                    {hits.map((h) => <ListingRow key={h.listing.id} listing={h.listing} t={t} locale={locale} meta={metaOf(h)} />)}
+                  </Group>
+                ) : null,
+              )}
+            </div>
+          )}
+          {!(groups && !recipe && results.length > 0) && !recipe && <p className="px-5 text-[15px] font-bold">{t('search.results', { n: results.length })}</p>}
+          {recipe || (groups && results.length > 0) ? null : results.length ? (
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 px-4">
               {results.map(({ listing, rel, km }) => (
                 <Tile key={listing.id} listing={listing} t={t} locale={locale} meta={rel.circle === 1 ? users[listing.ownerId].name.split(' ')[0] : formatDistance(km)} />

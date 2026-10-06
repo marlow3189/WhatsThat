@@ -30,7 +30,7 @@ export function App() {
 function Shell() {
   const { account } = useStore()
   const { pathname } = useLocation()
-  useEffect(() => window.scrollTo(0, 0), [pathname])
+  useEffect(() => window.scrollTo(0, 0), [pathname, account.onboarded])
   if (!account.onboarded) return <Onboarding />
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg">
@@ -93,11 +93,11 @@ function Toast() {
   if (!toast) return null
   const body = (
     <span className="flex items-start gap-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-primary text-primary-ink"><Icon name="bell" size={18} /></span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-white"><Icon name="bell" size={18} /></span>
       <span className="min-w-0 flex-1 text-[15px] leading-snug">{toast.text}</span>
     </span>
   )
-  const cls = 'toast-in glass block w-full rounded-[22px] p-3 text-left shadow-xl'
+  const cls = 'toast-in block w-full rounded-[24px] bg-surface p-3 text-left shadow-[0_10px_36px_rgb(28_26_23/0.18)]'
   return (
     <div className="fixed inset-x-0 z-50 mx-auto max-w-[34rem] px-3" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 8px)' }} role="status">
       {toast.link ? <Link to={toast.link} onClick={dismissToast} className={cls}>{body}</Link> : <button type="button" onClick={dismissToast} className={cls}>{body}</button>}
@@ -121,20 +121,30 @@ function TabBar() {
   ]
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[34rem] px-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }} aria-label="Menu">
-      <div className="glass grid h-[64px] grid-cols-5 rounded-full p-1 shadow-[0_8px_32px_rgb(0_0_0/0.12)]">
-        {tabs.map((tab) => (
-          <NavLink
-            key={tab.to}
-            to={tab.to}
-            end={tab.to === '/'}
-            onClick={tab.onClick}
-            className={({ isActive }) => cx('press relative flex flex-col items-center justify-center gap-0.5 rounded-full', isActive ? 'bg-fill text-ink' : 'text-muted')}
-          >
-            <Icon name={tab.icon} size={tab.icon === 'plus' ? 26 : 23} strokeWidth={tab.icon === 'plus' ? 2.2 : 1.9} />
-            <span className="max-w-full truncate px-1 text-[10px] font-medium">{tab.label}</span>
-            {!!tab.badge && <span className="tnum absolute top-1 left-[calc(50%+4px)] grid min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[11px] font-bold text-white">{tab.badge}</span>}
-          </NavLink>
-        ))}
+      <div className="grid h-[68px] grid-cols-5 items-center rounded-full bg-surface/95 px-1.5 shadow-[0_10px_36px_rgb(28_26_23/0.14)] backdrop-blur-xl">
+        {tabs.map((tab) =>
+          tab.icon === 'plus' ? (
+            <NavLink key={tab.to} to={tab.to} onClick={tab.onClick} aria-label={tab.label} className="press mx-auto grid size-[52px] place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgb(217_72_28/0.35)]">
+              <Icon name="plus" size={26} strokeWidth={2.4} />
+            </NavLink>
+          ) : (
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              end={tab.to === '/'}
+              onClick={tab.onClick}
+              className={({ isActive }) => cx('press relative flex h-full flex-col items-center justify-center gap-0.5', isActive ? 'text-ink' : 'text-muted')}
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon name={tab.icon} size={23} strokeWidth={isActive ? 2.3 : 1.9} />
+                  <span className={cx('max-w-full truncate px-1 text-[10px]', isActive ? 'font-bold' : 'font-medium')}>{tab.label}</span>
+                  {!!tab.badge && <span className="tnum absolute top-2 left-[calc(50%+4px)] grid min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-surface">{tab.badge}</span>}
+                </>
+              )}
+            </NavLink>
+          ),
+        )}
       </div>
     </nav>
   )

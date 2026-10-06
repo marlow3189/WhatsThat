@@ -121,7 +121,7 @@ export function OrderScreen() {
 function Photos({ label, id, photos, add, onAdd, disabled }: { label: string; id: string; photos: string[]; add: string; onAdd: (f: File) => void; disabled?: boolean }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="px-1 text-[13px] font-medium tracking-wide text-muted uppercase">{label}</p>
+      <p className="px-1 text-[15px] font-bold">{label}</p>
       <div className="grid grid-cols-3 gap-2">
         {photos.map((p, i) => <img key={i} src={p} alt={`${label} ${i + 1}`} className="aspect-square w-full rounded-[16px] object-cover" />)}
         <label htmlFor={`photo-${id}`} className={cx('card grid aspect-square place-items-center text-center text-[13px] text-link', disabled ? 'opacity-40' : 'press cursor-pointer')}>

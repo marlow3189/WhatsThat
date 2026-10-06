@@ -47,6 +47,14 @@ const PATHS: Record<string, ReactNode> = {
   doc: <><path d="M7 3.5h7l4 4V20.5H7z" /><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6" /></>,
   minus: <path d="M5 12h14" />,
   box: <><path d="M4 8 12 4l8 4v8.5L12 20.5l-8-4z" /><path d="M4 8l8 4 8-4M12 12v8.5" /></>,
+  sparkle: <><path d="M12 3.5c.6 4.4 2.6 6.4 7 7-4.4.6-6.4 2.6-7 7-.6-4.4-2.6-6.4-7-7 4.4-.6 6.4-2.6 7-7Z" /><path d="M19 3v3M17.5 4.5h3" /></>,
+  sun: <><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" /></>,
+  cloud: <path d="M7 18.5h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 18.5Z" />,
+  rain: <><path d="M7 15h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 15Z" /><path d="M8.5 18l-1 2.5M12.5 18l-1 2.5M16.5 18l-1 2.5" /></>,
+  snow: <><path d="M7 15h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 15Z" /><path d="M8.5 19h.01M12 20.5h.01M15.5 19h.01" /></>,
+  storm: <><path d="M7 15h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 15Z" /><path d="m12.5 15-2 3.5h3l-2 3" /></>,
+  fog: <path d="M4 9h16M6 13h12M4 17h16" />,
+  route: <><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><path d="M8 18h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16" /></>,
 }
 
 export function Icon({ name, size = 22, ...props }: { name: string; size?: number } & SVGProps<SVGSVGElement>) {
@@ -57,12 +65,14 @@ export function Icon({ name, size = 22, ...props }: { name: string; size?: numbe
   )
 }
 
-/** Znak: dwie osoby obok siebie. */
-export function Mark({ size = 26 }: { size?: number }) {
+/** Znak: planeta (Ty) i ktoś na Twojej orbicie. */
+export function Mark({ size = 28 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
-      <circle cx="18" cy="24" r="11" fill="var(--ink)" />
-      <circle cx="30" cy="24" r="11" fill="var(--accent)" />
+    <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden>
+      <rect width="96" height="96" rx="24" fill="var(--accent)" />
+      <ellipse cx="48" cy="48" rx="33" ry="15" fill="none" stroke="var(--ink)" strokeWidth="5" transform="rotate(-28 48 48)" />
+      <circle cx="48" cy="48" r="14" fill="var(--ink)" />
+      <circle cx="77" cy="32.5" r="8" fill="var(--primary)" stroke="var(--accent)" strokeWidth="3" />
     </svg>
   )
 }

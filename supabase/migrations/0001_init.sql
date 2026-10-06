@@ -1,4 +1,4 @@
--- Obok: schemat produkcyjny (Supabase / Postgres + PostGIS).
+-- Orbifolk: schemat produkcyjny (Supabase / Postgres + PostGIS).
 -- Model „łącznika”: nie trzymamy cudzych pieniędzy i nie pobieramy prowizji.
 -- Tożsamość = numer telefonu (Supabase Auth, logowanie SMS), opcjonalnie e-mail.
 
@@ -20,7 +20,7 @@ create table public.profiles (
   restricted_at timestamptz,
   plan text not null default 'free' check (plan in ('free', 'annual', 'business')),
   plan_until timestamptz,
-  renewal_due timestamptz not null default now() + interval '1 year',  -- konto darmowe: symboliczne odnowienie
+  refresh_due timestamptz not null default now() + interval '1 year',  -- konto darmowe: pierwszy rok gratis, potem odświeżenie 10 zł/rok
   kyc text not null default 'none' check (kyc in ('none', 'pending', 'verified')),
   business boolean not null default false,       -- firma: obowiązki DSA/Omnibus, faktury
   payout_account_id text,                        -- konto sprzedającego u operatora płatności
@@ -152,7 +152,7 @@ create table public.listings (
   price int check (price >= 0),                   -- najmniejsza jednostka waluty
   currency text not null default 'PLN',
   unit text not null default 'fixed'
-    check (unit in ('item', 'kg', 'pack', 'litre', 'hour', 'day', 'week', 'month', 'night', 'fixed')),
+    check (unit in ('item', 'kg', 'pack', 'litre', 'tonne', 'hour', 'day', 'week', 'month', 'night', 'fixed')),
   condition text check (condition in ('new', 'used')),
   deal boolean not null default false,            -- okazja
   stock numeric,                                  -- rolnik: ile zostało
@@ -172,22 +172,28 @@ create table public.listings (
   promoted boolean not null default false,
   paused boolean not null default false,          -- rolnik: „dziś niedostępne”
   status text not null default 'active' check (status in ('active', 'reserved', 'sold', 'removed', 'deleted')),
+  sold_at timestamptz,                            -- „Kupione” widać jeszcze dobę
   created_at timestamptz not null default now()
 );
 create index listings_location_idx on public.listings using gist (location);
 create index on public.listings (owner_id, status);
 create index on public.listings (category, sub_category, status);
 
--- Plan darmowy: 3 nowe ogłoszenia w miesiącu kalendarzowym. Roczny i Firma: bez limitu do daty ważności.
+-- Plan darmowy: 2 nowe ogłoszenia w miesiącu kalendarzowym, o ile konto jest odświeżone na ten rok.
+-- Roczny i Firma: bez limitu do daty ważności. Kupowanie i czaty zawsze bez opłat.
 create or replace function public.enforce_listing_limit() returns trigger language plpgsql as $$
 declare p profiles;
 begin
   select * into p from public.profiles where id = new.owner_id;
   if p.status <> 'active' then raise exception 'Konto zastrzeżone'; end if;
-  if not (p.plan in ('annual', 'business') and p.plan_until > now())
-     and (select count(*) from public.listings
-          where owner_id = new.owner_id and created_at >= date_trunc('month', now())) >= 3 then
-    raise exception 'Limit 3 darmowych ogłoszeń w miesiącu.';
+  if not (p.plan in ('annual', 'business') and p.plan_until > now()) then
+    if p.refresh_due <= now() then
+      raise exception 'Odśwież darmowe konto (10 zł na rok), żeby dalej wystawiać.';
+    end if;
+    if (select count(*) from public.listings
+        where owner_id = new.owner_id and created_at >= date_trunc('month', now())) >= 2 then
+      raise exception 'Limit 2 darmowych ogłoszeń w miesiącu.';
+    end if;
   end if;
   return new;
 end $$;
@@ -329,13 +335,18 @@ create or replace view public.dac7_sellers with (security_invoker = true) as
   where o.status in ('paid', 'ready', 'done')
   group by 1, 2, 3, 4;
 
--- Kto pierwszy zapłaci, ten ma: webhook operatora oznacza płatność i od razu rezerwuje rzecz.
+-- Kto pierwszy zapłaci, ten ma: webhook operatora oznacza płatność i od razu wygasza ofertę.
+-- Sprzedaż pojedynczej rzeczy → „Kupione”; wiele sztuk → maleje zapas, „Kupione” przy zerze; wynajem → zajęte.
 create or replace function public.on_order_paid() returns trigger language plpgsql security definer set search_path = public as $$
 begin
   if new.status = 'paid' and old.status is distinct from 'paid' then
     update listings set
       stock = case when stock is null then null else greatest(0, stock - new.qty) end,
-      status = case when stock is null then 'reserved' when stock - new.qty <= 0 then 'sold' else status end
+      status = case
+        when stock is not null and stock - new.qty > 0 then status
+        when stock is null and kind = 'rent' then 'reserved'
+        else 'sold' end,
+      sold_at = case when (stock is null and kind <> 'rent') or stock - new.qty <= 0 then now() else sold_at end
     where id = new.listing_id and status = 'active';
     if not found then raise exception 'Ktoś był szybszy: rzecz już zarezerwowana'; end if;
   end if;
@@ -454,7 +465,8 @@ create policy "trusted approves" on public.unlock_approvals for insert
 
 create policy "listing visible in circle" on public.listings for select
   using (owner_id = auth.uid()
-         or (status in ('active', 'reserved') and public.is_active(owner_id) and not auth.uid() = any(hidden_from)
+         or ((status in ('active', 'reserved') or (status = 'sold' and sold_at > now() - interval '1 day'))
+             and public.is_active(owner_id) and not auth.uid() = any(hidden_from)
              and case when incognito then public.circle_of(auth.uid(), owner_id) = 3
                       else public.circle_of(auth.uid(), owner_id) <= visibility end));
 create policy "listing own write" on public.listings for all

@@ -1,11 +1,11 @@
 {
-  "name": "Obok",
-  "short_name": "Obok",
-  "description": "Wszystko, co obok. Od znajomych i z okolicy.",
+  "name": "Orbifolk",
+  "short_name": "Orbifolk",
+  "description": "Twoja orbita: znajomi i okolica. Pożyczaj, kupuj, wynajmuj.",
   "lang": "pl",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f6f6f3",
-  "theme_color": "#f6f6f3",
+  "background_color": "#f6f4ef",
+  "theme_color": "#f6f4ef",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

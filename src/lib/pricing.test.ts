@@ -1,15 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, listingsThisMonth, orderTotal, referralBonus, rentalUnits, renewalReminder } from './pricing'
+import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, orderTotal, referralBonus, rentalUnits, renewalReminder } from './pricing'
 
 const now = Date.UTC(2026, 9, 15, 12)
 
 describe('plany', () => {
-  it('darmowy: 3 nowe ogłoszenia w miesiącu kalendarzowym', () => {
+  it('darmowy: 2 nowe ogłoszenia w miesiącu kalendarzowym', () => {
     const mine = [{ createdAt: now - DAY }, { createdAt: now - 2 * DAY }, { createdAt: Date.UTC(2026, 8, 20) }]
     expect(listingsThisMonth(mine, now)).toBe(2)
-    expect(canPublish('free', 2)).toBe(true)
-    expect(canPublish('free', 3)).toBe(false)
-    expect(canPublish('annual', 300)).toBe(true)
+    expect(canPublish('free', 1, now + DAY, now)).toBe(true)
+    expect(canPublish('free', 2, now + DAY, now)).toBe(false)
+    expect(canPublish('annual', 300, 0, now)).toBe(true)
+  })
+  it('po roku darmowe konto trzeba odświeżyć (10 zł), żeby dalej wystawiać', () => {
+    expect(needsRefresh('free', now - DAY, now)).toBe(true)
+    expect(needsRefresh('free', now + DAY, now)).toBe(false)
+    expect(needsRefresh('annual', now - DAY, now)).toBe(false)
+    expect(canPublish('free', 0, now - DAY, now)).toBe(false)
   })
   it('po wygaśnięciu planu konto wraca do darmowego', () => {
     expect(effectivePlan({ plan: 'annual', planUntil: now + DAY }, now)).toBe('annual')
@@ -26,8 +32,8 @@ describe('plany', () => {
     expect(referralBonus({ plan: 'annual', planUntil: now + 10 * DAY }, 2, now)).toBeUndefined()
     expect(referralBonus({ plan: 'annual', planUntil: now + 10 * DAY }, 3, now)).toBe(now + 100 * DAY)
   })
-  it('ceny: 99 zł rok, 499 zł firma, odnowienie 1 zł', () => {
-    expect(PRICES.PLN).toEqual({ annual: 9900, business: 49900, renewal: 100 })
+  it('ceny: 99 zł rok, 499 zł firma, odświeżenie 10 zł', () => {
+    expect(PRICES.PLN).toEqual({ annual: 9900, business: 49900, refresh: 1000 })
     expect(PRICES.EUR.business).toBe(10000)
     expect(PRICES.USD.business).toBe(11900)
   })
@@ -37,6 +43,7 @@ describe('plany', () => {
 describe('zamówienia', () => {
   it('rolnik: cena za kg × ilość', () => {
     expect(orderTotal({ price: 450, unit: 'kg', kind: 'sell', qty: 2.5 })).toBe(1125)
+    expect(orderTotal({ price: 12000, unit: 'tonne', kind: 'sell', qty: 3 })).toBe(36000)
   })
   it('wysyłka doliczana do kwoty', () => {
     expect(orderTotal({ price: 26000, unit: 'fixed', kind: 'sell', shipping: 1599 })).toBe(27599)
@@ -45,10 +52,13 @@ describe('zamówienia', () => {
     expect(orderTotal({ price: 2500, unit: 'day', kind: 'rent', from: '2026-10-10', to: '2026-10-13' })).toBe(7500)
     expect(rentalUnits('2026-10-01', '2026-10-20', 'week')).toBe(3)
   })
-  it('kto pierwszy zapłaci: rzecz pojedyncza się rezerwuje, zapas maleje', () => {
-    expect(afterPayment({ status: 'active', unit: 'fixed' }, 1)).toEqual({ stock: undefined, status: 'reserved' })
-    expect(afterPayment({ status: 'active', unit: 'item', stock: 12 }, 10)).toEqual({ stock: 2, status: 'active' })
-    expect(afterPayment({ status: 'active', unit: 'kg', stock: 2 }, 2)).toEqual({ stock: 0, status: 'sold' })
+  it('kto pierwszy zapłaci: rzecz pojedyncza „Kupione”, przy wielu sztukach maleje zapas', () => {
+    expect(afterPayment({ status: 'active', unit: 'fixed', kind: 'sell' }, 1, now)).toEqual({ stock: undefined, status: 'sold', soldAt: now })
+    expect(afterPayment({ status: 'active', unit: 'day', kind: 'rent' }, 1, now)).toEqual({ stock: undefined, status: 'reserved' })
+    expect(afterPayment({ status: 'active', unit: 'item', kind: 'sell', stock: 12 }, 10, now)).toEqual({ stock: 2, status: 'active' })
+    expect(afterPayment({ status: 'active', unit: 'kg', kind: 'sell', stock: 2 }, 2, now)).toEqual({ stock: 0, status: 'sold', soldAt: now })
+    expect(isShown({ status: 'sold', soldAt: now - DAY / 2 }, now)).toBe(true)
+    expect(isShown({ status: 'sold', soldAt: now - 2 * DAY }, now)).toBe(false)
     expect(isAvailable({ status: 'reserved' })).toBe(false)
     expect(isAvailable({ status: 'active', paused: true })).toBe(false)
     expect(isAvailable({ status: 'active', stock: 0 })).toBe(false)

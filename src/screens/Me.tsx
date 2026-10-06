@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Field, Group, Header, Input, ListingRow, Notice, Row, Toggle, cx, inputCls, money } from '../components/ui'
+import { Avatar, Button, Field, Group, Header, Input, ListingRow, Notice, Row, Toggle, cx, inputCls, money, pastelOf } from '../components/ui'
 import { Icon } from '../components/icons'
 import { LANGS } from '../i18n'
 import { PRICES, isAvailable } from '../lib/pricing'
 import { VOIVODESHIPS } from '../lib/geo'
 import { CATEGORIES, FARM_TEMPLATES } from '../lib/categories'
-import { TermsList } from './Onboarding'
+import { KeyTerms, TermsSheet } from '../components/terms'
 import type { Lang, Unit } from '../lib/types'
 import { ME } from '../data/seed'
 
 export function Me() {
-  const { t, locale, account, users, orders, mine, plan, daysLeft, addedThisMonth, freeLimit, buyPlan, renewFree, setLang, setPlace, reset } = useStore()
+  const { t, locale, account, users, orders, mine, plan, daysLeft, addedThisMonth, freeLimit, buyPlan, refresh, setLang, setPlace, reset } = useStore()
   const me = users[ME]
   const prices = PRICES[account.currency]
   const open = orders.filter((o) => !['done', 'cancelled'].includes(o.status)).length
@@ -32,25 +32,25 @@ export function Me() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">{t('me.plan')}</h2>
-        <div className={cx('mx-4 flex flex-col gap-3 rounded-[22px] p-5', plan === 'free' ? 'card' : 'bg-accent text-accent-ink')}>
+        <h2 className="px-5 text-[15px] font-bold">{t('me.plan')}</h2>
+        <div className={cx('mx-4 flex flex-col gap-3 rounded-[24px] p-5', plan === 'free' ? 'card' : 'bg-accent text-accent-ink')}>
           <div className="flex items-baseline justify-between gap-3">
             <p className="text-[22px] font-bold">{plan === 'free' ? t('me.planFree') : plan === 'annual' ? t('me.planAnnual') : t('me.planBusiness')}</p>
-            {plan !== 'free' && daysLeft !== null && daysLeft <= 30 && <span className="rounded-full bg-[#0b0b0c] px-2.5 py-0.5 text-[13px] font-semibold text-white">{t('me.planEnds', { n: daysLeft })}</span>}
+            {plan !== 'free' && daysLeft !== null && daysLeft <= 30 && <span className="rounded-full bg-ink px-2.5 py-0.5 text-[13px] font-semibold text-white">{t('me.planEnds', { n: daysLeft })}</span>}
           </div>
           <p className={cx('text-[15px] leading-snug', plan === 'free' ? 'text-muted' : 'opacity-80')}>
             {plan === 'free'
-              ? t('me.planFreeD', { used: addedThisMonth, limit: freeLimit, date: date(account.renewalDue), price: fmt(prices.renewal) })
+              ? t('me.planFreeD', { used: addedThisMonth, limit: freeLimit, date: date(account.refreshDue), price: fmt(prices.refresh) })
               : t('me.planUntil', { date: date(account.planUntil) })}
           </p>
           {plan === 'free' ? (
             <>
               <Button onClick={() => buyPlan('annual')}>{t('me.upgrade', { price: fmt(prices.annual) })}</Button>
               <Button variant="secondary" onClick={() => buyPlan('business')}>{t('me.upgradeBusiness', { price: fmt(prices.business) })}</Button>
-              <button type="button" onClick={renewFree} className="text-[14px] text-link">{t('me.renew', { price: fmt(prices.renewal) })}</button>
+              <button type="button" onClick={refresh} className="min-h-10 text-[14px] font-semibold text-link">{t('me.refresh', { price: fmt(prices.refresh) })}</button>
             </>
           ) : (
-            <Button className="bg-[#0b0b0c]! text-white!" onClick={() => buyPlan(plan)}>{t('me.renew', { price: fmt(plan === 'annual' ? prices.annual : prices.business) })}</Button>
+            <Button className="bg-ink! text-white!" onClick={() => buyPlan(plan)}>{t('me.renew', { price: fmt(plan === 'annual' ? prices.annual : prices.business) })}</Button>
           )}
         </div>
       </section>
@@ -65,7 +65,7 @@ export function Me() {
 
       <Group label={t('me.settings')}>
         <label className="flex min-h-[52px] items-center gap-3 px-4 py-1.5">
-          <span className="grid size-8 place-items-center rounded-[9px] bg-fill"><Icon name="globe" size={18} /></span>
+          <span className={cx('grid size-9 place-items-center rounded-full', pastelOf('globe'))}><Icon name="globe" size={18} /></span>
           <span className="flex-1">{t('me.lang')}</span>
           <select id="lang" value={account.lang} onChange={(e) => setLang(e.target.value as Lang)} className="max-w-[50%] bg-transparent text-right text-[16px] text-muted outline-none">
             {LANGS.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -73,7 +73,7 @@ export function Me() {
         </label>
         {account.country === 'PL' && (
           <label className="flex min-h-[52px] items-center gap-3 px-4 py-1.5">
-            <span className="grid size-8 place-items-center rounded-[9px] bg-fill"><Icon name="pin" size={18} /></span>
+            <span className={cx('grid size-9 place-items-center rounded-full', pastelOf('pin'))}><Icon name="pin" size={18} /></span>
             <span className="flex-1">{t('me.region')}</span>
             <select id="region" value={account.place.voivodeship} onChange={(e) => setPlace({ ...VOIVODESHIPS.find((v) => v.voivodeship === e.target.value)!, country: 'PL' })} className="max-w-[55%] bg-transparent text-right text-[16px] text-muted outline-none">
               {VOIVODESHIPS.map((v) => <option key={v.voivodeship} value={v.voivodeship}>{v.voivodeship === account.place.voivodeship ? account.place.town : v.voivodeship}</option>)}
@@ -203,16 +203,16 @@ export function Stall() {
       </Group>
 
       <section className="flex flex-col gap-3">
-        <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">{t('p.quickAdd')}</h2>
+        <h2 className="px-5 text-[15px] font-bold">{t('p.quickAdd')}</h2>
         {canAdd ? (
           <>
             <div className="no-scrollbar flex flex-wrap gap-2 px-4">
               {FARM_TEMPLATES.map((f) => (
-                <button key={f.id} type="button" onClick={() => setAdding(f.id)} aria-pressed={adding === f.id} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', adding === f.id ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+                <button key={f.id} type="button" onClick={() => setAdding(f.id)} aria-pressed={adding === f.id} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', adding === f.id ? 'bg-ink text-white' : 'bg-surface shadow-[var(--shadow)]')}>
                   {f.label[lang]}
                 </button>
               ))}
-              <button type="button" onClick={() => setAdding('other')} aria-pressed={adding === 'other'} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', adding === 'other' ? 'bg-primary text-primary-ink' : 'bg-accent text-accent-ink')}>
+              <button type="button" onClick={() => setAdding('other')} aria-pressed={adding === 'other'} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', adding === 'other' ? 'bg-ink text-white' : 'bg-accent text-accent-ink')}>
                 + {t('p.other')}
               </button>
             </div>
@@ -283,11 +283,19 @@ export function Interests() {
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('home.interests')} />
+      <div className="mx-4 flex items-start gap-3 rounded-[24px] bg-sun p-4">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface"><Icon name="house" size={20} /></span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center justify-between gap-2"><span className="font-bold">{t('ob.interests.neighbors')}</span><Icon name="lock" size={16} className="text-ink/60" /></span>
+          <span className="mt-1 block text-[14px] leading-snug text-ink/75">{t('ob.interests.neighborsD')}</span>
+          <Link to="/ja/ukryte" className="mt-2 inline-block text-[14px] font-bold text-link">{t('me.muted')}</Link>
+        </span>
+      </div>
       <div className="grid grid-cols-2 gap-2.5 px-4">
         {CATEGORIES.filter((c) => c.id !== 'other').map((c) => {
           const on = account.interests.includes(c.id)
           return (
-            <button key={c.id} type="button" aria-pressed={on} onClick={() => setInterests(on ? account.interests.filter((x) => x !== c.id) : [...account.interests, c.id])} className={cx('press flex min-h-[64px] items-center gap-2.5 rounded-[18px] px-3.5 text-left text-[15px] font-medium', on ? 'bg-primary text-primary-ink' : 'card')}>
+            <button key={c.id} type="button" aria-pressed={on} onClick={() => setInterests(on ? account.interests.filter((x) => x !== c.id) : [...account.interests, c.id])} className={cx('press flex min-h-[64px] items-center gap-2.5 rounded-[18px] px-3.5 text-left text-[15px] font-medium', on ? 'bg-surface font-bold shadow-[var(--shadow)] ring-2 ring-ink' : 'bg-fill text-ink/55')}>
               <Icon name={c.icon} size={22} />
               <span className="min-w-0 leading-tight">{c.label[account.lang]}</span>
             </button>
@@ -331,11 +339,17 @@ export function Privacy() {
 }
 
 export function Terms() {
-  const { t } = useStore()
+  const { t, account } = useStore()
+  const [full, setFull] = useState(false)
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('me.terms')} />
-      <div className="px-4"><TermsList t={t} /></div>
+      <div className="flex flex-col gap-3 px-4">
+        <KeyTerms t={t} />
+        <Button variant="secondary" onClick={() => setFull(true)}><Icon name="doc" size={18} /> {t('ob.terms.read')}</Button>
+        <p className="px-1 text-[13px] text-muted">{t('terms.contact')}</p>
+      </div>
+      {full && <TermsSheet lang={account.lang} t={t} onClose={() => setFull(false)} />}
     </div>
   )
 }

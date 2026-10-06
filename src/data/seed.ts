@@ -20,13 +20,16 @@ const user = (id: string, name: string, hue: number, place: Place, friends: stri
 export function seedUsers(now: number): User[] {
   return [
     user(ME, '', 24, near(waw, -0.03, 0.01), ['kasia', 'marek', 'tomek', 'ola', 'bartek'], { payouts: false }),
-    user('kasia', 'Kasia Nowak', 330, near(waw, -0.02, 0.02), [ME, 'marek', 'ania']),
-    user('marek', 'Marek Zieliński', 210, near(waw, 0.01, -0.03), [ME, 'kasia', 'ania', 'jozef']),
-    user('tomek', 'Tomek Wójcik', 140, near(waw, 0.05, 0.04), [ME, 'ewa']),
-    user('ola', 'Ola Kamińska', 280, near(waw, -0.06, -0.02), [ME, 'ewa', 'magda']),
+    user('kasia', 'Kasia Nowak', 330, near(waw, -0.02, 0.02), [ME, 'marek', 'ania'], { work: 'farm' }),
+    user('marek', 'Marek Zieliński', 210, near(waw, 0.01, -0.03), [ME, 'kasia', 'ania', 'jozef', 'piotr'], { work: 'tools' }),
+    user('tomek', 'Tomek Wójcik', 140, near(waw, 0.05, 0.04), [ME, 'ewa'], { work: 'cars' }),
+    user('ola', 'Ola Kamińska', 280, near(waw, -0.06, -0.02), [ME, 'ewa', 'magda'], { work: 'beauty' }),
     user('bartek', 'Bartek Wiśniewski', 260, near(waw, 0.08, -0.06), [ME, 'ola'], { restricted: true, since: now - 400 * day }),
     user('ania', 'Ania Lewandowska', 30, near(waw, 0.02, 0.05), ['kasia', 'marek'], { trusted: true, deals: 14 }),
-    user('jozef', 'Józef Malinowski', 95, town('Tarczyn'), ['marek'], { trusted: true, deals: 212 }),
+    user('jozef', 'Józef Malinowski', 95, town('Tarczyn'), ['marek'], { trusted: true, deals: 212, work: 'farm' }),
+    user('piotr', 'Piotr Brukarz', 25, town('Piaseczno'), ['marek'], { trusted: true, deals: 48, work: 'services' }),
+    user('henryk', 'Henryk Wróbel', 60, near(waw, 0.005, -0.004), []),
+    user('sklad', 'Skład Budowlany Piaseczno', 35, town('Piaseczno'), [], { business: true }),
     user('ewa', 'Ewa Szymańska', 100, town('Pruszków'), ['tomek', 'ola']),
     user('magda', 'Magda Kowalska', 340, town('Konstancin-Jeziorna'), ['ola']),
     user('kwatery', 'Kwatery Piaseczno', 190, town('Piaseczno'), [], { business: true }),
@@ -89,6 +92,17 @@ export function seedListings(now: number, users: User[]): Listing[] {
     { owner: 'michal', kind: 'sell', category: 'farm', sub: 'fruit', title: 'Jabłka Szampion, skrzynka 15 kg', description: 'Z sadu pod Poznaniem. Dowożę w soboty.', price: 45, unit: 'item', ago: 1 * day, extra: { stock: 30 } },
     { owner: 'natalia', kind: 'rent', category: 'fashion', sub: 'occasion', title: 'Suknia wieczorowa, rozmiar 38', description: 'Założona raz. Pralnia po stronie wypożyczającej.', price: 80, unit: 'day', ago: 4 * day },
     { owner: ME, kind: 'sell', category: 'kids', sub: 'toys', title: 'Rower dziecięcy 16 cali', description: 'Z bocznymi kółkami, kask gratis.', price: 180, ago: 40 * day, extra: { condition: 'used' } },
+    // Sąsiad kilkaset metrów dalej: nikt go nie zna, ale jego kosiarka i przyczepka są „obok”.
+    { owner: 'henryk', kind: 'rent', category: 'tools', sub: 'gardentools', title: 'Kosiarka spalinowa Honda, 20 zł za dzień', description: 'Kosz 70 l, napęd. Paliwo we własnym zakresie. Mogę też przyjść i skosić za 40 zł za godzinę.', price: 20, unit: 'day', ago: 4 * hour, extra: { deposit: zl(100) } },
+    { owner: 'henryk', kind: 'rent', category: 'cars', sub: 'trailer', title: 'Przyczepka lekka 1,5 m, bez hamulca', description: 'Na gałęzie, trawę, meble. Odbiór spod domu.', price: 50, unit: 'day', ago: 2 * day },
+    // Brukowanie podjazdu: piasek ze składu, kostka, zagęszczarka od Marka, gilotyna z wypożyczalni, brukarz znajomego.
+    { owner: 'sklad', kind: 'sell', category: 'home', sub: 'materials', title: 'Piasek płukany 0–2 mm, na tony', description: 'Pod podsypkę i do zapraw. Dowóz wywrotką do 15 km, 150 zł za kurs.', price: 120, unit: 'tonne', ago: 1 * day, delivery: ['pickup', 'courier'], extra: { stock: 60, shippingPrice: zl(150), promoted: true } },
+    { owner: 'sklad', kind: 'sell', category: 'home', sub: 'materials', title: 'Kostka brukowa Holland 6 cm, paleta 10,8 m²', description: 'Szara, z atestem. Paleta zwrotna.', price: 520, unit: 'item', ago: 2 * day, delivery: ['pickup', 'courier'], extra: { stock: 30, shippingPrice: zl(150), condition: 'new' } },
+    { owner: 'marek', kind: 'rent', category: 'tools', sub: 'build', title: 'Zagęszczarka gruntowa 90 kg', description: 'Do podbudowy pod kostkę. Zmieści się do kombi z przyczepką, pomogę załadować.', price: 90, unit: 'day', ago: 7 * hour, extra: { deposit: zl(500) } },
+    { owner: 'wypozyczalnia', kind: 'rent', category: 'tools', sub: 'build', title: 'Gilotyna do kostki brukowej', description: 'Tnie kostkę do 10 cm bez pyłu.', price: 60, unit: 'day', ago: 4 * day, extra: { deposit: zl(300) } },
+    { owner: 'piotr', kind: 'service', category: 'services', sub: 'reno', title: 'Brukarstwo: podjazdy, ścieżki, obrzeża', description: 'Wycena na miejscu gratis. Mam ekipę na 2–3 dni, terminy od listopada.', price: 95, unit: 'hour', ago: 1 * day },
+    { owner: 'kasia', kind: 'sell', category: 'farm', sub: 'eggs', title: 'Jajka od moich kur, 10 sztuk', description: 'Mam 8 kurek na działce. Zostawię pod drzwiami albo odbierz wieczorem.', price: 12, unit: 'pack', ago: 5 * hour, extra: { stock: 6 } },
+    { owner: 'ola', kind: 'give', category: 'home', sub: 'decor', title: 'Kartony po przeprowadzce, 20 sztuk', description: 'Mocne, z taśmą. Do odebrania z klatki.', ago: 1 * day },
   ]
   return items.map((s, i) => {
     const owner = users.find((u) => u.id === s.owner)!

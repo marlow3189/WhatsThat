@@ -1,6 +1,7 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useStore, DEFAULT_NOTIF } from '../data/store'
-import { Button, Field, Input, Notice, Toggle, cx, inputCls } from '../components/ui'
+import { Avatar, Button, Field, Input, Notice, Toggle, cx, hueOf, inputCls } from '../components/ui'
+import { KeyTerms, TermsSheet } from '../components/terms'
 import { Icon, Mark } from '../components/icons'
 import { LANGS, localeOf, translator } from '../i18n'
 import { VOIVODESHIPS, TOWNS, nearestTown } from '../lib/geo'
@@ -14,7 +15,7 @@ type Step = (typeof STEPS)[number]
 
 /** Rejestracja bez haseł: język, kraj i okolica, numer + SMS, imię, zainteresowania, kontakty, powiadomienia, zasady. */
 export function Onboarding() {
-  const { finishOnboarding, users } = useStore()
+  const { finishOnboarding, users, listings, relation } = useStore()
   const [step, setStep] = useState<Step>('lang')
   const [lang, setLang] = useState<Lang>('pl')
   const [country, setCountry] = useState('PL')
@@ -29,13 +30,30 @@ export function Onboarding() {
   const [code, setCode] = useState('')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [interests, setInterests] = useState<string[]>([])
+  // Wszystko włączone na start (sugerowane); użytkownik tylko wyłącza.
+  const [interests, setInterests] = useState<string[]>(() => CATEGORIES.filter((c) => c.id !== 'other').map((c) => c.id))
+  const [fullTerms, setFullTerms] = useState(false)
   const [contactsAllowed, setContactsAllowed] = useState(false)
   const [notif, setNotif] = useState<NotificationPrefs>(DEFAULT_NOTIF)
   const [accepted, setAccepted] = useState(false)
   const [error, setError] = useState('')
   const t = translator(lang)
   const locale = localeOf(lang)
+
+  /** Kto z Twojej orbity (znajomi i ich znajomi) działa albo wystawia w danej kategorii. */
+  const people = useMemo(() => {
+    const byCat: Record<string, Set<string>> = {}
+    const add = (cat: string | undefined, id: string) => {
+      if (cat) (byCat[cat] ??= new Set()).add(id)
+    }
+    for (const u of Object.values(users)) {
+      if (u.id !== 'me' && !u.restricted && relation(u.id).circle <= 2) add(u.work, u.id)
+    }
+    for (const l of listings) if (l.ownerId !== 'me' && !users[l.ownerId]?.restricted && relation(l.ownerId).circle <= 2) add(l.category, l.ownerId)
+    return byCat
+  }, [users, listings, relation])
+  const friends = users.me.friends.map((id) => users[id]).filter((u) => u && !u.restricted)
+  const industries = [...new Set(friends.map((u) => u.work).filter(Boolean) as string[])]
 
   const index = STEPS.indexOf(step)
   const go = (s: Step) => {
@@ -92,11 +110,11 @@ export function Onboarding() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col px-5 pt-6 pb-8">
-      <div className="mb-8 flex items-center justify-between">
-        <span className="flex items-center gap-2 text-[20px] font-bold tracking-tight"><Mark /> {BRAND.name}</span>
+      <div className="mb-7 flex items-center justify-between gap-4">
+        <span className="flex items-center gap-2 text-[20px] font-extrabold tracking-[-0.02em]"><Mark size={32} /> {BRAND.name}</span>
         {index > 0 && (
-          <div className="flex gap-1" aria-label={t('ob.step', { n: index, total: STEPS.length - 1 })}>
-            {STEPS.slice(1).map((s, i) => <span key={s} className={cx('h-1.5 w-4 rounded-full', i < index ? 'bg-primary' : 'bg-fill-strong')} />)}
+          <div className="h-2 w-28 overflow-hidden rounded-full bg-fill-strong" role="progressbar" aria-valuemin={0} aria-valuemax={STEPS.length - 1} aria-valuenow={index} aria-label={t('ob.step', { n: index, total: STEPS.length - 1 })}>
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(index / (STEPS.length - 1)) * 100}%` }} />
           </div>
         )}
       </div>
@@ -191,30 +209,92 @@ export function Onboarding() {
 
       {step === 'interests' && (
         <Screen title={t('ob.interests.title')} text={t('ob.interests.text')}>
+          {industries.length > 0 && (
+            <div className="card flex flex-col gap-3 p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2.5">
+                  {friends.slice(0, 5).map((u) => <span key={u.id} className="rounded-full ring-2 ring-surface"><Avatar user={u} size={32} /></span>)}
+                </div>
+                <p className="text-[14px] leading-tight font-semibold">{t('ob.interests.work')}</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {industries.map((id) => {
+                  const c = CATEGORIES.find((x) => x.id === id)!
+                  return (
+                    <span key={id} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1 text-[13px] font-semibold">
+                      <Icon name={c.icon} size={14} /> {c.label[lang]}
+                      <span className="tnum text-muted">{friends.filter((u) => u.work === id).length}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          <div className="flex items-start gap-3 rounded-[24px] bg-sun p-4">
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface"><Icon name="house" size={20} /></span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center justify-between gap-2">
+                <span className="text-[16px] font-bold">{t('ob.interests.neighbors')}</span>
+                <Icon name="lock" size={16} className="text-ink/60" />
+              </span>
+              <span className="mt-1 block text-[14px] leading-snug text-ink/75">{t('ob.interests.neighborsD')}</span>
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-1">
+            <span className="rounded-full bg-mint px-2.5 py-0.5 text-[12px] font-bold text-ok">{t('ob.interests.suggested')}</span>
+            <span className="tnum text-[13px] text-muted">{interests.length} / {CATEGORIES.length - 1}</span>
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
             {CATEGORIES.filter((c) => c.id !== 'other').map((c) => {
               const on = interests.includes(c.id)
+              const n = people[c.id]?.size ?? 0
               return (
                 <button
                   key={c.id}
                   type="button"
                   aria-pressed={on}
                   onClick={() => setInterests((xs) => (on ? xs.filter((x) => x !== c.id) : [...xs, c.id]))}
-                  className={cx('press flex min-h-[64px] items-center gap-2.5 rounded-[18px] px-3.5 text-left text-[15px] font-medium', on ? 'bg-primary text-primary-ink' : 'card')}
+                  className={cx('press flex min-h-[96px] flex-col justify-between gap-2 rounded-[22px] p-3.5 text-left transition', on ? 'bg-surface shadow-[var(--shadow)] ring-2 ring-ink' : 'bg-fill text-ink/55')}
                 >
-                  <Icon name={c.icon} size={22} />
-                  <span className="min-w-0 leading-tight">{c.label[lang]}</span>
+                  <span className="flex items-start justify-between">
+                    <span className={cx('grid size-9 place-items-center rounded-full', on ? 'tint' : 'bg-surface')} style={{ '--h': hueOf(c.id) } as CSSProperties}>
+                      <Icon name={c.icon} size={19} />
+                    </span>
+                    <span className={cx('grid size-5 place-items-center rounded-full', on ? 'bg-ink text-white' : 'border-2 border-fill-strong')}>
+                      {on && <Icon name="check" size={12} strokeWidth={3.2} />}
+                    </span>
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[14px] leading-tight font-bold">{c.label[lang]}</span>
+                    {n > 0 && (
+                      <span className="mt-0.5 flex items-center gap-1 text-[12px] font-semibold text-muted">
+                        <Icon name="users" size={13} /> <span className="tnum">{n}</span>
+                      </span>
+                    )}
+                  </span>
                 </button>
               )
             })}
           </div>
-          <Footer><Button className="w-full" disabled={interests.length === 0} onClick={next}>{t('next')}</Button></Footer>
+          <Footer><Button className="w-full" onClick={next}>{t('next')}</Button></Footer>
         </Screen>
       )}
 
       {step === 'contacts' && (
         <Screen title={t('ob.contacts.title')} text={t('ob.contacts.text')}>
-          {contactsAllowed && <Notice tone="ok" icon="users">{t('ob.contacts.found', { n: users.me.friends.length })}</Notice>}
+          {contactsAllowed && (
+            <div className="card flex flex-col gap-3 p-4">
+              <p className="flex items-center gap-2 text-[15px] font-bold text-ok"><Icon name="check" size={18} strokeWidth={2.6} /> {t('ob.contacts.found', { n: friends.length })}</p>
+              <div className="flex flex-wrap gap-3">
+                {friends.map((u) => (
+                  <span key={u.id} className="flex w-14 flex-col items-center gap-1">
+                    <Avatar user={u} size={48} />
+                    <span className="w-full truncate text-center text-[12px]">{u.name.split(' ')[0]}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <Footer>
             {contactsAllowed ? (
               <Button className="w-full" onClick={next}>{t('next')}</Button>
@@ -240,13 +320,17 @@ export function Onboarding() {
       )}
 
       {step === 'terms' && (
-        <Screen title={t('ob.terms.title')}>
-          <TermsList t={t} />
-          <label htmlFor="accept" className="card flex cursor-pointer items-center gap-3 p-4">
-            <input id="accept" type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="size-5 accent-[var(--primary)]" />
-            <span className="text-[15px]">{t('ob.terms.accept')}</span>
+        <Screen title={t('ob.terms.title')} text={t('ob.terms.lead')}>
+          <KeyTerms t={t} />
+          <button type="button" onClick={() => setFullTerms(true)} className="press flex min-h-12 items-center gap-2 self-start rounded-full bg-surface px-4 text-[15px] font-semibold shadow-[var(--shadow)]">
+            <Icon name="doc" size={18} /> {t('ob.terms.read')} <Icon name="globe" size={16} className="text-muted" /> <span className="tnum text-muted">{LANGS.length}</span>
+          </button>
+          <label htmlFor="accept" className={cx('flex cursor-pointer items-center gap-3 rounded-[20px] p-4 transition', accepted ? 'bg-mint' : 'card')}>
+            <input id="accept" type="checkbox" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} className="size-6 shrink-0 accent-[var(--ink)]" />
+            <span className="text-[15px] font-semibold">{t('ob.terms.accept')}</span>
           </label>
           <Footer><Button className="w-full" disabled={!accepted} onClick={finish}>{t('ob.finish')}</Button></Footer>
+          {fullTerms && <TermsSheet lang={lang} t={t} onClose={() => setFullTerms(false)} />}
         </Screen>
       )}
 
@@ -257,27 +341,12 @@ export function Onboarding() {
   )
 }
 
-export function TermsList({ t }: { t: ReturnType<typeof translator> }) {
-  const keys = ['terms.1', 'terms.2', 'terms.3', 'terms.4', 'terms.5', 'terms.6', 'terms.7', 'terms.8', 'terms.9'] as const
-  return (
-    <ol className="card flex flex-col gap-3 p-4 text-[15px] leading-snug">
-      {keys.map((k, i) => (
-        <li key={k} className="flex gap-3">
-          <span className="tnum grid size-6 shrink-0 place-items-center rounded-full bg-fill text-[13px] font-semibold">{i + 1}</span>
-          <span>{t(k)}</span>
-        </li>
-      ))}
-      <li className="pt-1 text-[13px] text-muted">{t('terms.contact')}</li>
-    </ol>
-  )
-}
-
 function Screen({ title, text, children }: { title: string; text?: string; children: ReactNode }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <h1 className="text-[34px] leading-[1.1] font-bold tracking-[-0.02em]">{title}</h1>
-        {text && <p className="text-[17px] text-muted">{text}</p>}
+        <h1 className="text-[32px] leading-[1.08] font-extrabold tracking-[-0.03em]">{title}</h1>
+        {text && <p className="text-[16px] leading-snug text-muted">{text}</p>}
       </div>
       {children}
     </div>

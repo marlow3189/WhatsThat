@@ -1,87 +1,38 @@
 @import 'tailwindcss';
 
-/* Układ: natywny styl iOS. Szare tło grupowane, białe karty z dużym promieniem,
-   duże tytuły, pływający szklany pasek zakładek. Akcent limonkowy tylko na wyróżnieniach,
-   główne przyciski czarne (w ciemnym motywie białe). */
 :root {
-  --bg: #f2f2f7;
+  /* Jasny, ciepły papier zamiast systemowej szarości; białe karty z dużym promieniem;
+     jeden kolor marki (pomarańcz orbity) na przyciskach i linkach, pastelowe tła kategorii. */
+  --bg: #f6f4ef;
   --surface: #ffffff;
-  --fill: #f2f2f7;
-  --fill-strong: #e5e5ea;
-  --ink: #0b0b0c;
-  --muted: #8a8a8e;
-  --line: #e3e3e8;
-  --primary: #0b0b0c;
+  --fill: #efece5;
+  --fill-strong: #e2ded4;
+  --ink: #1c1a17;
+  --muted: #736e65;
+  --line: #ece8e0;
+  --primary: #d9481c;
   --primary-ink: #ffffff;
-  --accent: #d6f35f;
-  --accent-ink: #0b0b0c;
-  --link: #007aff;
-  --ok: #248a3d;
-  --ok-soft: #e3f5e8;
-  --warn: #b25000;
-  --warn-soft: #fff1dc;
-  --danger: #d70015;
-  --danger-soft: #ffe5e5;
-  --switch: #34c759;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 30px rgb(0 0 0 / 0.06);
-  --tint-l: 92%;
-  --tint-s: 60%;
-  --tint-icon-l: 38%;
-  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #000000;
-    --surface: #1c1c1e;
-    --fill: #2c2c2e;
-    --fill-strong: #3a3a3c;
-    --ink: #ffffff;
-    --muted: #8e8e93;
-    --line: #38383a;
-    --primary: #ffffff;
-    --primary-ink: #000000;
-    --accent: #d6f35f;
-    --accent-ink: #0b0b0c;
-    --link: #0a84ff;
-    --ok: #30d158;
-    --ok-soft: #10301b;
-    --warn: #ff9f0a;
-    --warn-soft: #3a2a0d;
-    --danger: #ff453a;
-    --danger-soft: #3b1513;
-    --switch: #30d158;
-    --shadow: none;
-    --tint-l: 20%;
-    --tint-s: 22%;
-    --tint-icon-l: 72%;
-    color-scheme: dark;
-  }
-}
-:root[data-theme='dark'] {
-  --bg: #000000;
-  --surface: #1c1c1e;
-  --fill: #2c2c2e;
-  --fill-strong: #3a3a3c;
-  --ink: #ffffff;
-  --muted: #8e8e93;
-  --line: #38383a;
-  --primary: #ffffff;
-  --primary-ink: #000000;
-  --accent: #d6f35f;
-  --accent-ink: #0b0b0c;
-  --link: #0a84ff;
-  --ok: #30d158;
-  --ok-soft: #10301b;
-  --warn: #ff9f0a;
-  --warn-soft: #3a2a0d;
-  --danger: #ff453a;
-  --danger-soft: #3b1513;
-  --switch: #30d158;
-  --shadow: none;
-  --tint-l: 20%;
-  --tint-s: 22%;
-  --tint-icon-l: 72%;
-  color-scheme: dark;
+  --accent: #ffd84a;
+  --accent-ink: #1c1a17;
+  --link: #c2410c;
+  --ok: #1f7a43;
+  --ok-soft: #dcf3e4;
+  --warn: #9a4a00;
+  --warn-soft: #fff0cf;
+  --danger: #c81e1e;
+  --danger-soft: #ffe4e1;
+  --switch: #2fb36b;
+  --sky: #dcecff;
+  --mint: #d9f3e3;
+  --lilac: #ebe4ff;
+  --peach: #ffe4d6;
+  --sun: #fff2bf;
+  --shadow: 0 1px 2px rgb(28 26 23 / 0.04), 0 10px 28px rgb(28 26 23 / 0.06);
+  --tint-l: 90%;
+  --tint-s: 75%;
+  --tint-icon-l: 34%;
+  --font: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -104,6 +55,11 @@
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-switch: var(--switch);
+  --color-sky: var(--sky);
+  --color-mint: var(--mint);
+  --color-lilac: var(--lilac);
+  --color-peach: var(--peach);
+  --color-sun: var(--sun);
   --font-sans: var(--font);
 }
 
@@ -117,9 +73,10 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 17px;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  font-feature-settings: 'ss01';
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -133,7 +90,7 @@ h3 {
 }
 .card {
   background: var(--surface);
-  border-radius: 22px;
+  border-radius: 24px;
   box-shadow: var(--shadow);
 }
 .tint {
@@ -141,13 +98,18 @@ h3 {
   color: hsl(var(--h) 35% var(--tint-icon-l));
 }
 .glass {
-  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
   backdrop-filter: saturate(180%) blur(20px);
 }
 :focus-visible {
   outline: 2px solid var(--link);
   outline-offset: 2px;
+}
+/* Pola tekstowe mają własny pierścień (ring) na całej „pigułce”, bez prostokąta w środku. */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
 }
 .no-scrollbar {
   scrollbar-width: none;
@@ -183,4 +145,17 @@ h3 {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* Orbita na głównej: delikatny obrót kropek na pierścieniach. */
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.orbit-spin {
+  animation: orbit 60s linear infinite;
+}
+.orbit-spin > * {
+  animation: orbit 60s linear infinite reverse;
 }

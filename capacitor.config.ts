@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'app.obok',
-  appName: 'Obok',
+  appId: 'com.orbifolk.app',
+  appName: 'Orbifolk',
   webDir: 'dist',
 }
 

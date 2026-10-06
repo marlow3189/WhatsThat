@@ -12,6 +12,9 @@ export interface CostInput {
   /** odsetek aktywnych na płatnym planie, np. 0.05 */
   conversion: number
   annualPrice?: number // zł brutto
+  /** odsetek aktywnych, którzy odświeżają darmowe konto (10 zł/rok, od drugiego roku), np. 0.25 */
+  refreshRate?: number
+  refreshPrice?: number // zł brutto
   vatPayer?: boolean
 }
 
@@ -20,7 +23,7 @@ export interface CostLine {
   pln: number
 }
 
-export function monthlyCosts({ mau, newUsers, conversion, annualPrice = 99 }: CostInput): CostLine[] {
+export function monthlyCosts({ mau, newUsers, conversion, annualPrice = 99, refreshRate = 0, refreshPrice = 10 }: CostInput): CostLine[] {
   const computeUsd = mau > 50_000 ? 60 : mau > 20_000 ? 15 : 10 // micro / small / medium
   const supabaseUsd = 25 + Math.max(0, computeUsd - 10) + Math.max(0, mau - 100_000) * 0.00325
   const photosGb = (mau * 2 * 3 * 0.25) / 1024 // ok. 2 ogłoszenia × 3 zdjęcia × 250 KB na osobę
@@ -28,7 +31,7 @@ export function monthlyCosts({ mau, newUsers, conversion, annualPrice = 99 }: Co
   const sms = (newUsers * 1.3 + mau * 0.02) * smsPrice // ponowne próby i zmiany telefonu
   const email = mau > 30_000 ? 20 * USD_PLN : 0
   const paying = mau * conversion
-  const paymentFees = (paying * (annualPrice * 0.016 + 1)) / 12
+  const paymentFees = (paying * (annualPrice * 0.016 + 1) + mau * refreshRate * (refreshPrice * 0.016 + 1)) / 12
   const support = mau >= 100_000 ? 8000 : mau >= 30_000 ? 4000 : 0
   return [
     { label: 'Baza, logowanie, czat (Supabase)', pln: supabaseUsd * USD_PLN },
@@ -43,8 +46,8 @@ export function monthlyCosts({ mau, newUsers, conversion, annualPrice = 99 }: Co
   ]
 }
 
-export function monthlyRevenue({ mau, conversion, annualPrice = 99, vatPayer = false }: CostInput): number {
-  const gross = (mau * conversion * annualPrice) / 12
+export function monthlyRevenue({ mau, conversion, annualPrice = 99, refreshRate = 0, refreshPrice = 10, vatPayer = false }: CostInput): number {
+  const gross = (mau * conversion * annualPrice + mau * refreshRate * refreshPrice) / 12
   return vatPayer ? gross / 1.23 : gross
 }
 

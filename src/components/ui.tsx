@@ -19,6 +19,14 @@ const HUES: Record<string, number> = {
 }
 export const hueOf = (category: string) => HUES[category] ?? 240
 
+/** Pastelowe tło dla ikon w listach: stałe dla danej ikony, żeby ekran nie „mrugał” kolorami. */
+const PASTELS = ['bg-peach', 'bg-sky', 'bg-mint', 'bg-lilac', 'bg-sun']
+export function pastelOf(key: string) {
+  let h = 0
+  for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0
+  return PASTELS[h % PASTELS.length]
+}
+
 export function Avatar({ user, size = 40, anonymous }: { user: User; size?: number; anonymous?: boolean }) {
   const initials = anonymous
     ? '?'
@@ -29,8 +37,8 @@ export function Avatar({ user, size = 40, anonymous }: { user: User; size?: numb
         .join('')
   return (
     <span
-      className={cx('inline-grid shrink-0 place-items-center rounded-full font-semibold', anonymous ? 'bg-fill-strong text-muted' : 'text-white')}
-      style={{ width: size, height: size, fontSize: size * 0.38, background: anonymous ? undefined : `hsl(${user.hue} 30% 45%)` }}
+      className={cx('inline-grid shrink-0 place-items-center rounded-full font-bold', anonymous && 'bg-fill-strong text-muted')}
+      style={{ width: size, height: size, fontSize: size * 0.36, ...(anonymous ? {} : { background: `hsl(${user.hue} 80% 86%)`, color: `hsl(${user.hue} 55% 26%)` }) }}
       aria-hidden
     >
       {initials}
@@ -103,10 +111,10 @@ export function Button({
       type="button"
       {...props}
       className={cx(
-        'press inline-flex items-center justify-center gap-2 rounded-full font-semibold disabled:pointer-events-none disabled:opacity-35',
+        'press inline-flex items-center justify-center gap-2 rounded-full font-bold disabled:pointer-events-none disabled:opacity-35',
         size === 'lg' ? 'min-h-[52px] px-6 text-[17px]' : 'min-h-9 px-4 text-[15px]',
         variant === 'primary' && 'bg-primary text-primary-ink',
-        variant === 'secondary' && 'bg-fill text-ink',
+        variant === 'secondary' && 'bg-surface text-ink shadow-[var(--shadow)]',
         variant === 'plain' && 'min-h-10 px-2 text-link',
         variant === 'danger' && 'bg-danger text-white',
         variant === 'accent' && 'bg-accent text-accent-ink',
@@ -122,7 +130,7 @@ export function Header({ title, back, right, large, onBack }: { title: ReactNode
   if (large) {
     return (
       <header className="flex items-end justify-between gap-3 px-5 pt-6 pb-3">
-        <h1 className="min-w-0 truncate text-[34px] leading-[1.1] font-bold tracking-[-0.02em]">{title}</h1>
+        <h1 className="min-w-0 truncate text-[32px] leading-[1.1] font-extrabold tracking-[-0.03em]">{title}</h1>
         {right}
       </header>
     )
@@ -130,11 +138,11 @@ export function Header({ title, back, right, large, onBack }: { title: ReactNode
   return (
     <header className="glass sticky z-20 flex min-h-[52px] items-center gap-1 px-2" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
       {back && (
-        <button type="button" onClick={() => (onBack ? onBack() : nav(-1))} className="press grid size-11 place-items-center rounded-full text-link" aria-label="←">
-          <Icon name="back" size={26} strokeWidth={2.2} />
+        <button type="button" onClick={() => (onBack ? onBack() : nav(-1))} className="press grid size-11 place-items-center rounded-full text-ink" aria-label="←">
+          <span className="grid size-9 place-items-center rounded-full bg-surface shadow-[var(--shadow)]"><Icon name="back" size={20} strokeWidth={2.4} /></span>
         </button>
       )}
-      <div className="min-w-0 flex-1 truncate text-center text-[17px] font-semibold">{title}</div>
+      <div className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{title}</div>
       <div className="flex min-w-11 justify-end">{right}</div>
     </header>
   )
@@ -152,7 +160,7 @@ export function CircleButton({ icon, label, onClick, className }: { icon: string
 export function Group({ label, children, footer, className }: { label?: ReactNode; children: ReactNode; footer?: ReactNode; className?: string }) {
   return (
     <section className={cx('flex flex-col gap-2', className)}>
-      {label && <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">{label}</h2>}
+      {label && <h2 className="px-5 text-[15px] font-bold">{label}</h2>}
       <div className="card mx-4 overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">{children}</div>
       {footer && <p className="px-5 text-[13px] leading-snug text-muted">{footer}</p>}
     </section>
@@ -183,7 +191,7 @@ export function Row({
   const body = (
     <>
       {icon && (
-        <span className={cx('grid size-8 shrink-0 place-items-center rounded-[9px]', iconBg ?? 'bg-fill', danger ? 'text-danger' : 'text-ink')}>
+        <span className={cx('grid size-9 shrink-0 place-items-center rounded-full', iconBg ?? (danger ? 'bg-danger-soft' : pastelOf(icon)), danger ? 'text-danger' : 'text-ink')}>
           <Icon name={icon} size={18} />
         </span>
       )}
@@ -217,7 +225,7 @@ export function Toggle({ checked, onChange, label, hint, id }: { checked: boolea
 /** Przełącznik segmentowy iOS. */
 export function Segmented<V extends string | number>({ value, options, onChange, label }: { value: V; options: { value: V; label: ReactNode }[]; onChange: (v: V) => void; label: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-0.5 rounded-[11px] bg-fill p-0.5">
+    <div role="radiogroup" aria-label={label} className="grid auto-cols-fr grid-flow-col gap-0.5 rounded-full bg-fill-strong/60 p-1">
       {options.map((o) => (
         <button
           key={String(o.value)}
@@ -225,7 +233,7 @@ export function Segmented<V extends string | number>({ value, options, onChange,
           role="radio"
           aria-checked={o.value === value}
           onClick={() => onChange(o.value)}
-          className={cx('min-h-8 truncate rounded-[9px] px-2 text-[14px] font-medium transition', o.value === value ? 'bg-surface shadow-sm' : 'text-ink/80')}
+          className={cx('min-h-8 truncate rounded-full px-2 text-[14px] font-medium transition', o.value === value ? 'bg-surface font-semibold shadow-sm' : 'text-ink/75')}
         >
           {o.label}
         </button>
@@ -240,7 +248,7 @@ export function Chip({ active, children, onClick, icon }: { active?: boolean; ch
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[15px] whitespace-nowrap', active ? 'bg-primary text-primary-ink' : 'bg-surface text-ink shadow-[var(--shadow)]')}
+      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[15px] whitespace-nowrap', active ? 'bg-ink text-white' : 'bg-surface text-ink shadow-[var(--shadow)]')}
     >
       {icon && <Icon name={icon} size={16} />}
       {children}
@@ -269,11 +277,9 @@ export function Tile({ listing, t, meta, promoted, locale, width }: { listing: L
   return (
     <Link to={`/l/${listing.id}`} className="press flex min-w-0 shrink-0 flex-col gap-2" style={width ? { width } : undefined}>
       <div className="relative">
-        <Thumb listing={listing} className="aspect-square w-full rounded-[20px]" />
-        {promoted && <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[12px] font-semibold text-accent-ink">{promoted}</span>}
-        {listing.status !== 'active' && (
-          <span className="absolute right-2 bottom-2 rounded-full bg-primary px-2 py-0.5 text-[12px] font-semibold text-primary-ink">{t(`status.${listing.status === 'sold' ? 'sold' : 'reserved'}`)}</span>
-        )}
+        <Thumb listing={listing} className={cx('aspect-square w-full rounded-[22px]', listing.status === 'sold' && 'opacity-45 grayscale')} />
+        {promoted && <span className="absolute top-2 left-2 rounded-full bg-accent px-2.5 py-0.5 text-[12px] font-bold text-accent-ink">{promoted}</span>}
+        {listing.status !== 'active' && <StatusBadge status={listing.status} t={t} className="absolute right-2 bottom-2" />}
       </div>
       <div className="min-w-0 px-0.5">
         <p className="line-clamp-2 text-[15px] leading-tight font-medium">{listing.title}</p>
@@ -281,6 +287,16 @@ export function Tile({ listing, t, meta, promoted, locale, width }: { listing: L
         {meta && <p className="truncate text-[13px] text-muted">{meta}</p>}
       </div>
     </Link>
+  )
+}
+
+export function StatusBadge({ status, t, className }: { status: Listing['status']; t: T; className?: string }) {
+  if (status === 'active' || status === 'removed') return null
+  return (
+    <span className={cx('inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[12px] font-bold', status === 'sold' ? 'bg-ink text-white' : 'bg-sun text-ink', className)}>
+      {status === 'sold' && <Icon name="check" size={12} strokeWidth={3} />}
+      {t(`status.${status}`)}
+    </span>
   )
 }
 

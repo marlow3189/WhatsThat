@@ -84,7 +84,7 @@ function TrustedPicker() {
           <button key={u.id} type="button" onClick={() => toggle(u.id)} aria-pressed={on} className="flex min-h-14 w-full items-center gap-3 px-4 py-2 text-left active:bg-fill">
             <Avatar user={u} size={36} />
             <span className="flex-1">{u.name}</span>
-            <span className={cx('grid size-6 place-items-center rounded-full border-2', on ? 'border-link bg-link text-white' : 'border-fill-strong')}>
+            <span className={cx('grid size-6 place-items-center rounded-full border-2', on ? 'border-ink bg-ink text-white' : 'border-fill-strong')}>
               {on && <Icon name="check" size={14} strokeWidth={3} />}
             </span>
           </button>
@@ -123,10 +123,10 @@ export function Friends() {
       <div className="mx-4 flex flex-col gap-3 rounded-[24px] bg-accent p-5 text-accent-ink">
         <p className="text-[18px] leading-tight font-bold">{t('f.reward')}</p>
         <div className="h-2 overflow-hidden rounded-full bg-black/10">
-          <div className="h-full rounded-full bg-[#0b0b0c] transition-all" style={{ width: `${(n / 3) * 100}%` }} />
+          <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${(n / 3) * 100}%` }} />
         </div>
         <p className="tnum text-[14px] opacity-80">{t('f.progress', { n })}</p>
-        <Button size="sm" className="self-start bg-[#0b0b0c]! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={18} /> {t('f.shareApp')}</Button>
+        <Button size="sm" className="self-start bg-ink! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={18} /> {t('f.shareApp')}</Button>
       </div>
 
       <Group label={t('f.contacts')}>

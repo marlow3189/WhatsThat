@@ -1,4 +1,4 @@
-# Obok: marketing i harmonogram filmów (pod Higgsfield)
+# Orbifolk: marketing i harmonogram filmów (pod Higgsfield)
 
 Cel: rozpocząć w jednym powiecie i rosnąć przez polecenia. Płatne reklamy dopiero wtedy,
 gdy w okolicy jest co najmniej 300 ogłoszeń.
@@ -22,7 +22,7 @@ Zasady dla wszystkich filmów:
 - Format pionowy **9:16**, 8–15 s, pierwsze 2 sekundy to haczyk, napisy zawsze na ekranie (większość ogląda bez dźwięku).
 - Bez prawdziwych logo cudzych marek i bez wizerunku prawdziwych osób.
 - Oznaczaj filmy jako wygenerowane przez AI (TikTok i Meta tego wymagają, a w UE wymaga tego też AI Act).
-- Na końcu: znak Obok (dwa koła obok siebie) + „obok.app” + „Pierwsze 3 ogłoszenia za darmo”.
+- Na końcu: znak Orbifolk (planeta z kropką na orbicie) + „orbifolk.com” + „Pierwszy rok za darmo”.
 
 ## 1. Filary treści
 
@@ -42,42 +42,42 @@ Każdy film: **Prompt** (do Higgsfield), **Napis** (na ekranie), **Lektor** (opc
 - **Prompt:** Vertical 9:16, handheld smartphone look, warm evening light. A man in his 30s opens a cluttered basement in a Polish apartment block, pulls out a camping tent, a power drill and a child's bike, photographs each with his phone. Quick cut: his phone screen shows three notifications sliding in. Final shot: he smiles at the phone on the staircase. Natural, documentary style, no text in the image.
 - **Napis:** „Moja piwnica zarobiła 600 zł w miesiąc” → „Namiot 25 zł/dzień · Wiertarka 20 zł/dzień”
 - **Lektor:** „Nie sprzedałem nic. Po prostu pożyczam sąsiadom za drobne.”
-- **Koniec:** „Wystaw 3 rzeczy za darmo. Obok.”
+- **Koniec:** „Pierwszy rok za darmo. Orbifolk.”
 
 ### F2. Jajka czekały spakowane (10 s)
 - **Prompt:** Vertical 9:16, early autumn morning on a small Polish farm, an older farmer in a flannel shirt packs a carton of eggs and a bag of potatoes into a paper bag, writes a first name on it with a marker. Cut to a woman arriving by car, the farmer hands her the bag at the gate, both nod. Soft golden light, realistic, no logos.
 - **Napis:** „Zapłaciłam BLIK-iem w aplikacji” → „Pan Józef dostał powiadomienie i spakował”
-- **Koniec:** „Od rolnika, bez pośrednika. Obok.”
+- **Koniec:** „Od rolnika, bez pośrednika. Orbifolk.”
 
 ### F3. Rolnik: jak wystawić (15 s, dla sprzedających)
 - **Prompt:** Vertical 9:16, close-up of a farmer's weathered hands holding a smartphone in a barn, taking a photo of a crate of apples, then typing with one thumb. Cut to the farmer loading crates on a small trailer. Calm, honest, documentary feel.
 - **Napis:** „Zdjęcie, cena za kg, godziny odbioru. Gotowe.” → „Klient płaci z góry, Ty tylko pakujesz” → „0% prowizji”
-- **Koniec:** „Obok. Dla tych, co sprzedają z podwórka.”
+- **Koniec:** „Orbifolk. Dla tych, co sprzedają z podwórka.”
 
 ### F4. Przyczepka od sąsiada (10 s)
 - **Prompt:** Vertical 9:16, suburban Polish street, Saturday morning. A neighbor hitches a small car trailer to another man's hatchback, they shake hands. Cut to the trailer full of garden waste. Bright daylight, friendly mood.
-- **Napis:** „Wypożyczalnia: 150 zł” → „Sąsiad z Obok: 70 zł i pomógł podpiąć”
+- **Napis:** „Wypożyczalnia: 150 zł” → „Sąsiad z Orbifolk: 20 zł za dzień i pomógł podpiąć”
 - **Koniec:** „Pożycz od kogoś obok.”
 
 ### F5. Zastrzeż numer (12 s, filar „Bez oszustów”)
 - **Prompt:** Vertical 9:16, a young woman on a tram realizes her phone is missing, panic. Cut: she borrows a friend's phone, opens a website, taps a single red button. Cut: three different people in different places glance at a phone notification and nod. Cinematic but realistic, muted colors.
 - **Napis:** „Zgubiłaś telefon?” → „Jedno kliknięcie: konto zastrzeżone, znajomi ostrzeżeni” → „Odblokujesz tylko z dwiema zaufanymi osobami”
-- **Koniec:** „Bezpieczniej, bo wśród swoich. Obok.”
+- **Koniec:** „Bezpieczniej, bo wśród swoich. Orbifolk.”
 
 ### F6. Wyprzedaż garażowa (10 s)
 - **Prompt:** Vertical 9:16, sunny Saturday, a family sets out books, toys and bikes on tables in front of a garage in a Polish suburb, neighbors walk up holding phones, a kid sells a scooter. Warm, lively, handheld.
 - **Napis:** „Sobota 9–14, ul. Lipowa” → „Sąsiedzi dostali powiadomienie”
-- **Koniec:** „Zrób wyprzedaż garażową w Obok.”
+- **Koniec:** „Zrób wyprzedaż garażową w Orbifolk.”
 
 ### F7. Komunia bez kombinowania (12 s, kwiecień–maj)
 - **Prompt:** Vertical 9:16, a garden party for a First Communion in Poland, white tablecloths on folding tables, a party tent, kids in white robes running. Cut to a man unloading folding chairs from a neighbor's van the day before. Bright spring light.
 - **Napis:** „Namiot, stoły, 40 krzeseł” → „Wszystko od ludzi z okolicy, za ułamek ceny”
-- **Koniec:** „Imprezy i uroczystości w Obok.”
+- **Koniec:** „Imprezy i uroczystości w Orbifolk.”
 
 ### F8. Kwatery dla ekipy (10 s, B2B)
 - **Prompt:** Vertical 9:16, a construction foreman in a hi-vis vest looks at his phone next to a van, cut to a tidy shared house with simple single beds and a shared kitchen, workers arriving in the evening. Realistic, practical tone.
 - **Napis:** „Kwatery dla 12 osób, 10 km od budowy” → „Wyszukane w promieniu, zarezerwowane w 2 minuty”
-- **Koniec:** „Nieruchomości i kwatery w Obok.”
+- **Koniec:** „Nieruchomości i kwatery w Orbifolk.”
 
 ### F9. Vinted, ale lokalnie (8 s)
 - **Prompt:** Vertical 9:16, a young woman hands a folded winter jacket to another woman outside an apartment building entrance, quick smile, no packaging, no courier. Urban Polish autumn.
@@ -87,17 +87,27 @@ Każdy film: **Prompt** (do Higgsfield), **Napis** (na ekranie), **Lektor** (opc
 ### F10. Usługi od sąsiadów (10 s)
 - **Prompt:** Vertical 9:16, montage: a woman cleaning a bright kitchen, a teenager mowing a lawn, a retired man fixing a bike for a kid. Each scene 2 seconds, friendly natural light.
 - **Napis:** „Sprzątanie · koszenie · złota rączka” → „Od ludzi, których znają Twoi znajomi”
-- **Koniec:** „Usługi w Obok.”
+- **Koniec:** „Usługi w Orbifolk.”
 
 ### F11. Zaproś trzy osoby (8 s, polecenia)
 - **Prompt:** Vertical 9:16, close-up of a phone in hand sending a link in a group chat, cut to three friends at a kitchen table each opening the same link on their phones and laughing. Cozy evening light.
 - **Napis:** „Zaproś 3 osoby” → „3 miesiące bez limitu”
-- **Koniec:** „Obok. Lepiej ze znajomymi.”
+- **Koniec:** „Orbifolk. Lepiej ze znajomymi.”
 
 ### F12. Ukraińska wersja (10 s)
 - **Prompt:** jak F2 albo F10, z bohaterką mówiącą po ukraińsku.
 - **Napis (UK):** „Купуй і продавай поруч. Від друзів і сусідів.” → „Без комісії”
-- **Koniec:** „Obok — українською теж.”
+- **Koniec:** „Orbifolk — українською теж.”
+
+### F13. „Piasek” (10 s, planer AI, główny film marki)
+- **Prompt:** Vertical 9:16, a man in work gloves looks at a muddy driveway, types on his phone. Cut to a bright, friendly phone UI (no real brand logos) showing three steps with small avatars: sand, a plate compactor, a paver. Cut to a neighbour rolling a compactor over the fence and a small tipper truck dumping sand. Warm afternoon light, realistic, light and colourful, no logos.
+- **Napis:** „Chcę wybrukować podjazd” → „Piasek: skład 2 km” → „Zagęszczarka: Marek” → „Brukarz: znajomy Marka”
+- **Koniec:** „Twoja orbita. Orbifolk.”
+
+### F14. Kosiarka sąsiada (8 s)
+- **Prompt:** Vertical 9:16, overgrown lawn, a woman sighs, scrolls her phone, cut to the neighbour two houses away handing her a petrol lawn mower over the gate, both smile. Summer evening, realistic.
+- **Napis:** „Kosiarka? 400 m od Ciebie” → „20 zł za dzień”
+- **Koniec:** „Pożycz od kogoś obok. Orbifolk.”
 
 ## 3. Kalendarz (październik 2026 – wrzesień 2027)
 
@@ -123,12 +133,12 @@ Rytm: **3 filmy tygodniowo** (TikTok, Reels, Shorts), ten sam film na trzy platf
 **Plakat QR na klatkę schodową** (A5, czarno-biały, tanio):
 > **Masz wiertarkę? Sąsiad z 3. piętra też.**
 > Pożycz, kup albo oddaj komuś z bloku.
-> [kod QR] obok.app · pierwsze 3 ogłoszenia za darmo
+> [kod QR] orbifolk.com · pierwszy rok za darmo
 
 Warianty: „Jajka od rolnika 5 km stąd, płacisz BLIK-iem” · „Zgubiłeś telefon? Zastrzeż konto jednym kliknięciem”.
 
 **Grupy na Facebooku** („Oddam/sprzedam [miejscowość]”, „Ogłoszenia [gmina]”): wrzucamy prawdziwe ogłoszenia
-z linkiem do Obok, nie reklamę. Najlepiej robią to sami użytkownicy przyciskiem **Wyślij** po opublikowaniu.
+z linkiem do Orbifolk, nie reklamę. Najlepiej robią to sami użytkownicy przyciskiem **Wyślij** po opublikowaniu.
 
 **Rolnicy:** 10 gospodarstw w powiecie, rozmowa na miejscu, pomoc we wstawieniu pierwszych ogłoszeń,
 plan roczny gratis na pierwszy rok w zamian za plakat przy bramie.

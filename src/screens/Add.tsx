@@ -17,7 +17,7 @@ type Who = Circle | 'incognito'
 
 /** Dodawanie w czterech krótkich krokach. Z rozszerzenia przeglądarki przychodzi tytuł i zdjęcie (?t=, ?img=). */
 export function Add() {
-  const { t, locale, account, users, canAdd, addedThisMonth, freeLimit, buyPlan, addListing } = useStore()
+  const { t, locale, account, users, canAdd, mustRefresh, addedThisMonth, freeLimit, buyPlan, refresh, addListing } = useStore()
   const [params] = useSearchParams()
   const lang = account.lang
   const [step, setStep] = useState<Step>('kind')
@@ -58,6 +58,13 @@ export function Add() {
         <div className="flex flex-col gap-4 px-4">
           {account.restricted ? (
             <Notice tone="danger" icon="lock">{t('a.restricted')}</Notice>
+          ) : mustRefresh ? (
+            <div className="card flex flex-col gap-3 p-5">
+              <p className="text-[20px] leading-tight font-bold">{t('a.refreshTitle')}</p>
+              <p className="text-muted">{t('a.refreshText', { n: freeLimit, price: money(prices.refresh, account.currency, locale) })}</p>
+              <Button onClick={refresh}>{t('a.refreshCta', { price: money(prices.refresh, account.currency, locale) })}</Button>
+              <Button variant="secondary" onClick={() => buyPlan('annual')}>{t('a.buyAnnual', { price: money(prices.annual, account.currency, locale) })}</Button>
+            </div>
           ) : (
             <div className="card flex flex-col gap-3 p-5">
               <p className="text-[20px] leading-tight font-bold">{t('a.limitTitle')}</p>
@@ -159,7 +166,7 @@ export function Add() {
               <div className="flex flex-col gap-4 px-4">
                 <div className="flex flex-wrap gap-2">
                   {categoryById(category).subs.map((s) => (
-                    <button key={s.id} type="button" onClick={() => setSub(s.id)} aria-pressed={sub === s.id} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', sub === s.id ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+                    <button key={s.id} type="button" onClick={() => setSub(s.id)} aria-pressed={sub === s.id} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', sub === s.id ? 'bg-ink text-white' : 'bg-surface shadow-[var(--shadow)]')}>
                       {s.label[lang]}
                     </button>
                   ))}
@@ -248,7 +255,7 @@ export function Add() {
                     <span className="block">{c === 'incognito' ? t('a.incognito') : t(`a.who${c}`)}</span>
                     <span className="block text-[14px] text-muted">{c === 'incognito' ? t('a.incognitoD') : t(`a.who${c}d`)}</span>
                   </span>
-                  <span className={cx('grid size-6 place-items-center rounded-full border-2', who === c ? 'border-link bg-link text-white' : 'border-fill-strong')}>
+                  <span className={cx('grid size-6 place-items-center rounded-full border-2', who === c ? 'border-ink bg-ink text-white' : 'border-fill-strong')}>
                     {who === c && <Icon name="check" size={14} strokeWidth={3} />}
                   </span>
                 </button>

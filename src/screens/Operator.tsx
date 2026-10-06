@@ -30,7 +30,7 @@ export function Operator() {
   const approaching = seedSales.filter(isApproaching)
   const missing = rows.filter((r) => r.missing.length)
 
-  const scenario = { mau, newUsers: Math.round(mau * 0.08), conversion: 0.06 }
+  const scenario = { mau, newUsers: Math.round(mau * 0.08), conversion: 0.06, refreshRate: 0.25 }
   const costs = monthlyCosts(scenario)
   const revenue = monthlyRevenue(scenario)
   const total = sum(costs)
@@ -98,14 +98,14 @@ export function Operator() {
       </Group>
 
       <section className="flex flex-col gap-2">
-        <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">Koszty i przychód miesięcznie (aktywni użytkownicy)</h2>
+        <h2 className="px-5 text-[15px] font-bold">Koszty i przychód miesięcznie (aktywni użytkownicy)</h2>
         <div className="px-4">
           <Segmented<number> label="Skala" value={mau} onChange={setMau} options={[1_000, 10_000, 100_000].map((v) => ({ value: v, label: `${v / 1000} tys.` }))} />
         </div>
         <div className="card mx-4 overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">
           {costs.map((c) => <Row key={c.label} title={<span className="text-[15px]">{c.label}</span>} value={<span className="tnum">{Math.round(c.pln).toLocaleString('pl-PL')} zł</span>} />)}
           <Row title={<strong>Koszty razem</strong>} value={<strong className="tnum text-ink">{Math.round(total).toLocaleString('pl-PL')} zł</strong>} />
-          <Row title="Przychód (6% płaci 99 zł/rok)" value={<span className="tnum text-ink">{Math.round(revenue).toLocaleString('pl-PL')} zł</span>} />
+          <Row title="Przychód (6% płaci 99 zł/rok, 25% odświeża za 10 zł)" value={<span className="tnum text-ink">{Math.round(revenue).toLocaleString('pl-PL')} zł</span>} />
           <Row title={<strong>Wynik</strong>} value={<strong className={cx('tnum', revenue - total >= 0 ? 'text-ok' : 'text-danger')}>{Math.round(revenue - total).toLocaleString('pl-PL')} zł</strong>} />
         </div>
         <p className="px-5 text-[13px] text-muted">Bez VAT, ZUS i Twojej pensji. Odsetek płacących (6%) to założenie do sprawdzenia.</p>

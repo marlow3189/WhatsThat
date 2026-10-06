@@ -45,5 +45,7 @@ describe('koszty', () => {
     const input = { mau: 10_000, newUsers: 800, conversion: 0.06 }
     expect(sum(monthlyCosts(input))).toBeLessThan(1500)
     expect(monthlyRevenue(input)).toBeCloseTo(4950)
+    // odświeżenie 10 zł/rok u co czwartego aktywnego: +2083 zł miesięcznie
+    expect(monthlyRevenue({ ...input, refreshRate: 0.25 })).toBeCloseTo(4950 + 2083.33, 1)
   })
 })

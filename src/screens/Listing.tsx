@@ -96,7 +96,7 @@ export function ListingScreen() {
   return (
     <div className="pb-8">
       <div className="relative">
-        <Thumb listing={listing} className="aspect-[4/3] max-h-[52vh] w-full" iconSize={84} />
+        <Thumb listing={listing} className={cx('aspect-[4/3] max-h-[52vh] w-full rounded-b-[32px]', listing.status === 'sold' && 'grayscale')} iconSize={84} />
         <div className="absolute inset-x-0 top-0 flex justify-between p-3" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
           <CircleButton icon="back" label={t('back')} onClick={() => nav(-1)} />
           <div className="flex gap-2">
@@ -104,7 +104,12 @@ export function ListingScreen() {
             {!mine && <CircleButton icon="more" label="…" onClick={() => setSheet('more')} />}
           </div>
         </div>
-        {!available && <span className="absolute bottom-3 left-3 rounded-full bg-primary px-3 py-1 text-[14px] font-semibold text-primary-ink">{t(listing.status === 'sold' ? 'status.sold' : listing.paused ? 'status.paused' : 'status.reserved')}</span>}
+        {!available && (
+          <span className={cx('absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[15px] font-bold', listing.status === 'sold' ? 'bg-ink text-white' : 'bg-sun text-ink')}>
+            {listing.status === 'sold' && <Icon name="check" size={16} strokeWidth={3} />}
+            {t(listing.status === 'sold' ? 'status.sold' : listing.paused ? 'status.paused' : 'status.reserved')}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-col gap-1 px-5 pt-5">
@@ -131,7 +136,7 @@ export function ListingScreen() {
 
         {!mine && !blocked && (
           <div className="flex flex-col gap-2">
-            <p className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">{t('l.quick')}</p>
+            <p className="px-5 text-[15px] font-bold">{t('l.quick')}</p>
             <div className="no-scrollbar flex gap-2 overflow-x-auto px-4">
               {QUICK.map((k) => (
                 <button key={k} type="button" onClick={() => quick(k)} className="press min-h-9 shrink-0 rounded-full bg-surface px-3.5 text-[15px] whitespace-nowrap text-link shadow-[var(--shadow)]">{t(k)}</button>
@@ -200,7 +205,7 @@ export function ListingScreen() {
                     {(delivery === 'pickup' ? (['blik', 'transfer', 'cash'] as PayMethod[]) : (['blik', 'transfer'] as PayMethod[])).map((p) => (
                       <button key={p} type="button" role="radio" aria-checked={pay === p} onClick={() => setPay(p)} className="flex min-h-12 w-full items-center justify-between px-4 text-left">
                         {t(`pay.${p}`)}
-                        <span className={cx('grid size-6 place-items-center rounded-full border-2', pay === p ? 'border-link bg-link text-white' : 'border-fill-strong')}>
+                        <span className={cx('grid size-6 place-items-center rounded-full border-2', pay === p ? 'border-ink bg-ink text-white' : 'border-fill-strong')}>
                           {pay === p && <Icon name="check" size={14} strokeWidth={3} />}
                         </span>
                       </button>

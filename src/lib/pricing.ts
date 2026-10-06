@@ -7,18 +7,26 @@ import type { Account, Currency, Kind, Listing, Plan, Unit } from './types'
  */
 export const COMMISSION = 0
 
-/** Darmowy plan: 3 nowe ogłoszenia w miesiącu kalendarzowym. */
-export const FREE_PER_MONTH = 3
+/**
+ * Darmowy plan: 2 nowe ogłoszenia w miesiącu kalendarzowym. Dwa to rytm „raz na dwa tygodnie”,
+ * a kto wystawia częściej, ma powód, żeby wziąć plan roczny.
+ */
+export const FREE_PER_MONTH = 2
 
-/** Ceny brutto. Propozycja do zatwierdzenia; poza PLN zaokrąglone, nie przeliczane kursem. */
-export const PRICES: Record<Currency, { annual: number; business: number; renewal: number }> = {
-  PLN: { annual: 9900, business: 49900, renewal: 100 },
-  EUR: { annual: 2400, business: 10000, renewal: 100 },
-  USD: { annual: 2700, business: 11900, renewal: 100 },
-  GBP: { annual: 2100, business: 8900, renewal: 100 },
-  CZK: { annual: 59000, business: 249000, renewal: 2500 },
-  HUF: { annual: 990000, business: 3990000, renewal: 39000 },
-  UAH: { annual: 99000, business: 499000, renewal: 4500 },
+/**
+ * Ceny brutto. Propozycja do zatwierdzenia; poza PLN zaokrąglone, nie przeliczane kursem.
+ * `refresh`: odświeżenie darmowego konta na kolejny rok (pierwszy rok gratis). Mała kwota,
+ * ale zamienia „darmowego” użytkownika w płacącego, potwierdza numer i kartę/BLIK (mniej oszustów).
+ * Przy 10 zł prowizja operatora BLIK (ok. 1,6% + 1 zł) zostawia ok. 8,80 zł; 1 zł nie pokrywał opłat.
+ */
+export const PRICES: Record<Currency, { annual: number; business: number; refresh: number }> = {
+  PLN: { annual: 9900, business: 49900, refresh: 1000 },
+  EUR: { annual: 2400, business: 10000, refresh: 250 },
+  USD: { annual: 2700, business: 11900, refresh: 299 },
+  GBP: { annual: 2100, business: 8900, refresh: 199 },
+  CZK: { annual: 59000, business: 249000, refresh: 5900 },
+  HUF: { annual: 990000, business: 3990000, refresh: 99000 },
+  UAH: { annual: 99000, business: 499000, refresh: 9900 },
 }
 
 export const YEAR = 365 * 86_400_000
@@ -41,8 +49,18 @@ export function listingsThisMonth(mine: Pick<Listing, 'createdAt'>[], now = Date
   return mine.filter((l) => l.createdAt >= from).length
 }
 
-export function canPublish(plan: Plan, addedThisMonth: number): boolean {
-  return plan !== 'free' || addedThisMonth < FREE_PER_MONTH
+/**
+ * Płatny plan: bez limitu. Darmowy: 2 w miesiącu, o ile konto jest odświeżone na ten rok
+ * (`refreshDue` w przyszłości). Kupowanie, czaty i przeglądanie są zawsze bezpłatne.
+ */
+export function canPublish(plan: Plan, addedThisMonth: number, refreshDue = Infinity, now = Date.now()): boolean {
+  if (plan !== 'free') return true
+  return refreshDue > now && addedThisMonth < FREE_PER_MONTH
+}
+
+/** Czy darmowe konto wymaga odświeżenia (minął rok od założenia albo od ostatniej opłaty). */
+export function needsRefresh(plan: Plan, refreshDue: number, now = Date.now()): boolean {
+  return plan === 'free' && refreshDue <= now
 }
 
 /** Ile dni do końca planu; null dla darmowego. */
@@ -67,7 +85,7 @@ export function referralBonus(account: Pick<Account, 'plan' | 'planUntil'>, invi
 }
 
 export const UNITS_BY_KIND: Record<Kind, Unit[]> = {
-  sell: ['item', 'kg', 'pack', 'litre', 'fixed'],
+  sell: ['item', 'kg', 'pack', 'litre', 'tonne', 'fixed'],
   rent: ['day', 'week', 'month', 'night', 'hour'],
   service: ['hour', 'fixed'],
   give: ['fixed'],
@@ -77,7 +95,7 @@ export const UNITS_BY_KIND: Record<Kind, Unit[]> = {
 }
 
 /** Jednostki, w których kupujący wybiera ilość. */
-export const COUNTABLE: Unit[] = ['item', 'kg', 'pack', 'litre']
+export const COUNTABLE: Unit[] = ['item', 'kg', 'pack', 'litre', 'tonne']
 
 export function rentalUnits(from: string, to: string, unit: Unit): number {
   const days = Math.max(1, Math.round((Date.parse(to) - Date.parse(from)) / DAY) || 1)
@@ -103,15 +121,30 @@ export function orderTotal({ price, unit, kind, qty = 1, from, to, shipping = 0 
 }
 
 /**
- * Kto pierwszy zapłaci, ten ma: rzecz pojedyncza zostaje zarezerwowana,
- * przy towarze na wagę / sztuki zmniejsza się zapas.
+ * Kto pierwszy zapłaci, ten ma. Sprzedaż rzeczy pojedynczej od razu wygasza ogłoszenie jako „Kupione”;
+ * przy wielu sztukach / towarze na wagę maleje zapas, a „Kupione” pojawia się dopiero przy zerze.
+ * Wynajem nie znika: termin jest zajęty, rzecz wraca do oferty po zwrocie.
  */
-export function afterPayment(listing: Pick<Listing, 'stock' | 'status' | 'unit'>, qty: number): Pick<Listing, 'stock' | 'status'> {
+export function afterPayment(
+  listing: Pick<Listing, 'stock' | 'status' | 'unit' | 'kind'>,
+  qty: number,
+  now = Date.now(),
+): Pick<Listing, 'stock' | 'status' | 'soldAt'> {
   if (listing.stock !== undefined) {
     const stock = Math.max(0, +(listing.stock - qty).toFixed(2))
-    return { stock, status: stock === 0 ? 'sold' : listing.status }
+    return stock === 0 ? { stock, status: 'sold', soldAt: now } : { stock, status: listing.status }
   }
-  return { stock: undefined, status: 'reserved' }
+  if (listing.kind === 'rent') return { stock: undefined, status: 'reserved' }
+  return { stock: undefined, status: 'sold', soldAt: now }
+}
+
+/** „Kupione” wisi jeszcze dobę w karuzelach (widać, że rzeczy schodzą), potem znika. */
+export const SOLD_VISIBLE = DAY
+
+export function isShown(listing: Pick<Listing, 'status' | 'soldAt'>, now = Date.now()): boolean {
+  if (listing.status === 'removed') return false
+  if (listing.status === 'sold') return (listing.soldAt ?? 0) > now - SOLD_VISIBLE
+  return true
 }
 
 export function isAvailable(listing: Pick<Listing, 'status' | 'paused' | 'stock'>): boolean {

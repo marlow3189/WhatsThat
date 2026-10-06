@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "WhatsThat — mikro-wynajem, pożyczanie, wymiana i sprzedaż najpierw w kręgu znajomych, potem lokalnie.",
+  "description": "Orbifolk — mikro-wynajem, pożyczanie, wymiana i sprzedaż najpierw w kręgu znajomych, potem lokalnie.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -p . && vite build",
@@ -15,15 +15,16 @@
     "cap:android": "npm run build && cap sync android && cap open android",
     "cap:ios": "npm run build && cap sync ios && cap open ios",
     "build:extension": "npm run build && node scripts/build-extension.mjs",
-    "safari:extension": "npm run build:extension && xcrun safari-web-extension-converter extension --app-name Obok --bundle-identifier app.obok.extension"
+    "safari:extension": "npm run build:extension && xcrun safari-web-extension-converter extension --app-name Orbifolk --bundle-identifier com.orbifolk.extension"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@fontsource-variable/manrope": "^5.3.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-router": "^8.4.0",
-    "@capacitor/android": "^8.5.2",
-    "@capacitor/ios": "^8.5.2"
+    "react-router": "^8.4.0"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.5.2",

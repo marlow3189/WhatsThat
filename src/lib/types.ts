@@ -8,7 +8,7 @@ export type Circle = 1 | 2 | 3
 /** Co ktoś robi z ogłoszeniem. „wanted” = szukam. */
 export type Kind = 'sell' | 'rent' | 'service' | 'give' | 'swap' | 'garage' | 'wanted'
 
-export type Unit = 'item' | 'kg' | 'pack' | 'litre' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
+export type Unit = 'item' | 'kg' | 'pack' | 'litre' | 'tonne' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
 
 export type Plan = 'free' | 'annual' | 'business'
 
@@ -40,6 +40,8 @@ export interface User {
   deals?: number
   /** ma konto u operatora płatności (KYC zrobione) */
   payouts?: boolean
+  /** branża, w której ktoś działa (id kategorii), pokazywana znajomym przy rejestracji */
+  work?: string
 }
 
 export type ListingStatus = 'active' | 'reserved' | 'sold' | 'removed'
@@ -74,6 +76,8 @@ export interface Listing {
   hiddenFrom?: string[]
   promoted?: boolean
   status: ListingStatus
+  /** kiedy kupione (plakietka „Kupione” wisi jeszcze dobę) */
+  soldAt?: number
   /** rolnik: „dziś niedostępne” bez kasowania */
   paused?: boolean
   createdAt: number
@@ -166,7 +170,8 @@ export interface Account {
   plan: Plan
   planUntil?: number
   /** konto darmowe: kiedy odnowić za symboliczną opłatę */
-  renewalDue: number
+  /** do kiedy darmowe konto może wystawiać (pierwszy rok gratis, potem odświeżenie 10 zł/rok) */
+  refreshDue: number
   kyc: 'none' | 'pending' | 'verified'
   restricted: boolean
   trusted: string[]
