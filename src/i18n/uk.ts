@@ -159,6 +159,9 @@ export const uk: Dict = {
   'pay.blik': 'BLIK',
   'pay.transfer': 'Швидкий переказ',
   'pay.cash': 'Готівкою при отриманні',
+  'pick.today': 'Сьогодні 17:00–19:00',
+  'pick.tomorrow': 'Завтра 8:00–12:00',
+  'pick.saturday': 'Субота 9:00–13:00',
 
   'l.share': 'Надіслати',
   'l.shareTitle': 'Надіслати друзям',

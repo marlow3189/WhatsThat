@@ -159,6 +159,9 @@ export const sk: Dict = {
   'pay.blik': 'BLIK',
   'pay.transfer': 'Rýchly prevod',
   'pay.cash': 'V hotovosti pri prevzatí',
+  'pick.today': 'Dnes 17:00–19:00',
+  'pick.tomorrow': 'Zajtra 8:00–12:00',
+  'pick.saturday': 'Sobota 9:00–13:00',
 
   'l.share': 'Poslať',
   'l.shareTitle': 'Poslať priateľom',

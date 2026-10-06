@@ -157,6 +157,9 @@ export const pl = {
   'pay.blik': 'BLIK',
   'pay.transfer': 'Szybki przelew',
   'pay.cash': 'Gotówka przy odbiorze',
+  'pick.today': 'Dziś 17:00–19:00',
+  'pick.tomorrow': 'Jutro 8:00–12:00',
+  'pick.saturday': 'Sobota 9:00–13:00',
 
   'l.share': 'Wyślij',
   'l.shareTitle': 'Wyślij znajomym',

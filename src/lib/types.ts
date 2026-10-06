@@ -38,9 +38,11 @@ export interface User {
   /** po 10 udanych transakcjach bez sporów */
   trusted?: boolean
   deals?: number
+  /** ma konto u operatora płatności (KYC zrobione) */
+  payouts?: boolean
 }
 
-export type ListingStatus = 'active' | 'reserved' | 'sold'
+export type ListingStatus = 'active' | 'reserved' | 'sold' | 'removed'
 
 export interface Listing {
   id: string

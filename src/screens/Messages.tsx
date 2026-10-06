@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Header, Notice, Thumb, cx, readPhoto, relationText, timeAgo } from '../components/ui'
+import { Avatar, Header, Notice, Thumb, cx, money, readPhoto, relationText, timeAgo } from '../components/ui'
 import { Icon } from '../components/icons'
-import { formatPLN } from '../lib/money'
 import { ME } from '../data/seed'
 
 const LINK = /(https?:\/\/|www\.)\S+/i
@@ -12,10 +11,10 @@ export function Messages() {
   const { t, chats, users, listings, readAt } = useStore()
   const sorted = [...chats].filter((c) => c.messages.length).sort((a, b) => (b.messages.at(-1)?.at ?? 0) - (a.messages.at(-1)?.at ?? 0))
   return (
-    <>
-      <Header title={t('m.title')} />
-      {sorted.length === 0 && <p className="px-4 py-6 text-muted">{t('m.empty')}</p>}
-      <ul className="mx-4 divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
+    <div className="pb-6">
+      <Header large title={t('m.title')} />
+      {sorted.length === 0 && <p className="px-5 text-muted">{t('m.empty')}</p>}
+      <ul className="card mx-4 overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">
         {sorted.map((c) => {
           const other = users[c.members.find((m) => m !== ME)!]
           const listing = listings.find((l) => l.id === c.listingId)
@@ -23,31 +22,29 @@ export function Messages() {
           const unread = last.from !== ME && last.at > (readAt[c.id] ?? 0)
           return (
             <li key={c.id}>
-              <Link to={`/czat/${c.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-sunken">
-                <Avatar user={other} size={46} />
+              <Link to={`/czat/${c.id}`} className="flex items-center gap-3 px-4 py-3 active:bg-fill">
+                <Avatar user={other} size={50} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className={cx('truncate', unread ? 'font-bold' : 'font-semibold')}>{other.name}</span>
-                    <span className="tnum shrink-0 text-[12px] text-muted">{timeAgo(last.at, t)}</span>
+                    <span className="truncate font-semibold">{other.name}</span>
+                    <span className={cx('tnum shrink-0 text-[13px]', unread ? 'font-semibold text-link' : 'text-muted')}>{timeAgo(last.at, t)}</span>
                   </div>
-                  <div className="truncate text-[13px] text-muted">{listing?.title}</div>
-                  <div className={cx('truncate text-[14px]', !unread && 'text-muted')}>
-                    {last.orderId ? t('o.title') : last.photo ? t('m.photo') : last.text}
-                  </div>
+                  <div className="truncate text-[14px] text-muted">{listing?.title}</div>
+                  <div className={cx('truncate text-[15px]', unread ? 'font-medium' : 'text-muted')}>{last.orderId ? t('o.title') : last.photo ? t('m.photo') : last.text}</div>
                 </div>
-                {unread && <span className="size-2.5 shrink-0 rounded-full bg-accent" aria-hidden />}
+                {unread && <span className="size-2.5 shrink-0 rounded-full bg-link" aria-hidden />}
               </Link>
             </li>
           )
         })}
       </ul>
-    </>
+    </div>
   )
 }
 
 export function ChatScreen() {
   const { id } = useParams()
-  const { t, account, chats, users, listings, orders, sendMessage, relation, markRead } = useStore()
+  const { t, locale, account, chats, users, listings, orders, sendMessage, relation, markRead } = useStore()
   const chat = chats.find((c) => c.id === id)
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
@@ -57,7 +54,7 @@ export function ChatScreen() {
     if (id) markRead(id)
   }, [count, id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!chat) return <><Header title="" back /><p className="p-6 text-muted">{t('m.empty')}</p></>
+  if (!chat) return <><Header back title="" /><p className="p-6 text-muted">{t('m.empty')}</p></>
   const other = users[chat.members.find((m) => m !== ME)!]
   const listing = listings.find((l) => l.id === chat.listingId)
   const hasLink = chat.messages.some((m) => m.from !== ME && m.text && LINK.test(m.text)) || LINK.test(text)
@@ -74,64 +71,62 @@ export function ChatScreen() {
       <Header
         back
         title={
-          <span className="flex items-center gap-2">
-            <Avatar user={other} size={32} />
-            <span className="min-w-0">
-              <span className="block truncate text-[16px] leading-tight">{other.name}</span>
-              <span className="block truncate text-[12px] font-normal text-muted">{relationText(relation(other.id), other, users, t)}</span>
-            </span>
+          <span className="inline-flex max-w-full flex-col items-center leading-tight">
+            <span className="truncate text-[17px]">{other.name}</span>
+            <span className="truncate text-[12px] font-normal text-muted">{relationText(relation(other.id), other, users, t)}</span>
           </span>
         }
+        right={<Avatar user={other} size={34} />}
       />
       {listing && (
-        <Link to={`/l/${listing.id}`} className="flex items-center gap-3 border-b border-line bg-surface px-4 py-2">
-          <Thumb listing={listing} size={40} className="rounded-md" />
-          <span className="min-w-0 flex-1 truncate text-[14px] font-semibold">{listing.title}</span>
-          <Icon name="chevron" size={18} className="text-muted" />
+        <Link to={`/l/${listing.id}`} className="card mx-3 mt-2 flex items-center gap-3 p-2 pr-3">
+          <Thumb listing={listing} size={44} className="rounded-[12px]" />
+          <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{listing.title}</span>
+          <Icon name="chevron" size={16} strokeWidth={2.4} className="text-fill-strong" />
         </Link>
       )}
-      {other.restricted && <div className="px-3 pt-3"><Notice tone="danger">{t('l.restricted')}</Notice></div>}
+      {other.restricted && <div className="px-3 pt-3"><Notice tone="danger" icon="lock">{t('l.restricted')}</Notice></div>}
       <div className="flex flex-1 flex-col gap-1.5 px-3 py-4">
         {chat.messages.map((m) => {
           const mine = m.from === ME
           const order = m.orderId ? orders.find((o) => o.id === m.orderId) : undefined
           if (order) {
             return (
-              <Link key={m.id} to={`/zamowienie/${order.id}`} className="my-2 flex items-center gap-3 self-center rounded-xl border border-line bg-surface px-4 py-3 text-[14px]" style={{ width: 'min(100%, 22rem)' }}>
-                <Icon name="bag" className="text-muted" />
+              <Link key={m.id} to={`/zamowienie/${order.id}`} className="card my-2 flex items-center gap-3 self-center px-4 py-3 text-[15px]" style={{ width: 'min(100%, 22rem)' }}>
+                <span className="grid size-9 place-items-center rounded-full bg-fill"><Icon name="bag" size={18} /></span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-semibold">{t('m.order', { status: t(`o.status.${order.status}`) })}</span>
-                  {order.total > 0 && <span className="tnum block text-muted">{formatPLN(order.total)}</span>}
+                  {order.total > 0 && <span className="tnum block text-muted">{money(order.total, order.currency, locale)}</span>}
                 </span>
-                <Icon name="chevron" size={18} className="text-muted" />
+                <Icon name="chevron" size={16} strokeWidth={2.4} className="text-fill-strong" />
               </Link>
             )
           }
           return (
-            <div key={m.id} className={cx('max-w-[80%] rounded-2xl px-3 py-2', mine ? 'self-end rounded-br-md bg-accent-soft' : 'self-start rounded-bl-md border border-line bg-surface')}>
-              {m.photo && <img src={m.photo} alt={t('m.photo')} className="mb-1 max-h-60 rounded-xl" />}
+            <div key={m.id} className={cx('max-w-[78%] rounded-[20px] px-3.5 py-2', mine ? 'self-end rounded-br-[6px] bg-link text-white' : 'self-start rounded-bl-[6px] bg-surface')}>
+              {m.photo && <img src={m.photo} alt={t('m.photo')} className="mb-1 max-h-60 rounded-[14px]" />}
               {m.text && <p className="break-words whitespace-pre-wrap">{m.text}</p>}
-              <p className="tnum text-right text-[11px] text-muted">{new Date(m.at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</p>
+              <p className={cx('tnum text-right text-[11px]', mine ? 'text-white/70' : 'text-muted')}>{new Date(m.at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
           )
         })}
         <div ref={end} />
       </div>
-      {hasLink && <div className="px-3 pb-2"><Notice tone="danger">{t('m.linkWarn')}</Notice></div>}
+      {hasLink && <div className="px-3 pb-2"><Notice tone="danger" icon="shield">{t('m.linkWarn')}</Notice></div>}
       {account.restricted ? (
         <div className="px-3 pb-3"><Notice tone="danger">{t('r.banner')}</Notice></div>
       ) : (
-        <form onSubmit={submit} className="sticky bottom-[calc(64px+env(safe-area-inset-bottom,0px))] flex items-end gap-2 border-t border-line bg-bg px-3 py-2">
-          <label htmlFor="chat-photo" className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-full text-muted" aria-label={t('m.photo')}>
+        <form onSubmit={submit} className="glass sticky bottom-[calc(84px+env(safe-area-inset-bottom,0px))] mx-3 mb-2 flex items-center gap-1.5 rounded-full p-1.5 shadow-[var(--shadow)]">
+          <label htmlFor="chat-photo" className="press grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-muted" aria-label={t('m.photo')}>
             <Icon name="camera" />
             <input id="chat-photo" type="file" accept="image/*" className="sr-only" onChange={async (e) => {
               const f = e.target.files?.[0]
               if (f) sendMessage(chat.id, '', await readPhoto(f, 700))
             }} />
           </label>
-          <input id="chat-text" value={text} onChange={(e) => setText(e.target.value)} placeholder={t('m.ph')} className="min-h-11 min-w-0 flex-1 rounded-full border border-line bg-surface px-4 outline-none focus:border-ink" />
-          <button type="submit" className="grid size-11 shrink-0 place-items-center rounded-full bg-accent text-accent-ink" aria-label={t('m.send')}>
-            <Icon name="send" size={20} />
+          <input id="chat-text" value={text} onChange={(e) => setText(e.target.value)} placeholder={t('m.ph')} className="min-h-10 min-w-0 flex-1 bg-transparent px-2 text-[17px] outline-none placeholder:text-muted" />
+          <button type="submit" disabled={!text.trim()} className="press grid size-10 shrink-0 place-items-center rounded-full bg-link text-white disabled:opacity-40" aria-label={t('m.send')}>
+            <Icon name="send" size={18} />
           </button>
         </form>
       )}

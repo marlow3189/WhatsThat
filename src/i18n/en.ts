@@ -159,6 +159,9 @@ export const en: Dict = {
   'pay.blik': 'BLIK',
   'pay.transfer': 'Instant transfer',
   'pay.cash': 'Cash at pick-up',
+  'pick.today': 'Today 17:00–19:00',
+  'pick.tomorrow': 'Tomorrow 8:00–12:00',
+  'pick.saturday': 'Saturday 9:00–13:00',
 
   'l.share': 'Send',
   'l.shareTitle': 'Send to friends',

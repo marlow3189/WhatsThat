@@ -36,6 +36,16 @@ const PATHS: Record<string, ReactNode> = {
   bike: <><circle cx="6.5" cy="15.5" r="3.5" /><circle cx="17.5" cy="15.5" r="3.5" /><path d="M6.5 15.5 10 9h5.5l2 6.5M10 9 8.5 6.5h-2M12.5 15.5 15.5 9" /></>,
   tent: <><path d="M3 19.5 12 5l9 14.5z" /><path d="M12 5v14.5M9 19.5l3-5 3 5" /></>,
   paw: <><circle cx="7" cy="10" r="1.8" /><circle cx="10.5" cy="6.5" r="1.8" /><circle cx="14.5" cy="6.5" r="1.8" /><circle cx="18" cy="10" r="1.8" /><path d="M12.5 11.5c-3 0-5.5 3.5-5.5 5.7 0 1.6 1.4 2.3 2.8 2l2.7-.6 2.7.6c1.4.3 2.8-.4 2.8-2 0-2.2-2.5-5.7-5.5-5.7z" /></>,
+  drop: <path d="M12 3.5c3.5 4.2 6 7.6 6 10.6a6 6 0 0 1-12 0c0-3 2.5-6.4 6-10.6Z" />,
+  more: <><circle cx="5.5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="18.5" cy="12" r="1.2" /></>,
+  flag: <><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></>,
+  info: <><circle cx="12" cy="12" r="8.5" /><path d="M12 11v5M12 8h.01" /></>,
+  eyeoff: <><path d="M3 3l18 18" /><path d="M10.6 6.2A9.7 9.7 0 0 1 12 6c5 0 8.5 4.5 9 6-.3.9-1.3 2.5-3 3.8M6.5 7.6C4.6 8.9 3.4 10.7 3 12c.5 1.5 4 6 9 6 1.4 0 2.7-.3 3.8-.9" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></>,
+  store: <><path d="M4 9.5 5.5 4.5h13L20 9.5" /><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0" /><path d="M5.5 12v8h13v-8" /></>,
+  card: <><rect x="3.5" y="6" width="17" height="12" rx="2" /><path d="M3.5 10h17" /></>,
+  chart: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+  doc: <><path d="M7 3.5h7l4 4V20.5H7z" /><path d="M14 3.5v4h4M9.5 12h6M9.5 15.5h6" /></>,
+  minus: <path d="M5 12h14" />,
   box: <><path d="M4 8 12 4l8 4v8.5L12 20.5l-8-4z" /><path d="M4 8l8 4 8-4M12 12v8.5" /></>,
 }
 
@@ -51,8 +61,8 @@ export function Icon({ name, size = 22, ...props }: { name: string; size?: numbe
 export function Mark({ size = 26 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
-      <circle cx="18" cy="24" r="10" fill="var(--ink)" />
-      <circle cx="30" cy="24" r="10" fill="var(--accent)" style={{ mixBlendMode: 'normal' }} />
+      <circle cx="18" cy="24" r="11" fill="var(--ink)" />
+      <circle cx="30" cy="24" r="11" fill="var(--accent)" />
     </svg>
   )
 }

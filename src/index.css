@@ -1,80 +1,109 @@
 @import 'tailwindcss';
 
-/* Układ: jedna kolumna jak natywna aplikacja; listy pogrupowane jak w ustawieniach telefonu,
-   jeden kolor akcentu (ceglasty, jak szyld na targu) tylko na głównych akcjach. */
+/* Układ: natywny styl iOS. Szare tło grupowane, białe karty z dużym promieniem,
+   duże tytuły, pływający szklany pasek zakładek. Akcent limonkowy tylko na wyróżnieniach,
+   główne przyciski czarne (w ciemnym motywie białe). */
 :root {
-  --bg: #f6f6f3;
+  --bg: #f2f2f7;
   --surface: #ffffff;
-  --sunken: #eeeeea;
-  --ink: #1a1a18;
-  --muted: #6a6a64;
-  --line: #e2e1dc;
-  --accent: #b9402b;
-  --accent-ink: #ffffff;
-  --accent-soft: #f6e4df;
-  --ok: #2f7a4d;
-  --ok-soft: #e1f0e6;
-  --warn: #8f5400;
-  --warn-soft: #fbefd9;
-  --danger: #b3261e;
-  --danger-soft: #f9e1de;
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fill: #f2f2f7;
+  --fill-strong: #e5e5ea;
+  --ink: #0b0b0c;
+  --muted: #8a8a8e;
+  --line: #e3e3e8;
+  --primary: #0b0b0c;
+  --primary-ink: #ffffff;
+  --accent: #d6f35f;
+  --accent-ink: #0b0b0c;
+  --link: #007aff;
+  --ok: #248a3d;
+  --ok-soft: #e3f5e8;
+  --warn: #b25000;
+  --warn-soft: #fff1dc;
+  --danger: #d70015;
+  --danger-soft: #ffe5e5;
+  --switch: #34c759;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 30px rgb(0 0 0 / 0.06);
+  --tint-l: 92%;
+  --tint-s: 60%;
+  --tint-icon-l: 38%;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #121211;
-    --surface: #1c1c1a;
-    --sunken: #262624;
-    --ink: #ececE7;
-    --muted: #a2a29b;
-    --line: #30302d;
-    --accent: #ee7a61;
-    --accent-ink: #1a0a06;
-    --accent-soft: #3a231d;
-    --ok: #6bcb8f;
-    --ok-soft: #18301f;
-    --warn: #e7b04f;
-    --warn-soft: #33280f;
-    --danger: #f08a80;
-    --danger-soft: #3a1b19;
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --fill: #2c2c2e;
+    --fill-strong: #3a3a3c;
+    --ink: #ffffff;
+    --muted: #8e8e93;
+    --line: #38383a;
+    --primary: #ffffff;
+    --primary-ink: #000000;
+    --accent: #d6f35f;
+    --accent-ink: #0b0b0c;
+    --link: #0a84ff;
+    --ok: #30d158;
+    --ok-soft: #10301b;
+    --warn: #ff9f0a;
+    --warn-soft: #3a2a0d;
+    --danger: #ff453a;
+    --danger-soft: #3b1513;
+    --switch: #30d158;
+    --shadow: none;
+    --tint-l: 20%;
+    --tint-s: 22%;
+    --tint-icon-l: 72%;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #121211;
-  --surface: #1c1c1a;
-  --sunken: #262624;
-  --ink: #ececE7;
-  --muted: #a2a29b;
-  --line: #30302d;
-  --accent: #ee7a61;
-  --accent-ink: #1a0a06;
-  --accent-soft: #3a231d;
-  --ok: #6bcb8f;
-  --ok-soft: #18301f;
-  --warn: #e7b04f;
-  --warn-soft: #33280f;
-  --danger: #f08a80;
-  --danger-soft: #3a1b19;
+  --bg: #000000;
+  --surface: #1c1c1e;
+  --fill: #2c2c2e;
+  --fill-strong: #3a3a3c;
+  --ink: #ffffff;
+  --muted: #8e8e93;
+  --line: #38383a;
+  --primary: #ffffff;
+  --primary-ink: #000000;
+  --accent: #d6f35f;
+  --accent-ink: #0b0b0c;
+  --link: #0a84ff;
+  --ok: #30d158;
+  --ok-soft: #10301b;
+  --warn: #ff9f0a;
+  --warn-soft: #3a2a0d;
+  --danger: #ff453a;
+  --danger-soft: #3b1513;
+  --switch: #30d158;
+  --shadow: none;
+  --tint-l: 20%;
+  --tint-s: 22%;
+  --tint-icon-l: 72%;
   color-scheme: dark;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --color-sunken: var(--sunken);
+  --color-fill: var(--fill);
+  --color-fill-strong: var(--fill-strong);
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
+  --color-link: var(--link);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-switch: var(--switch);
   --font-sans: var(--font);
 }
 
@@ -88,8 +117,9 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 16px;
-  line-height: 1.45;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -101,8 +131,22 @@ h3 {
 .tnum {
   font-variant-numeric: tabular-nums;
 }
+.card {
+  background: var(--surface);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+.tint {
+  background: hsl(var(--h) var(--tint-s) var(--tint-l));
+  color: hsl(var(--h) 35% var(--tint-icon-l));
+}
+.glass {
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+}
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--link);
   outline-offset: 2px;
 }
 .no-scrollbar {
@@ -111,20 +155,32 @@ h3 {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
-input[type='range'] {
-  accent-color: var(--accent);
+.press {
+  transition: transform 0.12s ease, opacity 0.12s ease;
 }
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
+.press:active {
+  transform: scale(0.97);
+  opacity: 0.85;
 }
 @keyframes slide-down {
   from {
     transform: translateY(-120%);
   }
 }
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
 .toast-in {
-  animation: slide-down 0.25s ease-out;
+  animation: slide-down 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sheet-in {
+  animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

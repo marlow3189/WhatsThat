@@ -159,6 +159,9 @@ export const hu: Dict = {
   'pay.blik': 'BLIK',
   'pay.transfer': 'Azonnali utalás',
   'pay.cash': 'Készpénz átvételkor',
+  'pick.today': 'Ma 17:00–19:00',
+  'pick.tomorrow': 'Holnap 8:00–12:00',
+  'pick.saturday': 'Szombat 9:00–13:00',
 
   'l.share': 'Küldés',
   'l.shareTitle': 'Küldés barátoknak',
