@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/* Układ: jedna kolumna jak w telefonie, przyklejony nagłówek, dolny pasek zakładek.
+   Motyw: trzy koncentryczne kręgi zaufania; każdy krąg ma swój kolor. */
+:root {
+  --bg: #f5f6fa;
+  --surface: #ffffff;
+  --sunken: #eceef5;
+  --ink: #15172b;
+  --muted: #5d6280;
+  --line: #e1e4ee;
+  --brand: #e2561a;
+  --brand-ink: #ffffff;
+  --brand-soft: #fde9df;
+  --c1: #e2561a;
+  --c2: #7357ea;
+  --c3: #2f6fdb;
+  --ok: #138a52;
+  --ok-soft: #dcf3e7;
+  --warn: #a25b00;
+  --warn-soft: #fff1d6;
+  --bubble-me: #fde9df;
+  --font-display: 'Bricolage Grotesque', ui-rounded, 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #11131f;
+    --surface: #1a1d2c;
+    --sunken: #232739;
+    --ink: #eef0fa;
+    --muted: #9aa0bd;
+    --line: #2c3046;
+    --brand: #ff7a3d;
+    --brand-ink: #1a0d05;
+    --brand-soft: #3a2218;
+    --c1: #ff7a3d;
+    --c2: #a08cff;
+    --c3: #6ea2ff;
+    --ok: #4fd18f;
+    --ok-soft: #173327;
+    --warn: #f3b34d;
+    --warn-soft: #3a2d14;
+    --bubble-me: #3a2218;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #11131f;
+  --surface: #1a1d2c;
+  --sunken: #232739;
+  --ink: #eef0fa;
+  --muted: #9aa0bd;
+  --line: #2c3046;
+  --brand: #ff7a3d;
+  --brand-ink: #1a0d05;
+  --brand-soft: #3a2218;
+  --c1: #ff7a3d;
+  --c2: #a08cff;
+  --c3: #6ea2ff;
+  --ok: #4fd18f;
+  --ok-soft: #173327;
+  --warn: #f3b34d;
+  --warn-soft: #3a2d14;
+  --bubble-me: #3a2218;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-c1: var(--c1);
+  --color-c2: var(--c2);
+  --color-c3: var(--c3);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bubble-me: var(--bubble-me);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+  letter-spacing: -0.01em;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+input[type='range'] {
+  accent-color: var(--brand);
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "WhatsThat",
+  "short_name": "WhatsThat",
+  "description": "Pożycz, wynajmij, wymień albo sprzedaj. Najpierw znajomym, potem w okolicy.",
+  "lang": "pl",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#f5f6fa",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
