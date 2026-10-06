@@ -1,34 +1,46 @@
-export type Lang = 'pl' | 'en' | 'de' | 'uk'
+export type Lang = 'pl' | 'en' | 'de' | 'uk' | 'cs' | 'sk' | 'hu' | 'it' | 'es'
+
+export type Currency = 'PLN' | 'EUR' | 'USD' | 'CZK' | 'HUF' | 'UAH' | 'GBP'
 
 /** Kręgi zaufania: 1 = znajomi, 2 = znajomi znajomych, 3 = wszyscy. */
 export type Circle = 1 | 2 | 3
 
-/** Co ktoś robi z ogłoszeniem. */
-export type Kind = 'sell' | 'rent' | 'service' | 'give' | 'swap' | 'garage'
+/** Co ktoś robi z ogłoszeniem. „wanted” = szukam. */
+export type Kind = 'sell' | 'rent' | 'service' | 'give' | 'swap' | 'garage' | 'wanted'
 
-export type Unit = 'item' | 'kg' | 'pack' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
+export type Unit = 'item' | 'kg' | 'pack' | 'litre' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
 
-export type Plan = 'free' | 'annual'
+export type Plan = 'free' | 'annual' | 'business'
+
+/** Sposoby przekazania. Nikogo nie ograniczamy: „other” to dowolny przewoźnik. */
+export type Delivery = 'pickup' | 'inpost' | 'orlen' | 'dpd' | 'dhl' | 'poczta' | 'courier' | 'other'
+
+export type PayMethod = 'blik' | 'transfer' | 'cash'
 
 export interface Place {
   lat: number
   lng: number
   town: string
+  /** województwo w PL, region / land / kraj związkowy gdzie indziej */
   voivodeship: string
+  country?: string
 }
 
 export interface User {
   id: string
   name: string
-  /** ostatnie cyfry do wyświetlania znajomym, pełny numer nigdy nie trafia do obcych */
-  phoneTail: string
   hue: number
   place: Place
   friends: string[]
   since: number
   restricted?: boolean
   business?: boolean
+  /** po 10 udanych transakcjach bez sporów */
+  trusted?: boolean
+  deals?: number
 }
+
+export type ListingStatus = 'active' | 'reserved' | 'sold'
 
 export interface Listing {
   id: string
@@ -38,22 +50,30 @@ export interface Listing {
   sub?: string
   title: string
   description: string
-  /** grosze; brak = za darmo / wymiana */
+  /** w groszach / centach waluty ogłoszenia; brak = za darmo / wymiana */
   price?: number
+  currency?: Currency
   unit: Unit
   condition?: 'new' | 'used'
   deal?: boolean
-  /** ile sztuk / kg zostało (np. rolnik) */
+  /** ile zostało (rolnik); przy rzeczach pojedynczych brak */
   stock?: number
   pickupHours?: string
-  shipping?: boolean
-  /** grosze, informacyjnie: płatna właścicielowi, nie przez nas */
+  delivery: Delivery[]
+  shippingPrice?: number
   deposit?: number
   garageDate?: string
   swapFor?: string
   photo?: string
   place: Place
   visibility: Circle
+  /** incognito: znajomi nie widzą, obcy widzą bez imienia */
+  incognito?: boolean
+  hiddenFrom?: string[]
+  promoted?: boolean
+  status: ListingStatus
+  /** rolnik: „dziś niedostępne” bez kasowania */
+  paused?: boolean
   createdAt: number
 }
 
@@ -68,8 +88,11 @@ export interface Order {
   from?: string
   to?: string
   pickup?: string
+  delivery: Delivery
+  lockerCode?: string
   total: number
-  pay: 'blik' | 'cash'
+  currency: Currency
+  pay: PayMethod
   status: OrderStatus
   note?: string
   photosBefore: string[]
@@ -113,19 +136,44 @@ export interface AppNotification {
   tone?: 'warn'
 }
 
+export type ReportReason = 'scam' | 'illegal' | 'fake' | 'rights' | 'offensive' | 'other'
+
+/** Zgłoszenie treści (DSA art. 16) i decyzja z uzasadnieniem (art. 17). */
+export interface Report {
+  id: string
+  listingId: string
+  reporterId: string
+  reason: ReportReason
+  note?: string
+  at: number
+  status: 'new' | 'removed' | 'kept'
+  decidedAt?: number
+}
+
 export interface Account {
   onboarded: boolean
   lang: Lang
+  country: string
+  currency: Currency
   name: string
   phone: string
   email: string
   place: Place
+  interests: string[]
+  termsAcceptedAt?: number
   plan: Plan
   planUntil?: number
+  /** konto darmowe: kiedy odnowić za symboliczną opłatę */
+  renewalDue: number
+  kyc: 'none' | 'pending' | 'verified'
   restricted: boolean
   trusted: string[]
   unlockApprovals: string[]
   notif: NotificationPrefs
   invited: string[]
   contactsAllowed: boolean
+  /** osoby, których rzeczy nie chcę widzieć */
+  muted: string[]
+  /** znajomi „zapomniani”: nie liczą się już jako krąg 1 */
+  forgotten: string[]
 }

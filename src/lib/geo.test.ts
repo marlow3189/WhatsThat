@@ -31,7 +31,7 @@ describe('geo', () => {
 })
 
 describe('kręgi', () => {
-  const u = (id: string, friends: string[]): User => ({ id, name: id, phoneTail: '00', hue: 0, place: waw, friends, since: 0 })
+  const u = (id: string, friends: string[]): User => ({ id, name: id, hue: 0, place: waw, friends, since: 0 })
   const users = { me: u('me', ['a', 'b']), a: u('a', ['me', 'c']), b: u('b', ['me', 'c']), c: u('c', ['a', 'b']), d: u('d', []) }
   it('rozpoznaje znajomych, znajomych znajomych i obcych', () => {
     expect(relationTo('me', 'a', users).circle).toBe(1)
