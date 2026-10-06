@@ -5,11 +5,18 @@ gdy w okolicy jest co najmniej 300 ogłoszeń.
 
 ## 0. Jak podpiąć Higgsfield
 
-Higgsfield nie ma dziś gotowego connectora w katalogu Claude. Dwie drogi:
-1. Jeśli Higgsfield udostępnia serwer MCP (adres URL), dodaj go jako własny connector na
-   **claude.ai/customize/connectors**, a potem otwórz nową sesję: connectory wczytują się na starcie.
-   Wtedy mogę generować filmy prosto z poniższych opisów.
-2. Bez connectora: skopiuj opis sceny (pole **Prompt**) do Higgsfield, ustaw format 9:16 i długość podaną przy filmie.
+Higgsfield ma **oficjalny serwer MCP** (od 30 kwietnia 2026): `https://mcp.higgsfield.ai/mcp`, logowanie przez
+przeglądarkę (OAuth), bez klucza API. Daje dostęp do ponad 30 modeli obrazu i wideo (m.in. Kling, Veo, Minimax Hailuo, Soul).
+Z tej sesji nie mogę się z nim połączyć: connectory wczytują się na starcie sesji, a sieć tego środowiska blokuje
+zewnętrzne adresy.
+
+Jak podpiąć:
+1. Wejdź na **claude.ai/customize/connectors** → „Dodaj własny connector” → adres `https://mcp.higgsfield.ai/mcp`
+   → zaloguj się do Higgsfield.
+2. Otwórz **nową sesję** i napisz np. „Wygeneruj film F2 z docs/MARKETING.md”. Opisy scen poniżej są gotowe do użycia.
+3. W Claude Code w terminalu to samo jednym poleceniem: `claude mcp add --transport http higgsfield https://mcp.higgsfield.ai/mcp`.
+
+Bez connectora: skopiuj pole **Prompt** do Higgsfield, ustaw format 9:16 i długość podaną przy filmie.
 
 Zasady dla wszystkich filmów:
 - Format pionowy **9:16**, 8–15 s, pierwsze 2 sekundy to haczyk, napisy zawsze na ekranie (większość ogląda bez dźwięku).

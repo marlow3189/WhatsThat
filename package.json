@@ -13,7 +13,9 @@
     "typecheck": "tsc -p .",
     "cap:sync": "npm run build && cap sync",
     "cap:android": "npm run build && cap sync android && cap open android",
-    "cap:ios": "npm run build && cap sync ios && cap open ios"
+    "cap:ios": "npm run build && cap sync ios && cap open ios",
+    "build:extension": "npm run build && node scripts/build-extension.mjs",
+    "safari:extension": "npm run build:extension && xcrun safari-web-extension-converter extension --app-name Obok --bundle-identifier app.obok.extension"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.2",

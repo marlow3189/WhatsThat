@@ -8,14 +8,20 @@ create extension if not exists postgis;
 create table public.profiles (
   id uuid primary key references auth.users on delete cascade,   -- auth.users trzyma numer telefonu
   display_name text not null,
-  lang text not null default 'pl' check (lang in ('pl', 'en', 'de', 'uk')),
+  lang text not null default 'pl' check (lang in ('pl', 'en', 'de', 'uk', 'cs', 'sk', 'hu', 'it', 'es')),
+  country text not null default 'PL',
+  currency text not null default 'PLN',
+  interests text[] not null default '{}',
+  terms_accepted_at timestamptz not null default now(),
   voivodeship text not null,
   town text,
   home geography(point, 4326) not null,
   status text not null default 'active' check (status in ('active', 'restricted')),
   restricted_at timestamptz,
-  plan text not null default 'free' check (plan in ('free', 'annual')),
+  plan text not null default 'free' check (plan in ('free', 'annual', 'business')),
   plan_until timestamptz,
+  renewal_due timestamptz not null default now() + interval '1 year',  -- konto darmowe: symboliczne odnowienie
+  kyc text not null default 'none' check (kyc in ('none', 'pending', 'verified')),
   business boolean not null default false,       -- firma: obowiązki DSA/Omnibus, faktury
   payout_account_id text,                        -- konto sprzedającego u operatora płatności
   created_at timestamptz not null default now()
@@ -37,6 +43,18 @@ create table public.friendships (
 );
 create index on public.friendships (b);
 
+-- „Nie pokazuj mi rzeczy tej osoby” i „zapomnij kontakt”.
+create table public.mutes (
+  user_id uuid not null references public.profiles on delete cascade,
+  muted_id uuid not null references public.profiles on delete cascade,
+  primary key (user_id, muted_id)
+);
+create table public.forgotten (
+  user_id uuid not null references public.profiles on delete cascade,
+  forgotten_id uuid not null references public.profiles on delete cascade,
+  primary key (user_id, forgotten_id)
+);
+
 create or replace view public.friends with (security_invoker = true) as
   select a as user_id, b as friend_id from public.friendships
   union all
@@ -47,10 +65,12 @@ create or replace function public.circle_of(viewer uuid, other uuid)
 returns int language sql stable security definer set search_path = public as $$
   select case
     when viewer = other then 1
-    when exists (select 1 from friends where user_id = viewer and friend_id = other) then 1
+    when exists (select 1 from friends where user_id = viewer and friend_id = other
+                 and not exists (select 1 from forgotten where user_id = viewer and forgotten_id = other)) then 1
     when exists (
       select 1 from friends f1 join friends f2 on f2.user_id = f1.friend_id
       where f1.user_id = viewer and f2.friend_id = other
+        and not exists (select 1 from forgotten where user_id = viewer and forgotten_id = f1.friend_id)
     ) then 2
     else 3
   end
@@ -124,19 +144,21 @@ end $$;
 create table public.listings (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references public.profiles on delete cascade,
-  kind text not null check (kind in ('sell', 'rent', 'service', 'give', 'swap', 'garage')),
+  kind text not null check (kind in ('sell', 'rent', 'service', 'give', 'swap', 'garage', 'wanted')),
   category text not null,
   sub_category text,
   title text not null check (char_length(title) between 3 and 120),
   description text not null default '',
-  price int check (price >= 0),                   -- grosze
+  price int check (price >= 0),                   -- najmniejsza jednostka waluty
+  currency text not null default 'PLN',
   unit text not null default 'fixed'
-    check (unit in ('item', 'kg', 'pack', 'hour', 'day', 'week', 'month', 'night', 'fixed')),
+    check (unit in ('item', 'kg', 'pack', 'litre', 'hour', 'day', 'week', 'month', 'night', 'fixed')),
   condition text check (condition in ('new', 'used')),
   deal boolean not null default false,            -- okazja
   stock numeric,                                  -- rolnik: ile zostało
   pickup_hours text,
-  shipping boolean not null default false,
+  delivery text[] not null default '{pickup}',    -- pickup, inpost, orlen, dpd, dhl, poczta, courier, other
+  shipping_price int,
   deposit int,                                    -- grosze, informacyjnie: płatna właścicielowi
   garage_date date,
   swap_for text,
@@ -145,27 +167,31 @@ create table public.listings (
   town text not null,
   voivodeship text not null,
   visibility int not null default 3 check (visibility between 1 and 3),
-  status text not null default 'active' check (status in ('active', 'paused', 'sold', 'deleted')),
+  incognito boolean not null default false,       -- znajomi nie widzą, obcy bez imienia
+  hidden_from uuid[] not null default '{}',
+  promoted boolean not null default false,
+  paused boolean not null default false,          -- rolnik: „dziś niedostępne”
+  status text not null default 'active' check (status in ('active', 'reserved', 'sold', 'removed', 'deleted')),
   created_at timestamptz not null default now()
 );
 create index listings_location_idx on public.listings using gist (location);
 create index on public.listings (owner_id, status);
 create index on public.listings (category, sub_category, status);
 
--- Plan darmowy: 3 aktywne ogłoszenia. Dostęp roczny: bez limitu.
+-- Plan darmowy: 3 nowe ogłoszenia w miesiącu kalendarzowym. Roczny i Firma: bez limitu do daty ważności.
 create or replace function public.enforce_listing_limit() returns trigger language plpgsql as $$
 declare p profiles;
 begin
   select * into p from public.profiles where id = new.owner_id;
   if p.status <> 'active' then raise exception 'Konto zastrzeżone'; end if;
-  if new.status = 'active'
-     and not (p.plan = 'annual' and p.plan_until > now())
-     and (select count(*) from public.listings where owner_id = new.owner_id and status = 'active' and id <> new.id) >= 3 then
-    raise exception 'Limit 3 darmowych ogłoszeń. Dostęp roczny: 79 zł.';
+  if not (p.plan in ('annual', 'business') and p.plan_until > now())
+     and (select count(*) from public.listings
+          where owner_id = new.owner_id and created_at >= date_trunc('month', now())) >= 3 then
+    raise exception 'Limit 3 darmowych ogłoszeń w miesiącu.';
   end if;
   return new;
 end $$;
-create trigger listing_limit before insert or update of status on public.listings
+create trigger listing_limit before insert on public.listings
   for each row execute function public.enforce_listing_limit();
 
 -- Wyszukiwanie: znajomi i ich znajomi zawsze, reszta w promieniu albo w obszarze.
@@ -177,15 +203,19 @@ create or replace function public.listings_nearby(
   in_town text default null,
   in_voivodeship text default null
 )
-returns table (listing public.listings, circle int, distance_m double precision)
+returns table (listing jsonb, circle int, distance_m double precision)
 language sql stable security definer set search_path = public as $$
   with me as (select st_setsrid(st_makepoint(lng, lat), 4326)::geography as p)
-  select l, c.circle, st_distance(l.location, me.p)
+  -- incognito: obcy nie dostają owner_id, więc nie da się ustalić, kto sprzedaje
+  select case when l.incognito and l.owner_id <> auth.uid() then to_jsonb(l) - 'owner_id' else to_jsonb(l) end,
+         c.circle, st_distance(l.location, me.p)
   from listings l, me,
        lateral (select circle_of(auth.uid(), l.owner_id) as circle) c
   where l.status = 'active'
     and is_active(l.owner_id)
-    and c.circle <= least(l.visibility, max_circle)
+    and (case when l.incognito then c.circle = 3 else c.circle <= least(l.visibility, max_circle) end)
+    and not auth.uid() = any(l.hidden_from)
+    and not exists (select 1 from mutes m where m.user_id = auth.uid() and m.muted_id = l.owner_id)
     and (
       c.circle < 3
       or (in_town is not null and l.town = in_town)
@@ -208,8 +238,11 @@ create table public.orders (
   starts_on date,
   ends_on date,
   pickup_slot text,
-  total int not null default 0,                -- grosze, cena sprzedającego, bez naszych dopłat
-  pay_method text not null check (pay_method in ('blik', 'card', 'cash')),
+  delivery text not null default 'pickup',
+  locker_code text,
+  total int not null default 0,                -- cena sprzedającego (+ wysyłka), bez naszych dopłat
+  currency text not null default 'PLN',
+  pay_method text not null check (pay_method in ('blik', 'transfer', 'card', 'cash')),
   provider_payment_id text,
   status text not null default 'requested'
     check (status in ('requested', 'accepted', 'paid', 'ready', 'done', 'cancelled')),
@@ -296,6 +329,82 @@ create or replace view public.dac7_sellers with (security_invoker = true) as
   where o.status in ('paid', 'ready', 'done')
   group by 1, 2, 3, 4;
 
+-- Kto pierwszy zapłaci, ten ma: webhook operatora oznacza płatność i od razu rezerwuje rzecz.
+create or replace function public.on_order_paid() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.status = 'paid' and old.status is distinct from 'paid' then
+    update listings set
+      stock = case when stock is null then null else greatest(0, stock - new.qty) end,
+      status = case when stock is null then 'reserved' when stock - new.qty <= 0 then 'sold' else status end
+    where id = new.listing_id and status = 'active';
+    if not found then raise exception 'Ktoś był szybszy: rzecz już zarezerwowana'; end if;
+  end if;
+  return new;
+end $$;
+create trigger order_paid before update of status on public.orders
+  for each row execute function public.on_order_paid();
+
+-- DSA: zgłoszenia (art. 16) i decyzje z uzasadnieniem (art. 17), wysyłanym automatycznie obu stronom.
+create table public.reports (
+  id bigint generated always as identity primary key,
+  listing_id uuid not null references public.listings on delete cascade,
+  reporter_id uuid references public.profiles on delete set null,
+  reporter_email text,                          -- zgłoszenie także bez konta, ze strony www
+  reason text not null check (reason in ('scam', 'illegal', 'fake', 'rights', 'offensive', 'other')),
+  note text,
+  status text not null default 'new' check (status in ('new', 'removed', 'kept')),
+  statement text,                               -- uzasadnienie decyzji
+  decided_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create or replace function public.notify_report_decision() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.status <> old.status and new.status in ('removed', 'kept') then
+    if new.status = 'removed' then update listings set status = 'removed' where id = new.listing_id; end if;
+    insert into notifications (user_id, kind, payload)
+      select owner_id, 'report_decision', jsonb_build_object('report', new.id, 'decision', new.status, 'statement', new.statement)
+      from listings where id = new.listing_id
+      union all
+      select new.reporter_id, 'report_decision', jsonb_build_object('report', new.id, 'decision', new.status)
+      where new.reporter_id is not null;
+  end if;
+  return new;
+end $$;
+create trigger report_decision after update of status on public.reports
+  for each row execute function public.notify_report_decision();
+
+-- DAC7: dane sprzedawców (zbierane dopiero od 25 transakcji w roku) i roczne raporty.
+create table public.seller_tax_data (
+  user_id uuid primary key references public.profiles on delete cascade,
+  legal_name text,
+  address text,
+  tax_id text,                                  -- NIP lub PESEL; w produkcji szyfrowane (pgsodium / Vault)
+  birth_date date,
+  iban text,
+  updated_at timestamptz not null default now()
+);
+
+create table public.dac7_reports (
+  year int primary key,
+  prepared_at timestamptz,
+  submitted_at timestamptz,                     -- po wysłaniu DPI-IS do Szefa KAS
+  sellers_notified_at timestamptz,
+  file_path text
+);
+
+-- Automaty (pg_cron): przypomnienia o planach i sezon DAC7. Panel operatora tylko pokazuje, co wysłać.
+-- select cron.schedule('renewals', '0 9 * * *', $$
+--   insert into notifications (user_id, kind, payload)
+--   select id, 'plan_ending', jsonb_build_object('days', (plan_until::date - now()::date))
+--   from profiles where plan <> 'free' and (plan_until::date - now()::date) in (30, 7, 1) $$);
+-- select cron.schedule('dac7-season', '0 8 1 12 *', $$
+--   insert into dac7_reports (year) values (extract(year from now())::int) on conflict do nothing $$);
+-- select cron.schedule('dac7-ask-data', '0 10 * * *', $$
+--   insert into notifications (user_id, kind)
+--   select seller_id, 'dac7_data' from orders where status in ('paid','ready','done')
+--     and paid_at >= date_trunc('year', now()) group by seller_id having count(*) >= 25 $$);
+
 -- RLS -------------------------------------------------------------------------
 alter table public.profiles enable row level security;
 alter table public.phone_hashes enable row level security;
@@ -311,6 +420,18 @@ alter table public.messages enable row level security;
 alter table public.notification_prefs enable row level security;
 alter table public.push_tokens enable row level security;
 alter table public.notifications enable row level security;
+alter table public.mutes enable row level security;
+alter table public.forgotten enable row level security;
+alter table public.reports enable row level security;
+alter table public.seller_tax_data enable row level security;
+alter table public.dac7_reports enable row level security;
+
+create policy "own mutes" on public.mutes for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own forgotten" on public.forgotten for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "report anything" on public.reports for insert with check (reporter_id = auth.uid());
+create policy "see own reports" on public.reports for select using (reporter_id = auth.uid());
+create policy "own tax data" on public.seller_tax_data for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+-- dac7_reports: tylko service_role (panel operatora przez Edge Function).
 
 create policy "profile readable" on public.profiles for select using (auth.role() = 'authenticated');
 create policy "profile own insert" on public.profiles for insert with check (id = auth.uid());
@@ -333,7 +454,9 @@ create policy "trusted approves" on public.unlock_approvals for insert
 
 create policy "listing visible in circle" on public.listings for select
   using (owner_id = auth.uid()
-         or (status = 'active' and public.is_active(owner_id) and public.circle_of(auth.uid(), owner_id) <= visibility));
+         or (status in ('active', 'reserved') and public.is_active(owner_id) and not auth.uid() = any(hidden_from)
+             and case when incognito then public.circle_of(auth.uid(), owner_id) = 3
+                      else public.circle_of(auth.uid(), owner_id) <= visibility end));
 create policy "listing own write" on public.listings for all
   using (owner_id = auth.uid()) with check (owner_id = auth.uid() and public.is_active(auth.uid()));
 

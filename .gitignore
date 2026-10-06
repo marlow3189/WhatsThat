@@ -6,3 +6,5 @@ ios
 .env
 .env.local
 *.log
+extension/app
+release
