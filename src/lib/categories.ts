@@ -209,6 +209,8 @@ export const CATEGORIES: Category[] = [
     id: 'community', icon: 'users', kinds: ['wanted', 'give', 'service'],
     label: L('Sąsiedzi', 'Neighbours', 'Nachbarn', 'Сусіди', 'Sousedé', 'Susedia', 'Szomszédok', 'Vicini', 'Vecinos'),
     subs: [
+      s('missing', 'Zaginione zwierzęta', 'Missing pets', 'Vermisste Tiere', 'Зниклі тварини', 'Ztracená zvířata', 'Stratené zvieratá', 'Elveszett állatok', 'Animali scomparsi', 'Mascotas perdidas'),
+      s('meet', 'Zbiórki i miejsca spotkań', 'Meet-ups and gathering points', 'Treffpunkte und Sammelaktionen', 'Збори та місця зустрічі', 'Srazy a místa setkání', 'Zrazy a miesta stretnutia', 'Gyülekezők és találkozópontok', 'Ritrovi e punti di raccolta', 'Quedadas y puntos de encuentro'),
       s('help', 'Pomoc sąsiedzka', 'Neighbourly help', 'Nachbarschaftshilfe', 'Сусідська допомога', 'Sousedská výpomoc', 'Susedská výpomoc', 'Szomszédsegítség', 'Aiuto tra vicini', 'Ayuda vecinal'),
       s('lost', 'Zgubione i znalezione', 'Lost and found', 'Fundsachen', 'Загублене і знайдене', 'Ztráty a nálezy', 'Straty a nálezy', 'Elveszett és talált', 'Oggetti smarriti', 'Objetos perdidos'),
       s('localevents', 'Wydarzenia w okolicy', 'Local events', 'Veranstaltungen', 'Події поруч', 'Akce v okolí', 'Podujatia v okolí', 'Helyi események', 'Eventi in zona', 'Eventos cerca'),

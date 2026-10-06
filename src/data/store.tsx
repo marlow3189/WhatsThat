@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { Account, AppNotification, Chat, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, User } from '../lib/types'
+import type { Account, AppNotification, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, User } from '../lib/types'
 import { relationTo, type Relation } from '../lib/circles'
-import { DAY, FREE_PER_MONTH, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, referralBonus, renewalReminder } from '../lib/pricing'
+import { DAY, FREE_PER_MONTH, PRICES, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, handoverCode, inviteMonths, isAvailable, isCommunity, isShown, listingsThisMonth, needsRefresh, renewalReminder, withBonusMonths } from '../lib/pricing'
+import { relocateDemo, shiftPlace } from '../lib/demo'
+import { track } from '../lib/analytics'
 import { town } from '../lib/geo'
 import { zl } from '../lib/money'
 import { localeOf, translator } from '../i18n'
@@ -16,6 +18,8 @@ interface State {
   notifications: AppNotification[]
   reports: Report[]
   readAt: Record<string, number>
+  /** obejrzane relacje znajomych (id ogłoszeń) */
+  seen: string[]
   friendDemoDone: boolean
   remindedAt?: number
 }
@@ -26,7 +30,7 @@ export interface Toast {
   link?: string
 }
 
-const KEY = 'orbifolk:v4'
+const KEY = 'orbifolk:v5'
 
 /** Wszystko włączone (sugerowane); cisza nocna chroni przed nadmiarem. */
 export const DEFAULT_NOTIF: NotificationPrefs = { friendsNew: true, messages: true, orders: true, fofNew: true, nearby: true, quiet: true }
@@ -55,6 +59,7 @@ function initial(): State {
       unlockApprovals: [],
       notif: DEFAULT_NOTIF,
       invited: [],
+      inviteRewards: 0,
       contactsAllowed: false,
       muted: [],
       forgotten: [],
@@ -71,6 +76,7 @@ function initial(): State {
       { id: 'Z-1042', listingId: 'l11', reporterId: 'grzegorz', reason: 'fake', note: 'Cena podejrzanie niska jak na oryginał.', at: now - 5 * 3600_000, status: 'new' },
     ],
     readAt: {},
+    seen: [],
     friendDemoDone: false,
   }
 }
@@ -167,22 +173,30 @@ function useStoreValue() {
     notify({ text: translator(latest.current.account.lang)('n.renew', { n: left }), link: '/ja' }, 'orders')
   }, [reminder]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const buyPlan = (p: Exclude<Plan, 'free'>) =>
+  const buyPlan = (p: Exclude<Plan, 'free'>) => {
     patchAccount({ plan: p, planUntil: Math.max(Date.now(), effectivePlan(state.account) === p ? state.account.planUntil ?? 0 : 0) + YEAR })
+    track('subscribe', { value: PRICES[state.account.currency][p] / 100, currency: state.account.currency })
+  }
   /** Odświeżenie darmowego konta na kolejny rok (10 zł). */
   const refresh = () => patchAccount({ refreshDue: Math.max(Date.now(), state.account.refreshDue) + YEAR })
 
   /* --- konto ------------------------------------------------------------- */
 
   const finishOnboarding = (patch: Partial<Account>) => {
-    patchAccount({ ...patch, onboarded: true, termsAcceptedAt: Date.now() })
+    const place = patch.place ?? state.account.place
+    const polish = (patch.country ?? state.account.country) === 'PL'
+    setState((s) => {
+      const moved = relocateDemo(s.users, s.listings, place, polish, ME)
+      return { ...s, ...moved, account: { ...s.account, ...patch, onboarded: true, termsAcceptedAt: Date.now() } }
+    })
+    track('sign_up')
     if (!state.friendDemoDone) {
       later(9000, () => {
         const now = Date.now()
         const listing: Listing = {
           id: 'l-trailer', ownerId: 'marek', kind: 'rent', category: 'cars', sub: 'trailer',
           title: 'Przyczepka samochodowa 750 kg', description: 'Z plandeką, wtyczka 13-pin z adapterem. Odbiór na Mokotowie.',
-          price: zl(70), currency: 'PLN', unit: 'day', deposit: zl(500), delivery: ['pickup'], place: { ...town('Warszawa'), lat: 52.24, lng: 20.98 },
+          price: zl(70), currency: 'PLN', unit: 'day', deposit: zl(500), delivery: ['pickup'], place: shiftPlace({ ...town('Warszawa'), lat: 52.24, lng: 20.98 }, place, polish),
           visibility: 2, status: 'active', createdAt: now,
         }
         setState((s) => ({ ...s, friendDemoDone: true, listings: [listing, ...s.listings] }))
@@ -198,12 +212,19 @@ function useStoreValue() {
     setState((s) => ({ ...s, account: { ...s.account, notif: { ...s.account.notif, [key]: value } } }))
   const setTrusted = (trusted: string[]) => patchAccount({ trusted: trusted.slice(0, 2) })
 
-  const invite = (contact: string) =>
+  /** Zaproszenia: każde 100 unikalnych numerów = miesiąc planu Rocznego gratis. */
+  const invite = (...contacts: string[]) => {
+    let months = 0
+    track('invite', { count: contacts.length })
     setState((s) => {
-      const invited = [...new Set([...s.account.invited, contact])]
-      const bonus = s.account.invited.length < 3 ? referralBonus(s.account, invited.length) : undefined
-      return { ...s, account: { ...s.account, invited, ...(bonus ? { planUntil: bonus } : {}) } }
+      const invited = [...new Set([...s.account.invited, ...contacts])]
+      months = inviteMonths(invited.length, s.account.inviteRewards)
+      const bonus = months ? withBonusMonths(s.account, months) : {}
+      return { ...s, account: { ...s.account, invited, inviteRewards: s.account.inviteRewards + months, ...bonus } }
     })
+    later(50, () => months && notify({ text: translator(latest.current.account.lang)('f.bonus', { n: months }), link: '/ja' }, 'orders'))
+  }
+  const hideAd = () => patchAccount({ adHiddenAt: Date.now() })
 
   const startKyc = () => {
     patchAccount({ kyc: 'pending' })
@@ -236,9 +257,10 @@ function useStoreValue() {
   const canAdd = !state.account.restricted && canPublish(plan, addedThisMonth, state.account.refreshDue)
 
   const addListing = (l: Omit<Listing, 'id' | 'createdAt' | 'ownerId' | 'status'>): string | null => {
-    if (!canAdd) return null
+    if (state.account.restricted || (!canAdd && !isCommunity(l))) return null
     const id = uid()
     setState((s) => ({ ...s, listings: [{ ...l, id, ownerId: ME, status: 'active', createdAt: Date.now() }, ...s.listings] }))
+    track('listing_created')
     return id
   }
 
@@ -289,6 +311,7 @@ function useStoreValue() {
     }
   }
 
+  const markSeen = (listingId: string) => setState((s) => (s.seen.includes(listingId) ? s : { ...s, seen: [...s.seen, listingId] }))
   const markRead = (chatId: string) => setState((s) => ({ ...s, readAt: { ...s.readAt, [chatId]: Date.now() } }))
   const markNotificationsRead = () => setState((s) => ({ ...s, notifications: s.notifications.map((n) => ({ ...n, read: true })) }))
 
@@ -313,9 +336,14 @@ function useStoreValue() {
     const order: Order = {
       id, listingId: listing.id, buyerId: ME, sellerId: listing.ownerId, qty, total, currency: listing.currency ?? 'PLN', pay, delivery, lockerCode,
       from, to, pickup, note, status, photosBefore: [], photosAfter: [], chatId, createdAt: Date.now(), paidAt: instant ? Date.now() : undefined,
+      handoverCode: online ? handoverCode() : undefined,
+      deposit: listing.kind === 'rent' ? listing.deposit : undefined,
     }
     setState((s) => ({ ...s, orders: [order, ...s.orders] }))
-    if (instant) reserve(listing.id, qty)
+    if (instant) {
+      reserve(listing.id, qty)
+      track('purchase', { value: total / 100, currency: order.currency })
+    }
     if (note) pushMessage(chatId, { from: ME, text: note })
     pushMessage(chatId, { from: ME, orderId: id })
     const tl = translator(state.account.lang)
@@ -336,16 +364,68 @@ function useStoreValue() {
 
   const payOrder = (id: string, pay: PayMethod) => {
     const order = state.orders.find((o) => o.id === id)
-    setOrder(id, { status: 'paid', pay, paidAt: Date.now() })
+    setOrder(id, { status: 'paid', pay, paidAt: Date.now(), handoverCode: order?.handoverCode ?? handoverCode(), depositStatus: order?.deposit ? 'held' : undefined })
     if (order) reserve(order.listingId, order.qty)
   }
 
+  /** „Odebrane”: operator płatności wypłaca sprzedającemu, kaucja (blokada na karcie) zostaje zwolniona. */
   const advanceOrder = (id: string, status: OrderStatus) => {
-    setOrder(id, { status })
     const order = state.orders.find((o) => o.id === id)
-    if (order && order.sellerId === ME && status === 'ready') later(3000, () => setOrder(id, { status: 'done' }))
+    const done = status === 'done' && order
+    setOrder(id, {
+      status,
+      ...(done && order.paidAt && !order.dispute ? { releasedAt: Date.now() } : {}),
+      ...(done && order.depositStatus === 'held' ? { depositStatus: 'released' as const } : {}),
+    })
+    if (order && order.sellerId === ME && status === 'ready') later(3000, () => setOrder(id, { status: 'done', releasedAt: order.paidAt ? Date.now() : undefined }))
     if (order && order.sellerId === ME && status === 'accepted' && order.pay === 'cash') reserve(order.listingId, order.qty)
   }
+
+  /**
+   * Zgłoszenie problemu: wypłata albo kaucja zostają wstrzymane u operatora płatności,
+   * druga strona ma 48 h na odpowiedź (w demo odpowiada po chwili), potem mediacja.
+   */
+  const openDispute = (id: string, reason: DisputeReason, note?: string) => {
+    const order = state.orders.find((o) => o.id === id)
+    if (!order) return
+    const tl = translator(state.account.lang)
+    setOrder(id, { dispute: { reason, by: ME, note, at: Date.now(), status: 'open' }, ...(order.depositStatus === 'held' && reason === 'damaged' ? { depositStatus: 'held' } : {}) })
+    pushMessage(order.chatId, { from: ME, text: `${tl('d.opened')}: ${tl(`d.r.${reason}`)}${note ? ` — ${note}` : ''}` })
+    const other = order.buyerId === ME ? order.sellerId : order.buyerId
+    later(2500, () => {
+      const proposal = reason === 'damaged' && order.sellerId === ME ? 'partial' : 'refund'
+      setState((s) => ({
+        ...s,
+        orders: s.orders.map((o) => (o.id === id && o.dispute ? { ...o, dispute: { ...o.dispute, status: 'proposed', proposal, amount: proposal === 'partial' ? Math.round((o.deposit ?? o.total) / 2) : o.total } } : o)),
+      }))
+      pushMessage(order.chatId, { from: other, text: tl('d.otherReply') })
+      notify({ text: tl('d.proposalIn'), link: `/zamowienie/${id}` }, 'orders')
+    })
+  }
+
+  /** Przyjęcie propozycji kończy spór; odrzucenie przekazuje sprawę do mediacji (decyzja w 5 dni roboczych). */
+  const settleDispute = (id: string, accept: boolean) =>
+    setState((s) => ({
+      ...s,
+      orders: s.orders.map((o) => {
+        if (o.id !== id || !o.dispute) return o
+        if (!accept) return { ...o, dispute: { ...o.dispute, status: 'mediation' } }
+        const outcome = o.dispute.proposal ?? 'refund'
+        return {
+          ...o,
+          status: outcome === 'refund' ? 'cancelled' : 'done',
+          refundedAt: outcome === 'refund' ? Date.now() : o.refundedAt,
+          releasedAt: outcome !== 'refund' ? Date.now() : o.releasedAt,
+          depositStatus: o.depositStatus === 'held' ? (outcome === 'partial' ? 'claimed' : 'released') : o.depositStatus,
+          dispute: { ...o.dispute, status: 'resolved', outcome },
+        }
+      }),
+      // zwrot za rzecz, której nie było: ogłoszenie wraca do oferty
+      listings: s.listings.map((l) => {
+        const o = s.orders.find((x) => x.id === id)
+        return accept && o?.listingId === l.id && o.dispute?.proposal === 'refund' && l.status === 'sold' ? { ...l, status: 'active', soldAt: undefined, stock: l.stock === undefined ? undefined : l.stock + o.qty } : l
+      }),
+    }))
 
   const addProtocolPhoto = (id: string, phase: 'before' | 'after', photo: string) =>
     setState((s) => ({
@@ -400,6 +480,7 @@ function useStoreValue() {
     buyPlan,
     refresh,
     invite,
+    hideAd,
     startKyc,
     mute,
     forget,
@@ -412,10 +493,13 @@ function useStoreValue() {
     openChat,
     sendMessage,
     markRead,
+    markSeen,
     markNotificationsRead,
     placeOrder,
     payOrder,
     advanceOrder,
+    openDispute,
+    settleDispute,
     addProtocolPhoto,
     reset,
   }

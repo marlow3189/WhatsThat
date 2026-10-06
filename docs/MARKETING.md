@@ -99,6 +99,13 @@ Każdy film: **Prompt** (do Higgsfield), **Napis** (na ekranie), **Lektor** (opc
 - **Napis (UK):** „Купуй і продавай поруч. Від друзів і сусідів.” → „Без комісії”
 - **Koniec:** „Orbifolk — українською теж.”
 
+### Polecenia i pomiar
+- W aplikacji: **„Wyślij zaproszenie do 100 osób, a dostaniesz miesiąc planu Rocznego gratis”**, z paskiem postępu
+  i przyciskiem „Zaproś wszystkich z kontaktów”. Komunikat w filmach: „Zaproś sąsiadów, miesiąc bez limitu gratis”.
+- Każdy link z kampanii ma UTM (`?utm_source=tiktok&utm_campaign=piasek`); piksele GA4, Meta i TikTok liczą
+  rejestracje i zakupy po zgodzie użytkownika. Konfiguracja: [WDROZENIE.md](WDROZENIE.md), etap 2.
+- Kampanie płatne optymalizuj pod zdarzenie **CompleteRegistration** (Meta, TikTok) albo `sign_up` (Google).
+
 ### F13. „Piasek” (10 s, planer AI, główny film marki)
 - **Prompt:** Vertical 9:16, a man in work gloves looks at a muddy driveway, types on his phone. Cut to a bright, friendly phone UI (no real brand logos) showing three steps with small avatars: sand, a plate compactor, a paver. Cut to a neighbour rolling a compactor over the fence and a small tipper truck dumping sand. Warm afternoon light, realistic, light and colourful, no logos.
 - **Napis:** „Chcę wybrukować podjazd” → „Piasek: skład 2 km” → „Zagęszczarka: Marek” → „Brukarz: znajomy Marka”

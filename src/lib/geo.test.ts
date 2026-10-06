@@ -43,3 +43,20 @@ describe('kręgi', () => {
     expect(canSee(2, 3)).toBe(true)
   })
 })
+
+import { relocateDemo, shiftPlace } from './demo'
+import { town as townOf } from './geo'
+
+describe('demo w innym mieście', () => {
+  it('przesuwa okolicę Warszawy do Katowic, zachowując odległości', () => {
+    const kat = townOf('Katowice')
+    const piaseczno = townOf('Piaseczno')
+    const moved = shiftPlace(piaseczno, kat, true)
+    expect(Math.abs(distanceKm(moved, kat) - distanceKm(piaseczno, townOf('Warszawa')))).toBeLessThan(1)
+    expect(moved.town).not.toBe('Piaseczno')
+  })
+  it('nie rusza danych, gdy ktoś mieszka w Warszawie', () => {
+    const r = relocateDemo({}, [], townOf('Warszawa'), true, 'me')
+    expect(r.listings).toEqual([])
+  })
+})

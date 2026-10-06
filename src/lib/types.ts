@@ -106,6 +106,33 @@ export interface Order {
   chatId: string
   createdAt: number
   paidAt?: number
+  /**
+   * Bezpieczna płatność: pieniądze czekają u licencjonowanego operatora płatności (nie u nas)
+   * i trafiają do sprzedającego po odbiorze (kod odbioru) albo automatycznie po 48 h bez zgłoszenia.
+   */
+  handoverCode?: string
+  releasedAt?: number
+  refundedAt?: number
+  /** wynajem: kaucja jako blokada na karcie, zwalniana po potwierdzeniu zwrotu */
+  deposit?: number
+  depositStatus?: 'held' | 'released' | 'claimed'
+  dispute?: Dispute
+}
+
+export type DisputeReason = 'not_received' | 'not_as_described' | 'damaged' | 'not_returned' | 'deposit' | 'no_show'
+
+/** Zgłoszony problem z transakcją: wypłata wstrzymana, druga strona ma 48 h na odpowiedź, potem mediacja. */
+export interface Dispute {
+  reason: DisputeReason
+  by: string
+  note?: string
+  at: number
+  status: 'open' | 'proposed' | 'mediation' | 'resolved'
+  /** propozycja drugiej strony */
+  proposal?: 'refund' | 'partial' | 'release'
+  /** kwota zwrotu przy propozycji częściowej */
+  amount?: number
+  outcome?: 'refund' | 'partial' | 'release'
 }
 
 export interface Message {
@@ -169,7 +196,6 @@ export interface Account {
   termsAcceptedAt?: number
   plan: Plan
   planUntil?: number
-  /** konto darmowe: kiedy odnowić za symboliczną opłatę */
   /** do kiedy darmowe konto może wystawiać (pierwszy rok gratis, potem odświeżenie 10 zł/rok) */
   refreshDue: number
   kyc: 'none' | 'pending' | 'verified'
@@ -178,6 +204,10 @@ export interface Account {
   unlockApprovals: string[]
   notif: NotificationPrefs
   invited: string[]
+  /** ile setek wysłanych zaproszeń już nagrodzono miesiącem gratis */
+  inviteRewards: number
+  /** kiedy ukryto reklamę na głównej (plan darmowy) */
+  adHiddenAt?: number
   contactsAllowed: boolean
   /** osoby, których rzeczy nie chcę widzieć */
   muted: string[]

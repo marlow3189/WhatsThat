@@ -1,4 +1,4 @@
-import { useState, type ButtonHTMLAttributes, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ButtonHTMLAttributes, type CSSProperties, type InputHTMLAttributes, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
 import type { Currency, Listing, User } from '../lib/types'
 import type { Relation } from '../lib/circles'
@@ -452,4 +452,71 @@ export async function stampedPhoto(file: File): Promise<string> {
   ctx.fillStyle = '#fff'
   ctx.fillText(label, img.width - w, img.height - size * 0.85)
   return canvas.toDataURL('image/jpeg', 0.75)
+}
+
+/**
+ * Poziome przewijanie jak relacje na Instagramie i w WhatsAppie: palcem na telefonie,
+ * myszką przez przeciągnięcie albo strzałki na komputerze. Przeciągnięcie nie otwiera kafelka.
+ */
+export function Scroller({ children, className, label }: { children: ReactNode; className?: string; label?: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null)
+  const [edges, setEdges] = useState({ l: false, r: false })
+  const update = () => {
+    const el = ref.current
+    if (!el) return
+    setEdges({ l: el.scrollLeft > 4, r: el.scrollLeft + el.clientWidth < el.scrollWidth - 4 })
+  }
+  useEffect(() => {
+    update()
+    const el = ref.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const by = (dir: 1 | -1) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: 'smooth' })
+  return (
+    <div className="group/scroller relative">
+      <div
+        ref={ref}
+        role={label ? 'region' : undefined}
+        aria-label={label}
+        onScroll={update}
+        onPointerDown={(e) => {
+          if (e.pointerType !== 'mouse' || !ref.current) return
+          drag.current = { x: e.clientX, left: ref.current.scrollLeft, moved: false }
+        }}
+        onPointerMove={(e) => {
+          const d = drag.current
+          if (!d || !ref.current) return
+          const dx = e.clientX - d.x
+          if (Math.abs(dx) > 5) d.moved = true
+          if (d.moved) ref.current.scrollLeft = d.left - dx
+        }}
+        onPointerUp={() => setTimeout(() => (drag.current = null))}
+        onPointerLeave={() => (drag.current = null)}
+        onClickCapture={(e) => {
+          if (drag.current?.moved) {
+            e.preventDefault()
+            e.stopPropagation()
+          }
+        }}
+        onDragStart={(e) => e.preventDefault()}
+        className={cx('no-scrollbar flex snap-x snap-proximity scroll-px-5 gap-3 overflow-x-auto overscroll-x-contain px-5 pb-1 select-none [&>*]:snap-start', className)}
+      >
+        {children}
+      </div>
+      {edges.l && (
+        <button type="button" onClick={() => by(-1)} aria-label="←" className="press absolute top-1/2 left-1.5 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-surface text-ink shadow-[0_4px_14px_rgb(20_27_45/0.16)] [@media(hover:hover)]:grid">
+          <Icon name="back" size={18} strokeWidth={2.4} />
+        </button>
+      )}
+      {edges.r && (
+        <button type="button" onClick={() => by(1)} aria-label="→" className="press absolute top-1/2 right-1.5 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-surface text-ink shadow-[0_4px_14px_rgb(20_27_45/0.16)] [@media(hover:hover)]:grid">
+          <Icon name="chevron" size={18} strokeWidth={2.4} />
+        </button>
+      )}
+    </div>
+  )
 }

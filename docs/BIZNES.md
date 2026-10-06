@@ -95,6 +95,31 @@ znika); przy wielu sztukach maleje zapas, a „Kupione” pojawia się dopiero p
 InPost, Orlen Paczka, DPD Pickup, DHL POP, Poczta Polska, kurier, dowolny inny przewoźnik.
 Pod każdą ofertą **szybkie pytania** do czatu i **„Twoje prawa”** w dymku: osobno dla zakupu od osoby prywatnej i od firmy.
 
+**Gdy coś pójdzie nie tak (rozwiązane w aplikacji):**
+
+| Sytuacja | Co się dzieje |
+|---|---|
+| Kupujący zapłacił, sprzedający nie wydał | Pieniądze **nie trafiają do sprzedającego**, tylko czekają u operatora płatności. Kupujący zgłasza „Nie dostałem rzeczy” → wypłata wstrzymana → zwrot. Bez wydania w terminie zwrot automatyczny. |
+| Rzecz niezgodna z opisem | Zgłoszenie w zamówieniu przed potwierdzeniem odbioru; druga strona ma 48 h na propozycję (zwrot całości / części), potem mediacja. |
+| Wydanie rzeczy | Kupujący podaje **4-cyfrowy kod odbioru** dopiero z rzeczą w ręku; sprzedający wpisuje kod → wypłata. Bez zgłoszenia wypłata automatycznie 48 h po wydaniu. |
+| Wynajmujący zepsuł rzecz | Kaucja to **blokada na karcie**; zdjęcia z datą przy wydaniu i zwrocie; właściciel ma 48 h na zgłoszenie szkody → część kaucji na naprawę albo mediacja. Później: opcjonalne ubezpieczenie wynajmu u partnera (np. kilka % ceny). |
+| Wynajmujący nie oddał rzeczy | Zgłoszenie „Nie wróciła na czas” → kaucja zatrzymana, konto oznaczone, przy kradzieży zgłoszenie na policję (dajemy dane z aplikacji na wniosek organów). |
+| Właściciel nie oddaje kaucji | Kaucji nie oddaje „ręcznie” właściciel: zwalnia ją system po potwierdzeniu zwrotu albo po 48 h bez zgłoszenia szkody. |
+| Gotówka | Płacisz przy odbiorze, po obejrzeniu. Aplikacja ostrzega przed zaliczkami poza aplikacją. |
+
+Mediację prowadzi człowiek (operator albo zewnętrzny mediator), z uzasadnieniem dla obu stron. Decyzję wykonuje
+operator płatności (zwrot / wypłata). Nadal nie jesteśmy stroną umowy ani nie trzymamy pieniędzy; prawo do sądu zostaje.
+
+**Mapa celów:** wyniki wyszukiwania i plan AI na mapie: Ty w środku, kręgi odległości, numerowane punkty kroków,
+„Trasa przez wszystkie punkty” w Mapach Google (najpierw najbliższy). Dane demo przesuwają się do wybranego miasta
+(np. Katowice), żeby „obok” znaczyło obok.
+
+**Relacje znajomych** jak w WhatsAppie i na Instagramie: kółka z nowymi ofertami, stuknięcie otwiera pełny ekran,
+pasek postępu, „Zobacz ofertę” i „Napisz”. Na komputerze rzędy przewija się strzałkami albo przeciągnięciem myszą.
+
+**Alerty sąsiedzkie:** zaginione zwierzę, zbiórka (np. poszukiwania, sprzątanie parku), znaleziona rzecz. Zawsze
+za darmo, poza limitem, na górze głównej u sąsiadów do 10 km.
+
 **Rolnik, krok po kroku** (ekran „Mój stragan”):
 1. Jednym stuknięciem dodaje produkt z listy (jajka, mleko, ser, ziemniaki, marchew, cebula, pomidory, ogórki, kapusta,
    jabłka, truskawki, miód, drewno) albo **„Inne, dopisz sam”**; podaje cenę i zapas.
@@ -126,7 +151,10 @@ podręczną pamięć. Prototyp (bez serwera) zapisuje dane demo w przeglądarce.
 | **Firma** | **499 zł** · 100 € · 119 $ | faktury, profil firmy, kilka osób na koncie: wypożyczalnie, gospodarstwa, kwatery |
 
 - **0% prowizji** od transakcji. Zawsze.
-- **Bonus za polecenia** (3 osoby = 3 miesiące gratis) działa tylko na planie Rocznym i Firma.
+- **Polecenia:** każde **100 wysłanych zaproszeń** (unikalne numery) = **miesiąc planu Rocznego gratis**, najwyżej 12.
+  Na darmowym koncie to próba planu bez limitu, co samo w sobie zwiększa szansę na zakup.
+- **Reklamy tylko na planie darmowym:** jedna chmurka „Reklama” na głównej, znika po stuknięciu X (wraca po 3 dniach),
+  z „Dlaczego to widzę?” (DSA art. 26). Plan Roczny i Firma: bez reklam.
 - **Koniec subskrypcji:** data ważności w profilu, przypomnienia 30, 7 i 1 dzień przed końcem (powiadomienie i baner).
   Po wygaśnięciu konto wraca do darmowego, nic nie znika, tylko nowe ogłoszenia mają limit.
 - Ceny w innych walutach (CZK, HUF, UAH, GBP) to zaokrąglone propozycje w `src/lib/pricing.ts`.
@@ -143,6 +171,16 @@ można w przyszłości zwolnić z limitu, jeśli zabraknie ruchu w okolicy (decy
 
 **Po co roczna opłata (po ludzku):** płacisz raz w roku i masz spokój, bez miesięcznych opłat i bez płacenia
 za każde ogłoszenie osobno. Limit zatrzymuje spamerów i handlarzy, którzy chcieliby wrzucać setki ogłoszeń za darmo.
+
+### Reklamy: ile mogą dać
+Lokalne firmy (skład budowlany, warsztat, wypożyczalnia) kupują chmurkę w swoim mieście, bez profilowania ludzi.
+Przykład: 10 tys. aktywnych × ok. 20 wejść na główną miesięcznie = 200 tys. wyświetleń. Przy lokalnej cenie
+ok. 10 zł za 1 000 wyświetleń to ok. 2 000 zł miesięcznie; pakiet dla firmy np. 49 zł za tydzień w jednym mieście.
+Google AdSense na stronie WWW daje zwykle kilka złotych za 1 000 wyświetleń (wymaga zgody na cookies),
+więc to tylko uzupełnienie, gdy lokalnych reklam brakuje.
+
+**Pomiar marketingu:** GA4, Meta Pixel i TikTok Pixel po zgodzie użytkownika (`src/lib/analytics.ts`, kroki w
+[WDROZENIE.md](WDROZENIE.md)). Zdarzenia: rejestracja, nowe ogłoszenie, zaproszenie, zakup, plan.
 
 ## 5. Jak wygrać z Otodom, nieruchomosci-online i innymi
 
@@ -246,7 +284,7 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
 3. **Płatności, push, strony ogłoszeń** (miesiące 2–4).
 4. **Kolejne powiaty**, potem Czechy, Słowacja i społeczność ukraińska (języki już są).
 
-Marketing i filmy: [MARKETING.md](MARKETING.md).
+Marketing i filmy: [MARKETING.md](MARKETING.md). Wdrożenie krok po kroku: [WDROZENIE.md](WDROZENIE.md). Bezpieczeństwo: [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md).
 
 ## 11. Następne kroki w kodzie
 
@@ -256,4 +294,6 @@ Marketing i filmy: [MARKETING.md](MARKETING.md).
 3. Przewoźnicy: InPost ShipX API albo agregator (Furgonetka, Apaczka) do etykiet i śledzenia.
 4. Web Push + FCM/APNs z tabeli `notifications`; pg_cron dla przypomnień i DAC7.
 5. Publiczne strony ogłoszeń z podglądem, strona `/zastrzez`, generator XML DPI-IS.
-6. Planer AI: wdrożyć `supabase/functions/plan` (sekret `ANTHROPIC_API_KEY`), limit zapytań na konto, pamięć gotowych planów.
+6. Bezpieczna płatność i spory: `0002_safety.sql` (spory, kaucje, zaproszenia, reklamy, limity zapytań, dziennik),
+   Edge Functions do wypłat i zwrotów u operatora płatności.
+7. Planer AI: wdrożyć `supabase/functions/plan` (sekret `ANTHROPIC_API_KEY`), limit zapytań na konto, pamięć gotowych planów.

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Toggle, cx, inputCls, listingUrl, money, readPhoto } from '../components/ui'
+import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Tile, Toggle, cx, inputCls, listingUrl, money, readPhoto } from '../components/ui'
 import { Icon } from '../components/icons'
 import { CATEGORIES, categoryById } from '../lib/categories'
 import { PRICES, UNITS_BY_KIND } from '../lib/pricing'
@@ -17,7 +17,7 @@ type Who = Circle | 'incognito'
 
 /** Dodawanie w czterech krótkich krokach. Z rozszerzenia przeglądarki przychodzi tytuł i zdjęcie (?t=, ?img=). */
 export function Add() {
-  const { t, locale, account, users, canAdd, mustRefresh, addedThisMonth, freeLimit, buyPlan, refresh, addListing } = useStore()
+  const { t, locale, account, users, listings, canAdd, mustRefresh, addedThisMonth, freeLimit, buyPlan, refresh, addListing } = useStore()
   const [params] = useSearchParams()
   const lang = account.lang
   const [step, setStep] = useState<Step>('kind')
@@ -44,14 +44,17 @@ export function Add() {
   const [error, setError] = useState('')
   const [publishedId, setPublishedId] = useState('')
   const [share, setShare] = useState(false)
+  // Ogłoszenia sąsiedzkie (zaginione zwierzę, zbiórka) są zawsze darmowe, także po wykorzystaniu limitu.
+  const [community, setCommunity] = useState(false)
 
+  const published = publishedId ? listings.find((l) => l.id === publishedId) : undefined
   const prices = PRICES[account.currency]
   const paid = kind === 'sell' || kind === 'rent' || kind === 'service'
   const isFarm = category === 'farm'
   const friends = users[ME].friends.map((id) => users[id]).filter(Boolean)
   const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString(locale, { day: 'numeric', month: 'long' })
 
-  if (step !== 'done' && !canAdd) {
+  if (step !== 'done' && !canAdd && !(community && !account.restricted)) {
     return (
       <div className="pb-6">
         <Header large title={t('a.title')} />
@@ -73,6 +76,15 @@ export function Add() {
               <Button variant="secondary" onClick={() => buyPlan('business')}>{t('a.buyBusiness', { price: money(prices.business, account.currency, locale) })}</Button>
               <p className="tnum text-center text-[13px] text-muted">{addedThisMonth} / {freeLimit}</p>
             </div>
+          )}
+          {!account.restricted && (
+            <button type="button" onClick={() => { setCommunity(true); setKind('wanted'); setCategory('community'); setSub('missing'); setStep('details') }} className="press flex items-center gap-3 rounded-[22px] bg-danger-soft p-4 text-left">
+              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-danger"><Icon name="paw" size={20} /></span>
+              <span className="min-w-0">
+                <span className="block font-bold">{t('a.alertTitle')}</span>
+                <span className="block text-[14px] leading-snug text-ink/70">{t('a.alertText')}</span>
+              </span>
+            </button>
           )}
         </div>
       </div>
@@ -288,6 +300,12 @@ export function Add() {
               <p className="text-[22px] font-bold">{t('a.published')}</p>
               <p className="text-muted">{t('a.shareNow')}</p>
             </div>
+            {published && (
+              <div className="flex flex-col items-center gap-2">
+                <p className="text-[13px] font-bold text-muted">{t('a.preview')}</p>
+                <Tile listing={published} t={t} locale={locale} width={180} meta={t('rel.friend')} />
+              </div>
+            )}
             <Button onClick={() => setShare(true)}><Icon name="share" size={20} /> {t('l.shareTitle')}</Button>
             <Link to={`/l/${publishedId}`} className="text-center text-[17px] text-link">{t('a.view')}</Link>
           </div>

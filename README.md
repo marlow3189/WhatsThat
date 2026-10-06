@@ -13,10 +13,12 @@ bez haseł i bez prowizji. Marka jest w `src/config.ts` (orbifolk.com).
   w produkcji `supabase/functions/plan` z Claude).
 - **Sąsiedzi:** oferty do 3 km widać zawsze; ukryć można tylko konkretną osobę. Pogoda na głównej (Open-Meteo).
 - **Cennik:** 2 nowe ogłoszenia w miesiącu za darmo (pierwszy rok gratis, potem 10 zł/rok), Roczny 99 zł, Firma 499 zł, 0% prowizji.
+- **Bezpieczna płatność:** pieniądze czekają u operatora do kodu odbioru, spory z 48 h na odpowiedź i mediacją, kaucja jako blokada na karcie.
+- **Mapa:** wyniki i plan AI na mapie z trasą przez wszystkie punkty.
 - **Kupione:** po płatności rzecz pojedyncza znika z oferty („Kupione” przez dobę), przy wielu sztukach maleje zapas.
 - **Komputer:** rozszerzenie do Chrome, Edge i Safari z menu „Wystaw na Orbifolk”.
 
-Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
+Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Wdrożenie krok po kroku: **[docs/WDROZENIE.md](docs/WDROZENIE.md)** · Bezpieczeństwo: **[docs/BEZPIECZENSTWO.md](docs/BEZPIECZENSTWO.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
 
 ## Uruchomienie
 

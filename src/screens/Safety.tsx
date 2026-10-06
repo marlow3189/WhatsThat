@@ -4,6 +4,7 @@ import { Avatar, Button, Group, Header, Notice, Row, ShareSheet, cx, timeAgo } f
 import { Icon } from '../components/icons'
 import { BRAND } from '../config'
 import { ME } from '../data/seed'
+import { INVITES_PER_MONTH } from '../lib/pricing'
 
 /** Zastrzeżenie numeru: jak zastrzeżenie PESEL, tylko dla konta w aplikacji. */
 export function Restrict() {
@@ -106,6 +107,8 @@ export function Trusted() {
 
 /** Kontakty z telefonu, których jeszcze tu nie ma (w aplikacji natywnej: wtyczka Contacts). */
 const PHONE_CONTACTS = ['Agnieszka, sąsiadka', 'Wujek Staszek', 'Kuba z pracy', 'Monika', 'Paweł rower', 'Basia']
+/** Reszta książki adresowej w demo (w aplikacji: numery z telefonu, które jeszcze nie mają konta). */
+const MORE_CONTACTS = Array.from({ length: 128 }, (_, i) => `kontakt-${i + 1}`)
 
 /** Polecanie jak w WhatsAppie: SMS z linkiem do instalacji, wysyłany z telefonu użytkownika (koszt 0 zł). */
 export function Friends() {
@@ -113,20 +116,33 @@ export function Friends() {
   const [shareApp, setShareApp] = useState(false)
   const friends = users[ME].friends.map((id) => users[id])
   const fof = Object.values(users).filter((u) => u.id !== ME && relation(u.id).circle === 2)
-  const n = Math.min(account.invited.length, 3)
+  const sent = account.invited.length
+  const inCycle = sent % INVITES_PER_MONTH
+  const toGo = INVITES_PER_MONTH - inCycle
+  const all = [...PHONE_CONTACTS, ...MORE_CONTACTS]
+  const left = all.filter((c) => !account.invited.includes(c)).length
   const link = `https://${BRAND.domain}/z/${ME}`
   const msg = t('f.inviteMsg', { link })
 
   return (
     <div className="flex flex-col gap-6 pb-8">
       <Header back title={t('f.title')} />
-      <div className="mx-4 flex flex-col gap-3 rounded-[24px] bg-accent p-5 text-accent-ink">
-        <p className="text-[18px] leading-tight font-bold">{t('f.reward')}</p>
-        <div className="h-2 overflow-hidden rounded-full bg-black/10">
-          <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${(n / 3) * 100}%` }} />
+      <div className="mx-4 flex flex-col gap-3 rounded-[28px] bg-primary p-5 text-white shadow-[0_14px_34px_rgb(46_91_255/0.3)]">
+        <p className="text-[20px] leading-tight font-extrabold">{t('f.reward', { n: INVITES_PER_MONTH })}</p>
+        <div className="h-2.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuemin={0} aria-valuemax={INVITES_PER_MONTH} aria-valuenow={inCycle}>
+          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(inCycle / INVITES_PER_MONTH) * 100}%` }} />
         </div>
-        <p className="tnum text-[14px] opacity-80">{t('f.progress', { n })}</p>
-        <Button size="sm" className="self-start bg-ink! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={18} /> {t('f.shareApp')}</Button>
+        <p className="tnum text-[14px] text-white/85">{t('f.progress', { n: inCycle, total: INVITES_PER_MONTH, left: toGo })}</p>
+        {account.inviteRewards > 0 && <p className="flex items-center gap-2 rounded-[14px] bg-white/15 px-3 py-2 text-[14px] font-semibold"><Icon name="check" size={16} strokeWidth={3} /> {t('f.earned', { n: account.inviteRewards })}</p>}
+        <div className="flex flex-wrap gap-2">
+          {left > 0 && (
+            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(...all)} className="press inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-[15px] font-bold text-primary">
+              <Icon name="send" size={17} /> {t('f.inviteAll', { n: left })}
+            </a>
+          )}
+          <Button size="sm" className="min-h-10 bg-white/20! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={17} /> {t('f.shareApp')}</Button>
+        </div>
+        <p className="text-[12px] leading-snug text-white/70">{t('f.fair')}</p>
       </div>
 
       <Group label={t('f.contacts')}>
@@ -134,7 +150,7 @@ export function Friends() {
           <div key={c} className="flex min-h-14 items-center gap-3 px-4 py-2">
             <span className="grid size-9 place-items-center rounded-full bg-fill font-semibold text-muted">{c[0]}</span>
             <span className="min-w-0 flex-1 truncate">{c}</span>
-            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(c)} className="press inline-flex min-h-9 items-center rounded-full bg-fill px-3.5 text-[15px] font-semibold text-link">
+            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(c)} className="press inline-flex min-h-9 items-center rounded-full bg-sky px-3.5 text-[15px] font-bold text-primary">
               {account.invited.includes(c) ? t('f.again') : t('f.invite')}
             </a>
           </div>

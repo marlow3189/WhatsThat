@@ -8,6 +8,8 @@ import { CATEGORIES, categoryById } from '../lib/categories'
 import { distanceKm, formatDistance, matchesLocation, type Scope } from '../lib/geo'
 import type { Circle, Kind } from '../lib/types'
 import { findRecipe, plan, searchByCircle, type Hit } from '../lib/planner'
+import { MapView, routeUrl, type MapPoint } from '../components/map'
+import { formatMoney } from '../lib/money'
 
 const KINDS: Kind[] = ['sell', 'rent', 'service', 'give', 'swap', 'garage', 'wanted']
 const RADII = [2, 5, 10, 25, 50, 100]
@@ -23,7 +25,7 @@ export function Search() {
   const cat = params.get('k') ?? ''
   const sub = params.get('p') ?? ''
   const lang = account.lang
-  const showCategories = !q && !cat && kind === 'all'
+  const showCategories = !q && !cat && kind === 'all' && !params.get('mapa')
 
   const scope: Scope = /^\d+$/.test(where) ? 'radius' : (where as Scope)
   const radiusKm = scope === 'radius' ? Number(where) : 0
@@ -46,6 +48,16 @@ export function Search() {
   const steps = recipe ? plan(recipe, pool) : []
   const groups = query ? searchByCircle(query, pool) : null
   const results = groups ? [...groups.friends, ...groups.fof, ...groups.nearby] : pool
+  const [view, setView] = useState<'list' | 'map'>(() => (params.get('mapa') ? 'map' : 'list'))
+  const [sel, setSel] = useState('')
+  const tone = (h: Hit): MapPoint['tone'] => (h.rel.circle === 1 ? 'friend' : h.rel.circle === 2 ? 'fof' : 'other')
+  const short = (h: Hit) => (h.listing.price !== undefined ? formatMoney(h.listing.price, h.listing.currency ?? 'PLN', locale).replace(/[,.]00(?=\D|$)/, '') : t(`kind.${h.listing.kind}`))
+  // Plan: po jednej, najlepszej ofercie na krok, z numerem kroku. Zwykłe wyszukiwanie: wyniki z ceną.
+  const planStops = steps.flatMap(({ hits }, i) => (hits[0] ? [{ hit: hits[0], n: i + 1 }] : []))
+  const points: MapPoint[] = recipe
+    ? planStops.map(({ hit, n }) => ({ id: hit.listing.id, lat: hit.listing.place.lat, lng: hit.listing.place.lng, label: `${n}`, tone: tone(hit) }))
+    : results.slice(0, 40).map((h) => ({ id: h.listing.id, lat: h.listing.place.lat, lng: h.listing.place.lng, label: short(h), tone: tone(h) }))
+  const selected = sel ? (recipe ? planStops.map((x) => x.hit) : results).find((h) => h.listing.id === sel) : undefined
   const metaOf = (h: Hit) => (h.rel.circle === 1 ? users[h.listing.ownerId].name.split(' ')[0] : `${relationText(h.rel, users[h.listing.ownerId], users, t, h.listing.incognito)} · ${formatDistance(h.km)}`)
 
   const setCat = (k: string, p = '') => {
@@ -107,7 +119,32 @@ export function Search() {
               ))}
             </div>
           )}
-          {recipe && (
+          {(recipe || results.length > 0) && (
+            <div className="px-4">
+              <Segmented<'list' | 'map'> label={t('map.view')} value={view} onChange={setView} options={[{ value: 'list', label: t('map.list') }, { value: 'map', label: t('map.map') }]} />
+            </div>
+          )}
+          {view === 'map' && (recipe || results.length > 0) && (
+            <section className="flex flex-col gap-3 px-4">
+              <MapView center={account.place} points={points} selected={sel} onSelect={setSel} height={340} label={t('map.map')} />
+              {selected ? (
+                <div className="card overflow-hidden">
+                  <ListingRow listing={selected.listing} t={t} locale={locale} meta={metaOf(selected)} />
+                  <a href={routeUrl(account.place, [selected.listing.place])} target="_blank" rel="noreferrer" className="flex min-h-12 items-center justify-center gap-2 border-t border-line text-[15px] font-bold text-link">
+                    <Icon name="route" size={18} /> {t('map.route')}
+                  </a>
+                </div>
+              ) : (
+                <p className="px-1 text-[14px] text-muted">{t('map.tap')}</p>
+              )}
+              {recipe && planStops.length > 1 && (
+                <a href={routeUrl(account.place, planStops.map((x) => x.hit.listing.place))} target="_blank" rel="noreferrer" className="press flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-primary text-[16px] font-bold text-white">
+                  <Icon name="route" size={19} /> {t('map.routeAll', { n: planStops.length })}
+                </a>
+              )}
+            </section>
+          )}
+          {recipe && view === 'list' && (
             <section className="mx-4 flex flex-col gap-3 rounded-[28px] bg-lilac p-4">
               <div className="flex items-start gap-3">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink text-white"><Icon name="sparkle" size={20} /></span>
@@ -117,6 +154,9 @@ export function Search() {
                   <p className="mt-0.5 text-[14px] leading-snug text-ink/70">{t('plan.lead')}</p>
                 </div>
               </div>
+              <button type="button" onClick={() => setView('map')} className="press flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface text-[15px] font-bold text-link">
+                <Icon name="pin" size={18} /> {t('map.showPlan')}
+              </button>
               <ol className="flex flex-col gap-2.5">
                 {steps.map(({ step, hits }, i) => (
                   <li key={step.id} className="overflow-hidden rounded-[20px] bg-surface">
@@ -140,7 +180,7 @@ export function Search() {
               <p className="px-1 text-[12px] leading-snug text-ink/60">{t('plan.note')}</p>
             </section>
           )}
-          {groups && !recipe && results.length > 0 && (
+          {view === 'list' && groups && !recipe && results.length > 0 && (
             <div className="flex flex-col gap-5">
               {([['search.friends', groups.friends], ['search.fof', groups.fof], ['search.nearby', groups.nearby]] as const).map(([label, hits]) =>
                 hits.length ? (
@@ -151,8 +191,8 @@ export function Search() {
               )}
             </div>
           )}
-          {!(groups && !recipe && results.length > 0) && !recipe && <p className="px-5 text-[15px] font-bold">{t('search.results', { n: results.length })}</p>}
-          {recipe || (groups && results.length > 0) ? null : results.length ? (
+          {view === 'list' && !(groups && !recipe && results.length > 0) && !recipe && <p className="px-5 text-[15px] font-bold">{t('search.results', { n: results.length })}</p>}
+          {view === 'map' || recipe || (groups && results.length > 0) ? null : results.length ? (
             <div className="grid grid-cols-2 gap-x-3 gap-y-5 px-4">
               {results.map(({ listing, rel, km }) => (
                 <Tile key={listing.id} listing={listing} t={t} locale={locale} meta={rel.circle === 1 ? users[listing.ownerId].name.split(' ')[0] : formatDistance(km)} />

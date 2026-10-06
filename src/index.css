@@ -1,36 +1,36 @@
 @import 'tailwindcss';
 
 :root {
-  /* Jasny, ciepły papier zamiast systemowej szarości; białe karty z dużym promieniem;
-     jeden kolor marki (pomarańcz orbity) na przyciskach i linkach, pastelowe tła kategorii. */
-  --bg: #f6f4ef;
+  /* Czysty, „medyczny” styl: chłodne jasne tło, białe karty, jeden mocny niebieski na akcjach
+     i kartach-bohaterach, pastelowe tła ikon. Bez ciemnego motywu. */
+  --bg: #f3f6fb;
   --surface: #ffffff;
-  --fill: #efece5;
-  --fill-strong: #e2ded4;
-  --ink: #1c1a17;
-  --muted: #736e65;
-  --line: #ece8e0;
-  --primary: #d9481c;
+  --fill: #eef2f8;
+  --fill-strong: #dde4ef;
+  --ink: #141b2d;
+  --muted: #64708a;
+  --line: #e8edf5;
+  --primary: #2e5bff;
   --primary-ink: #ffffff;
-  --accent: #ffd84a;
-  --accent-ink: #1c1a17;
-  --link: #c2410c;
-  --ok: #1f7a43;
-  --ok-soft: #dcf3e4;
-  --warn: #9a4a00;
-  --warn-soft: #fff0cf;
-  --danger: #c81e1e;
-  --danger-soft: #ffe4e1;
-  --switch: #2fb36b;
-  --sky: #dcecff;
-  --mint: #d9f3e3;
-  --lilac: #ebe4ff;
-  --peach: #ffe4d6;
-  --sun: #fff2bf;
-  --shadow: 0 1px 2px rgb(28 26 23 / 0.04), 0 10px 28px rgb(28 26 23 / 0.06);
-  --tint-l: 90%;
-  --tint-s: 75%;
-  --tint-icon-l: 34%;
+  --accent: #ffd66b;
+  --accent-ink: #141b2d;
+  --link: #2449d8;
+  --ok: #157a4a;
+  --ok-soft: #dcf5e8;
+  --warn: #92500a;
+  --warn-soft: #fff1d6;
+  --danger: #c4231f;
+  --danger-soft: #ffe5e3;
+  --switch: #1fb866;
+  --sky: #e3ecff;
+  --mint: #dcf5ea;
+  --lilac: #ebe8ff;
+  --peach: #ffe8df;
+  --sun: #fff3c9;
+  --shadow: 0 1px 2px rgb(20 27 45 / 0.04), 0 8px 24px rgb(46 91 255 / 0.07);
+  --tint-l: 92%;
+  --tint-s: 80%;
+  --tint-icon-l: 36%;
   --font: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color-scheme: light;
 }
@@ -158,4 +158,17 @@ textarea:focus-visible {
 }
 .orbit-spin > * {
   animation: orbit 60s linear infinite reverse;
+}
+
+/* Pasek postępu relacji znajomych. */
+@keyframes story {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.story-progress {
+  animation: story linear forwards;
 }

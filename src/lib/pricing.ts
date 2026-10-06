@@ -44,9 +44,9 @@ export function startOfMonth(now = Date.now()): number {
 }
 
 /** Ile ogłoszeń dodano w bieżącym miesiącu kalendarzowym. */
-export function listingsThisMonth(mine: Pick<Listing, 'createdAt'>[], now = Date.now()): number {
+export function listingsThisMonth(mine: Pick<Listing, 'createdAt' | 'category'>[], now = Date.now()): number {
   const from = startOfMonth(now)
-  return mine.filter((l) => l.createdAt >= from).length
+  return mine.filter((l) => l.createdAt >= from && !isCommunity(l)).length
 }
 
 /**
@@ -78,11 +78,36 @@ export function renewalReminder(days: number | null): 30 | 7 | 1 | null {
   return null
 }
 
-/** Bonus za 3 polecenia: +3 miesiące, tylko na płatnym planie. */
-export function referralBonus(account: Pick<Account, 'plan' | 'planUntil'>, invited: number, now = Date.now()): number | undefined {
-  if (invited < 3 || effectivePlan(account, now) === 'free') return undefined
-  return (account.planUntil ?? now) + 90 * DAY
+/**
+ * Polecanie: każde 100 wysłanych zaproszeń (unikalne numery) = miesiąc planu Rocznego gratis, maksymalnie 12 miesięcy.
+ * Na darmowym koncie to „próba” planu bez limitu; po miesiącu konto wraca do darmowego.
+ */
+export const INVITES_PER_MONTH = 100
+export const MAX_INVITE_MONTHS = 12
+
+/** Ile nowych miesięcy należy się za zaproszenia (0, jeśli nic). */
+export function inviteMonths(sent: number, rewarded: number): number {
+  return Math.max(0, Math.min(MAX_INVITE_MONTHS, Math.floor(sent / INVITES_PER_MONTH)) - rewarded)
 }
+
+/** Plan po doliczeniu miesięcy: darmowy dostaje Roczny na próbę, płatny się wydłuża. */
+export function withBonusMonths(account: Pick<Account, 'plan' | 'planUntil'>, months: number, now = Date.now()): Pick<Account, 'plan' | 'planUntil'> {
+  if (months <= 0) return account
+  const plan = effectivePlan(account, now)
+  const from = plan === 'free' ? now : Math.max(now, account.planUntil ?? now)
+  return { plan: plan === 'free' ? 'annual' : plan, planUntil: from + months * 30 * DAY }
+}
+
+/** Ogłoszenia sąsiedzkie (zaginione zwierzę, zbiórka, pomoc) są zawsze darmowe i nie liczą się do limitu. */
+export const isCommunity = (l: Pick<Listing, 'category'>) => l.category === 'community'
+
+/** Kod odbioru: 4 cyfry, kupujący podaje go dopiero przy odbiorze. */
+export function handoverCode(rand = Math.random): string {
+  return String(Math.floor(rand() * 10_000)).padStart(4, '0')
+}
+
+/** Ile godzin od wydania do automatycznej wypłaty, jeśli nikt nic nie zgłosi. */
+export const AUTO_RELEASE_H = 48
 
 export const UNITS_BY_KIND: Record<Kind, Unit[]> = {
   sell: ['item', 'kg', 'pack', 'litre', 'tonne', 'fixed'],

@@ -22,7 +22,7 @@ export function seedUsers(now: number): User[] {
     user(ME, '', 24, near(waw, -0.03, 0.01), ['kasia', 'marek', 'tomek', 'ola', 'bartek'], { payouts: false }),
     user('kasia', 'Kasia Nowak', 330, near(waw, -0.02, 0.02), [ME, 'marek', 'ania'], { work: 'farm' }),
     user('marek', 'Marek Zieliński', 210, near(waw, 0.01, -0.03), [ME, 'kasia', 'ania', 'jozef', 'piotr'], { work: 'tools' }),
-    user('tomek', 'Tomek Wójcik', 140, near(waw, 0.05, 0.04), [ME, 'ewa'], { work: 'cars' }),
+    user('tomek', 'Tomek Wójcik', 140, near(waw, 0.012, 0.01), [ME, 'ewa'], { work: 'cars' }),
     user('ola', 'Ola Kamińska', 280, near(waw, -0.06, -0.02), [ME, 'ewa', 'magda'], { work: 'beauty' }),
     user('bartek', 'Bartek Wiśniewski', 260, near(waw, 0.08, -0.06), [ME, 'ola'], { restricted: true, since: now - 400 * day }),
     user('ania', 'Ania Lewandowska', 30, near(waw, 0.02, 0.05), ['kasia', 'marek'], { trusted: true, deals: 14 }),
@@ -102,6 +102,9 @@ export function seedListings(now: number, users: User[]): Listing[] {
     { owner: 'wypozyczalnia', kind: 'rent', category: 'tools', sub: 'build', title: 'Gilotyna do kostki brukowej', description: 'Tnie kostkę do 10 cm bez pyłu.', price: 60, unit: 'day', ago: 4 * day, extra: { deposit: zl(300) } },
     { owner: 'piotr', kind: 'service', category: 'services', sub: 'reno', title: 'Brukarstwo: podjazdy, ścieżki, obrzeża', description: 'Wycena na miejscu gratis. Mam ekipę na 2–3 dni, terminy od listopada.', price: 95, unit: 'hour', ago: 1 * day },
     { owner: 'kasia', kind: 'sell', category: 'farm', sub: 'eggs', title: 'Jajka od moich kur, 10 sztuk', description: 'Mam 8 kurek na działce. Zostawię pod drzwiami albo odbierz wieczorem.', price: 12, unit: 'pack', ago: 5 * hour, extra: { stock: 6 } },
+    // Alerty sąsiedzkie: zawsze darmowe, z powiadomieniem dla okolicy.
+    { owner: 'tomek', kind: 'wanted', category: 'community', sub: 'missing', title: 'Zaginął pies Fafik, beagle', description: 'Uciekł wczoraj ok. 19 z ogrodu. Brązowo-biały, czerwona obroża z numerem. Jeśli go widzisz, napisz albo zadzwoń. Nagroda.', ago: 3 * hour, extra: { visibility: 3 } },
+    { owner: 'ania', kind: 'service', category: 'community', sub: 'meet', title: 'Zbiórka: sprzątanie parku w sobotę 10:00', description: 'Spotykamy się przy głównej bramie parku. Worki i rękawice zapewniamy, weź wodę. Potem wspólny grill.', ago: 7 * hour, extra: { visibility: 3, garageDate: new Date(now + 3 * day).toISOString().slice(0, 10) } },
     { owner: 'ola', kind: 'give', category: 'home', sub: 'decor', title: 'Kartony po przeprowadzce, 20 sztuk', description: 'Mocne, z taśmą. Do odebrania z klatki.', ago: 1 * day },
   ]
   return items.map((s, i) => {

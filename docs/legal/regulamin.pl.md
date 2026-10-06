@@ -44,6 +44,25 @@ Po opłaceniu zakupu ogłoszenie dotyczące pojedynczej rzeczy jest automatyczni
 z oferty po 24 godzinach. Przy ogłoszeniach z wieloma sztukami zmniejsza się dostępna liczba; oznaczenie „Kupione”
 pojawia się po wyczerpaniu zapasu.
 
+## §4b. Bezpieczna płatność, kaucja i spory
+1. Przy płatności w aplikacji środki obsługuje licencjonowany dostawca usług płatniczych. Wypłata na rachunek
+   sprzedającego następuje po potwierdzeniu odbioru kodem odbioru albo automatycznie po 48 godzinach od wydania,
+   jeżeli żadna ze stron nie zgłosi problemu. Operator nie przyjmuje środków na własny rachunek.
+2. Kaucja przy wynajmie ma postać blokady środków na karcie płatniczej najemcy (bez obciążenia). Blokada jest zwalniana
+   po potwierdzeniu zwrotu albo po 48 godzinach od zwrotu, jeżeli wynajmujący nie zgłosi szkody.
+3. Strona transakcji może zgłosić problem w zamówieniu. Zgłoszenie wstrzymuje wypłatę lub zwolnienie kaucji.
+   Druga strona ma 48 godzin na odpowiedź i propozycję rozwiązania. W braku porozumienia sprawę rozpatruje mediator
+   wyznaczony przez Operatora na podstawie zdjęć z datą i historii rozmowy, w terminie 5 dni roboczych, z uzasadnieniem.
+   Dostawca usług płatniczych wykonuje zwrot lub wypłatę zgodnie z rozstrzygnięciem.
+4. Mediacja nie wyłącza prawa stron do dochodzenia roszczeń przed sądem ani praw konsumenta.
+
+## §4c. Reklamy i polecenia
+1. Na planie darmowym wyświetlana jest jedna oznaczona reklama lokalnego przedsiębiorcy z informacją, kto za nią płaci
+   i dlaczego jest wyświetlana. Reklamy nie są dobierane na podstawie profilowania. Plany płatne są bez reklam.
+2. Za każde 100 zaproszeń wysłanych do różnych numerów telefonu użytkownik otrzymuje miesiąc planu Rocznego,
+   łącznie nie więcej niż 12 miesięcy. Operator może odmówić nagrody przy nadużyciach (np. numery fikcyjne).
+3. Ogłoszenia sąsiedzkie (zaginione zwierzęta, zbiórki, rzeczy znalezione) są bezpłatne i nie wliczają się do limitu.
+
 ## §5. Ogłoszenia i obowiązki użytkownika
 1. Za treść ogłoszenia, opis, stan, zgodność z prawem i realizację Transakcji odpowiada wystawiający.
 2. Zakazane są w szczególności: rzeczy i usługi nielegalne, podróbki, broń i amunicja, leki na receptę, alkohol

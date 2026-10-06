@@ -34,3 +34,12 @@ Working draft, October 2026. The Polish version prevails. This English text is t
 11. **Personal data.** See the Privacy Policy. The user’s address book is never uploaded; only hashed phone numbers are compared.
 12. **Changes and law.** Changes are announced in the app 15 days in advance. Polish law applies, without prejudice to
     mandatory consumer protection rules of the consumer’s country of residence.
+
+**Safe payment, deposits and disputes.** In-app payments are handled by a licensed payment provider; the seller is paid
+after the buyer confirms pickup with a code, or automatically 48 hours after handover if no problem is reported.
+Rental deposits are card holds released after return unless damage is reported within 48 hours. Reporting a problem
+pauses the payout; the other party has 48 hours to propose a solution, otherwise a mediator decides within 5 working
+days with reasons, and the payment provider refunds or pays out accordingly. Court remedies remain available.
+
+**Ads and referrals.** The free plan shows one labelled local ad (who pays and why you see it; no profiling).
+Every 100 invites to distinct phone numbers earn one free month of the Annual plan (max. 12).

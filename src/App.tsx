@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { HashRouter, Link, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router'
 import { StoreProvider, useStore } from './data/store'
 import { cx } from './components/ui'
@@ -13,6 +13,7 @@ import { Add } from './screens/Add'
 import { Interests, Me, Muted, MyListings, NotificationSettings, Orders, Payouts, Privacy, Stall, Terms } from './screens/Me'
 import { Friends, Install, Notifications, Restrict, Trusted } from './screens/Safety'
 import { Operator } from './screens/Operator'
+import { getConsent, hasTrackers, setConsent } from './lib/analytics'
 
 // Podgląd jednoplikowy działa w ramce bez dostępu do adresu, więc trasy trzyma w pamięci.
 const Router = import.meta.env.MODE === 'preview' ? MemoryRouter : HashRouter
@@ -64,6 +65,29 @@ function Shell() {
         </Routes>
       </main>
       <TabBar />
+      <ConsentBanner />
+    </div>
+  )
+}
+
+/** Zgoda na piksele: dwa równorzędne przyciski, bez „zgody domyślnej”. Pokazuje się tylko, gdy piksele są skonfigurowane. */
+function ConsentBanner() {
+  const { t } = useStore()
+  const [open, setOpen] = useState(() => hasTrackers() && getConsent() === null)
+  if (!open) return null
+  const choose = (v: 'granted' | 'denied') => {
+    setConsent(v)
+    setOpen(false)
+  }
+  return (
+    <div className="fixed inset-x-0 bottom-24 z-40 mx-auto max-w-[34rem] px-3" role="dialog" aria-label={t('cc.more')}>
+      <div className="flex flex-col gap-3 rounded-[24px] bg-surface p-4 shadow-[0_10px_36px_rgb(20_27_45/0.2)]">
+        <p className="text-[14px] leading-snug">{t('cc.text')} <Link to="/ja/prywatnosc" className="font-semibold text-link">{t('cc.more')}</Link></p>
+        <div className="grid grid-cols-2 gap-2">
+          <button type="button" onClick={() => choose('denied')} className="press min-h-11 rounded-full bg-fill text-[15px] font-bold">{t('cc.reject')}</button>
+          <button type="button" onClick={() => choose('granted')} className="press min-h-11 rounded-full bg-fill text-[15px] font-bold">{t('cc.accept')}</button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -124,7 +148,7 @@ function TabBar() {
       <div className="grid h-[68px] grid-cols-5 items-center rounded-full bg-surface/95 px-1.5 shadow-[0_10px_36px_rgb(28_26_23/0.14)] backdrop-blur-xl">
         {tabs.map((tab) =>
           tab.icon === 'plus' ? (
-            <NavLink key={tab.to} to={tab.to} onClick={tab.onClick} aria-label={tab.label} className="press mx-auto grid size-[52px] place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgb(217_72_28/0.35)]">
+            <NavLink key={tab.to} to={tab.to} onClick={tab.onClick} aria-label={tab.label} className="press mx-auto grid size-[52px] place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgb(46_91_255/0.35)]">
               <Icon name="plus" size={26} strokeWidth={2.4} />
             </NavLink>
           ) : (
@@ -133,7 +157,7 @@ function TabBar() {
               to={tab.to}
               end={tab.to === '/'}
               onClick={tab.onClick}
-              className={({ isActive }) => cx('press relative flex h-full flex-col items-center justify-center gap-0.5', isActive ? 'text-ink' : 'text-muted')}
+              className={({ isActive }) => cx('press relative flex h-full flex-col items-center justify-center gap-0.5', isActive ? 'text-primary' : 'text-muted')}
             >
               {({ isActive }) => (
                 <>

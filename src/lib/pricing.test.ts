@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, orderTotal, referralBonus, rentalUnits, renewalReminder } from './pricing'
+import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, orderTotal, handoverCode, inviteMonths, rentalUnits, withBonusMonths, renewalReminder } from './pricing'
 
 const now = Date.UTC(2026, 9, 15, 12)
 
 describe('plany', () => {
   it('darmowy: 2 nowe ogłoszenia w miesiącu kalendarzowym', () => {
-    const mine = [{ createdAt: now - DAY }, { createdAt: now - 2 * DAY }, { createdAt: Date.UTC(2026, 8, 20) }]
+    const mine = [{ createdAt: now - DAY, category: 'tools' }, { createdAt: now - 2 * DAY, category: 'tools' }, { createdAt: Date.UTC(2026, 8, 20), category: 'tools' }]
     expect(listingsThisMonth(mine, now)).toBe(2)
     expect(canPublish('free', 1, now + DAY, now)).toBe(true)
     expect(canPublish('free', 2, now + DAY, now)).toBe(false)
@@ -27,10 +27,20 @@ describe('plany', () => {
     expect(renewalReminder(daysLeft({ plan: 'business', planUntil: now + 5 * DAY }, now))).toBe(7)
     expect(renewalReminder(daysLeft({ plan: 'annual', planUntil: now + DAY / 2 }, now))).toBe(1)
   })
-  it('bonus za polecenia tylko na płatnym planie', () => {
-    expect(referralBonus({ plan: 'free' }, 3, now)).toBeUndefined()
-    expect(referralBonus({ plan: 'annual', planUntil: now + 10 * DAY }, 2, now)).toBeUndefined()
-    expect(referralBonus({ plan: 'annual', planUntil: now + 10 * DAY }, 3, now)).toBe(now + 100 * DAY)
+  it('100 wysłanych zaproszeń = miesiąc gratis, najwyżej 12', () => {
+    expect(inviteMonths(99, 0)).toBe(0)
+    expect(inviteMonths(100, 0)).toBe(1)
+    expect(inviteMonths(250, 1)).toBe(1)
+    expect(inviteMonths(5000, 0)).toBe(12)
+    expect(withBonusMonths({ plan: 'free' }, 1, now)).toEqual({ plan: 'annual', planUntil: now + 30 * DAY })
+    expect(withBonusMonths({ plan: 'annual', planUntil: now + 10 * DAY }, 1, now)).toEqual({ plan: 'annual', planUntil: now + 40 * DAY })
+  })
+  it('ogłoszenia sąsiedzkie nie liczą się do limitu', () => {
+    expect(listingsThisMonth([{ createdAt: now, category: 'community' }, { createdAt: now, category: 'tools' }], now)).toBe(1)
+  })
+  it('kod odbioru ma 4 cyfry', () => {
+    expect(handoverCode(() => 0.0042)).toBe('0042')
+    expect(handoverCode()).toMatch(/^\d{4}$/)
   })
   it('ceny: 99 zł rok, 499 zł firma, odświeżenie 10 zł', () => {
     expect(PRICES.PLN).toEqual({ annual: 9900, business: 49900, refresh: 1000 })
