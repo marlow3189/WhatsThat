@@ -1,68 +1,61 @@
 @import 'tailwindcss';
 
-/* Układ: jedna kolumna jak w telefonie, przyklejony nagłówek, dolny pasek zakładek.
-   Motyw: trzy koncentryczne kręgi zaufania; każdy krąg ma swój kolor. */
+/* Układ: jedna kolumna jak natywna aplikacja; listy pogrupowane jak w ustawieniach telefonu,
+   jeden kolor akcentu (ceglasty, jak szyld na targu) tylko na głównych akcjach. */
 :root {
-  --bg: #f5f6fa;
+  --bg: #f6f6f3;
   --surface: #ffffff;
-  --sunken: #eceef5;
-  --ink: #15172b;
-  --muted: #5d6280;
-  --line: #e1e4ee;
-  --brand: #e2561a;
-  --brand-ink: #ffffff;
-  --brand-soft: #fde9df;
-  --c1: #e2561a;
-  --c2: #7357ea;
-  --c3: #2f6fdb;
-  --ok: #138a52;
-  --ok-soft: #dcf3e7;
-  --warn: #a25b00;
-  --warn-soft: #fff1d6;
-  --bubble-me: #fde9df;
-  --font-display: 'Bricolage Grotesque', ui-rounded, 'Segoe UI', system-ui, sans-serif;
-  --font-body: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --sunken: #eeeeea;
+  --ink: #1a1a18;
+  --muted: #6a6a64;
+  --line: #e2e1dc;
+  --accent: #b9402b;
+  --accent-ink: #ffffff;
+  --accent-soft: #f6e4df;
+  --ok: #2f7a4d;
+  --ok-soft: #e1f0e6;
+  --warn: #8f5400;
+  --warn-soft: #fbefd9;
+  --danger: #b3261e;
+  --danger-soft: #f9e1de;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --bg: #11131f;
-    --surface: #1a1d2c;
-    --sunken: #232739;
-    --ink: #eef0fa;
-    --muted: #9aa0bd;
-    --line: #2c3046;
-    --brand: #ff7a3d;
-    --brand-ink: #1a0d05;
-    --brand-soft: #3a2218;
-    --c1: #ff7a3d;
-    --c2: #a08cff;
-    --c3: #6ea2ff;
-    --ok: #4fd18f;
-    --ok-soft: #173327;
-    --warn: #f3b34d;
-    --warn-soft: #3a2d14;
-    --bubble-me: #3a2218;
+    --bg: #121211;
+    --surface: #1c1c1a;
+    --sunken: #262624;
+    --ink: #ececE7;
+    --muted: #a2a29b;
+    --line: #30302d;
+    --accent: #ee7a61;
+    --accent-ink: #1a0a06;
+    --accent-soft: #3a231d;
+    --ok: #6bcb8f;
+    --ok-soft: #18301f;
+    --warn: #e7b04f;
+    --warn-soft: #33280f;
+    --danger: #f08a80;
+    --danger-soft: #3a1b19;
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --bg: #11131f;
-  --surface: #1a1d2c;
-  --sunken: #232739;
-  --ink: #eef0fa;
-  --muted: #9aa0bd;
-  --line: #2c3046;
-  --brand: #ff7a3d;
-  --brand-ink: #1a0d05;
-  --brand-soft: #3a2218;
-  --c1: #ff7a3d;
-  --c2: #a08cff;
-  --c3: #6ea2ff;
-  --ok: #4fd18f;
-  --ok-soft: #173327;
-  --warn: #f3b34d;
-  --warn-soft: #3a2d14;
-  --bubble-me: #3a2218;
+  --bg: #121211;
+  --surface: #1c1c1a;
+  --sunken: #262624;
+  --ink: #ececE7;
+  --muted: #a2a29b;
+  --line: #30302d;
+  --accent: #ee7a61;
+  --accent-ink: #1a0a06;
+  --accent-soft: #3a231d;
+  --ok: #6bcb8f;
+  --ok-soft: #18301f;
+  --warn: #e7b04f;
+  --warn-soft: #33280f;
+  --danger: #f08a80;
+  --danger-soft: #3a1b19;
   color-scheme: dark;
 }
 
@@ -73,19 +66,16 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
-  --color-brand: var(--brand);
-  --color-brand-ink: var(--brand-ink);
-  --color-brand-soft: var(--brand-soft);
-  --color-c1: var(--c1);
-  --color-c2: var(--c2);
-  --color-c3: var(--c3);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
-  --color-bubble-me: var(--bubble-me);
-  --font-display: var(--font-display);
-  --font-body: var(--font-body);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font);
 }
 
 html,
@@ -97,23 +87,22 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 15px;
+  font-family: var(--font);
+  font-size: 16px;
   line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
 h1,
 h2,
 h3 {
-  font-family: var(--font-display);
   text-wrap: balance;
-  letter-spacing: -0.01em;
 }
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 :focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 .no-scrollbar {
@@ -123,11 +112,19 @@ h3 {
   display: none;
 }
 input[type='range'] {
-  accent-color: var(--brand);
+  accent-color: var(--accent);
 }
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
     animation: none !important;
   }
+}
+@keyframes slide-down {
+  from {
+    transform: translateY(-120%);
+  }
+}
+.toast-in {
+  animation: slide-down 0.25s ease-out;
 }

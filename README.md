@@ -1,43 +1,49 @@
-# WhatsThat
+# Obok
 
-Mikro-wynajem, pożyczanie, wymiana i sprzedaż rzeczy. **Najpierw znajomym, potem w okolicy.**
+Codzienny, lokalny handel między ludźmi: sprzedaż, odsprzedaż, wyprzedaże garażowe, wynajem, usługi,
+wymiana i oddawanie za darmo. **Najpierw znajomi z telefonu, potem okolica.** Konto to numer telefonu,
+bez haseł i bez prowizji. Nazwa robocza jest w `src/config.ts`.
 
-- **Krąg 1, znajomi** (kontakty z telefonu): bez opłat.
-- **Krąg 2, znajomi znajomych**: widzisz, przez kogo się znacie; 5% opłaty.
-- **Krąg 3, market**: promień km, miasto, województwo albo cały kraj; 10% opłaty, kaucja i ochrona.
+- **Kręgi:** znajomi (wzajemne kontakty), znajomi znajomych, wszyscy w promieniu km / miejscowości / województwie / kraju.
+- **Rolnik:** cena za kg albo sztukę, klient płaci BLIK-iem, rolnik widzi „Opłacone”, pakuje, klient odbiera.
+- **Zastrzeżenie numeru:** jeden przycisk; odblokowanie kodem SMS i potwierdzeniem dwóch zaufanych osób.
+- **Języki:** polski, angielski, niemiecki, ukraiński.
+- **Cennik:** 3 aktywne ogłoszenia za darmo, bez limitu 79 zł za rok.
 
-Koncept, konkurencja, cennik, kierunki zarobku, plan startu i marketing: **[docs/BIZNES.md](docs/BIZNES.md)**.
+Strategia, nazwa, prawo, iOS: **[docs/BIZNES.md](docs/BIZNES.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)**
 
 ## Uruchomienie
 
 ```bash
 npm install
 npm run dev            # http://localhost:5173
-npm test               # testy opłat, odległości i kręgów
-npm run build          # dist/ — web/PWA i webDir dla Capacitora
-npm run build:preview  # dist-preview/index.html — cała aplikacja w jednym pliku
+npm test               # testy cennika, odległości i kręgów
+npm run build          # dist/: strona (PWA) i webDir dla Capacitora
+npm run build:preview  # dist-preview/index.html: cała aplikacja w jednym pliku
 ```
 
-Prototyp działa bez backendu: dane demo są w `src/data/seed.ts`, a zmiany zapisują się w pamięci przeglądarki.
-Przycisk „Przywróć dane demo” w zakładce **Ja** czyści wszystko.
+Prototyp działa bez serwera: dane demo są w `src/data/seed.ts`, zmiany zapisują się w pamięci przeglądarki.
+Kod SMS i BLIK w wersji demo: dowolne 6 cyfr. „Wyloguj i wyczyść dane demo” w zakładce **Ja** zaczyna od nowa.
 
-## Android i iOS
+## iPhone i Android
+
+Najpierw jako aplikacja ze strony (PWA): Safari → Udostępnij → „Do ekranu początkowego”, Chrome → „Zainstaluj aplikację”.
+Wersje do sklepów z tego samego kodu:
 
 ```bash
-npx cap add android    # raz; wymaga Android Studio
-npx cap add ios        # raz; wymaga macOS i Xcode
-npm run cap:android
-npm run cap:ios
+npx cap add android && npm run cap:android   # wymaga Android Studio
+npx cap add ios && npm run cap:ios           # wymaga macOS i Xcode
 ```
 
 ## Struktura
 
 | Ścieżka | Co tam jest |
 |---|---|
-| `src/lib/fees.ts` | cennik i wycena: opłata serwisowa, ochrona, kaucja, koszt płatności |
-| `src/lib/circles.ts` | kręgi zaufania z grafu znajomości, wskaźnik zaufania |
-| `src/lib/geo.ts` | odległości (haversine), filtr: promień, miasto, województwo, kraj |
-| `src/data/store.tsx` | stan aplikacji (ogłoszenia, rezerwacje, czaty) |
-| `src/screens/` | Odkrywaj, Ogłoszenie, Dodaj, Czaty, Krąg, Ja, Protokół zdjęć |
-| `supabase/migrations/0001_init.sql` | schemat produkcyjny: PostGIS, `circle_of`, `listings_nearby`, RLS, widok DAC7 |
-| `capacitor.config.ts` | konfiguracja aplikacji mobilnych |
+| `src/config.ts` | nazwa i domena |
+| `src/i18n/` | teksty interfejsu: `pl`, `en`, `de`, `uk` |
+| `src/lib/categories.ts` | drzewo kategorii w 4 językach |
+| `src/lib/pricing.ts` | plany (3 darmowe / 79 zł rok), kwoty zamówień, 0% prowizji |
+| `src/lib/circles.ts`, `src/lib/geo.ts` | kręgi zaufania, odległości, województwa |
+| `src/data/store.tsx` | stan: konto, ogłoszenia, zamówienia, czaty, powiadomienia, zastrzeżenie |
+| `src/screens/` | Rejestracja, Główna, Szukaj, Ogłoszenie, Zamówienie, Dodaj, Wiadomości, Ja, Bezpieczeństwo |
+| `supabase/migrations/0001_init.sql` | schemat: PostGIS, kręgi, limit 3 ogłoszeń, zastrzeżenie i odblokowanie, zamówienia, powiadomienia, RLS, DAC7 |

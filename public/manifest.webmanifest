@@ -1,11 +1,11 @@
 {
-  "name": "WhatsThat",
-  "short_name": "WhatsThat",
-  "description": "Pożycz, wynajmij, wymień albo sprzedaj. Najpierw znajomym, potem w okolicy.",
+  "name": "Obok",
+  "short_name": "Obok",
+  "description": "Wszystko, co obok. Od znajomych i z okolicy.",
   "lang": "pl",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f5f6fa",
-  "theme_color": "#f5f6fa",
+  "background_color": "#f6f6f3",
+  "theme_color": "#f6f6f3",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

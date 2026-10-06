@@ -1,170 +1,195 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, CATEGORIES, CircleBadge, Header, MODE_LABEL, Thumb, Toggle, priceLabel } from '../components/ui'
-import { QuoteView } from '../components/QuoteView'
-import { quoteFree, quoteRental, quoteSale, rentalDays } from '../lib/fees'
+import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Thumb, cx, formatDay, inputCls, listingUrl, priceText, relationText } from '../components/ui'
+import { Icon } from '../components/icons'
+import { categoryById, subById } from '../lib/categories'
+import { COUNTABLE, orderTotal } from '../lib/pricing'
 import { distanceKm, formatDistance } from '../lib/geo'
-import { trustScore } from '../lib/circles'
 import { formatPLN } from '../lib/money'
+import { localeOf } from '../i18n'
 import { ME } from '../data/seed'
 
 const iso = (d: Date) => d.toISOString().slice(0, 10)
+const PICKUPS = ['pick.today', 'pick.tomorrow', 'pick.saturday'] as const
 
 export function ListingScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { listings, users, relation, here, openChat, requestBooking, boost } = useStore()
+  const { t, account, listings, users, relation, openChat, placeOrder } = useStore()
   const listing = listings.find((l) => l.id === id)
-
+  const [share, setShare] = useState(false)
+  const [qty, setQty] = useState(1)
+  const [pickup, setPickup] = useState<string>(PICKUPS[0])
+  const [pay, setPay] = useState<'blik' | 'cash'>('blik')
+  const [blik, setBlik] = useState('')
   const today = new Date()
   const [from, setFrom] = useState(iso(new Date(today.getTime() + 86_400_000)))
   const [to, setTo] = useState(iso(new Date(today.getTime() + 3 * 86_400_000)))
-  const rel = listing ? relation(listing.ownerId) : { circle: 3 as const, via: [] }
-  const [protection, setProtection] = useState(rel.circle === 3)
-  const [safeBuy, setSafeBuy] = useState(rel.circle > 1)
-  const [shared, setShared] = useState('')
+  const [note, setNote] = useState('')
 
-  const days = rentalDays(from, to)
-  const quote = useMemo(() => {
-    if (!listing) return null
-    if (listing.mode === 'rent')
-      return quoteRental({ pricePerDay: listing.pricePerDay ?? 0, days, circle: rel.circle, protection, deposit: rel.circle === 1 ? 0 : listing.deposit })
-    if (listing.mode === 'sell') return quoteSale({ price: listing.price ?? 0, circle: rel.circle, inApp: safeBuy })
-    return quoteFree(rel.circle === 1 ? 0 : listing.deposit)
-  }, [listing, days, rel.circle, protection, safeBuy])
-
-  if (!listing || !quote) {
+  if (!listing) {
     return (
       <>
-        <Header title="Ogłoszenie" back />
-        <p className="p-6 text-muted">To ogłoszenie zniknęło albo nie masz do niego dostępu.</p>
+        <Header title="" back />
+        <p className="p-6 text-muted">{t('l.missing')}</p>
       </>
     )
   }
 
   const owner = users[listing.ownerId]
+  const rel = relation(listing.ownerId)
   const mine = listing.ownerId === ME
-  const trust = trustScore(owner, rel)
-  const link = `https://whatsthat.app/l/${listing.id}`
+  const lang = account.lang
+  const category = categoryById(listing.category)
+  const sub = subById(listing.category, listing.sub)
+  const countable = listing.kind === 'sell' && COUNTABLE.includes(listing.unit)
+  const step = listing.unit === 'kg' ? 0.5 : 1
+  const total = listing.price !== undefined ? orderTotal({ price: listing.price, unit: listing.unit, kind: listing.kind, qty, from, to }) : 0
+  const blocked = account.restricted || owner.restricted
 
-  const share = async () => {
-    const text = `${listing.title} — ${priceLabel(listing)} na WhatsThat`
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: listing.title, text, url: link })
-        return
-      }
-      await navigator.clipboard.writeText(`${text}\n${link}`)
-      setShared('Link skopiowany. Wklej go na WhatsAppie albo w grupie osiedlowej.')
-    } catch {
-      setShared(link)
-    }
+  const tags = [t(`kind.${listing.kind}`), listing.condition && t(`cond.${listing.condition}`), listing.deal && t('deal')].filter(Boolean).join(' · ')
+
+  const submit = () => {
+    const orderId = placeOrder({
+      listing,
+      qty,
+      total,
+      pay: listing.kind === 'sell' ? pay : 'cash',
+      from: listing.kind === 'rent' || listing.kind === 'service' ? from : undefined,
+      to: listing.kind === 'rent' ? to : undefined,
+      pickup: listing.kind === 'sell' ? pickup : undefined,
+      note: note.trim() || undefined,
+    })
+    if (orderId) nav(`/zamowienie/${orderId}`)
   }
 
-  const act = () => {
-    const chatId = openChat(listing)
-    if (listing.mode === 'rent') {
-      requestBooking({ listingId: listing.id, renterId: ME, ownerId: listing.ownerId, from, to, circle: rel.circle, protection, quote }, chatId)
-    }
-    nav(`/czat/${chatId}`)
-  }
+  const cta =
+    listing.kind === 'sell'
+      ? pay === 'blik' ? t('l.pay', { amount: formatPLN(total) }) : t('l.reserve')
+      : listing.kind === 'rent' ? t('l.request')
+      : listing.kind === 'service' ? t('l.requestService')
+      : listing.kind === 'give' ? t('l.requestFree')
+      : t('l.propose')
 
-  const cta = { rent: 'Poproś o wypożyczenie', sell: 'Kupuję', lend: 'Poproś o pożyczenie', swap: 'Zaproponuj wymianę' }[listing.mode]
+  const canSubmit = listing.kind !== 'sell' || pay === 'cash' || blik.length === 6
 
   return (
-    <>
+    <div className="pb-6">
       <Header
-        title={MODE_LABEL[listing.mode]}
+        title={category.label[lang]}
         back
         right={
-          <button type="button" onClick={share} className="rounded-full border border-line bg-surface px-3 py-1.5 text-sm font-semibold">
-            Udostępnij
+          <button type="button" onClick={() => setShare(true)} className="flex min-h-11 items-center gap-1.5 px-2 text-[15px] font-semibold text-accent">
+            <Icon name="share" size={20} /> {t('l.share')}
           </button>
         }
       />
-      <Thumb listing={listing} className="text-7xl [&>span]:text-8xl" />
-      <div className="flex flex-col gap-5 px-4 py-4">
-        {shared && <p className="rounded-xl bg-ok-soft px-3 py-2 text-sm break-all text-ok">{shared}</p>}
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-semibold tracking-wider text-muted uppercase">{CATEGORIES[listing.category]}</span>
-          <h1 className="text-2xl leading-tight font-bold">{listing.title}</h1>
-          <p className="tnum font-display text-2xl font-extrabold text-brand">{priceLabel(listing)}</p>
-          {listing.mode === 'swap' && listing.swapFor && <p className="text-sm">Szukam: <strong>{listing.swapFor}</strong></p>}
-        </div>
+      <Thumb listing={listing} className="aspect-[4/3] max-h-[46vh] w-full max-w-full" />
 
-        <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3">
-          <Avatar user={owner} size={46} />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 font-semibold">
-              <span className="truncate">{mine ? 'Twoje ogłoszenie' : owner.name}</span>
-              {owner.verified && <span className="text-xs text-ok" title="Zweryfikowany">✓</span>}
-              {owner.plan === 'biznes' && <span className="rounded bg-sunken px-1.5 text-[10px] font-bold uppercase">Firma</span>}
+      <div className="flex flex-col gap-1 px-4 pt-4">
+        <p className="text-[13px] text-muted">{[tags, sub?.label[lang]].filter(Boolean).join(' · ')}</p>
+        <h1 className="text-[24px] leading-tight font-bold tracking-tight">{listing.title}</h1>
+        <p className="tnum text-[22px] font-semibold">{priceText(listing, t)}</p>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-6">
+        {owner.restricted && <div className="px-4"><Notice tone="danger">{t('l.restricted')}</Notice></div>}
+
+        <Group>
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Avatar user={owner} size={44} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold">{mine ? account.name : owner.name}</p>
+              <p className="flex items-center gap-1 text-[13px] text-muted">
+                {!owner.restricted && <Icon name="shield" size={14} className="text-ok" />}
+                {mine ? t('me.verified') : relationText(rel, owner, users, t)}
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 text-sm text-muted">
-              {!mine && <CircleBadge rel={rel} users={users} />}
-              <span className="tnum">★ {owner.rating.toFixed(1)} · {owner.reviews} opinii</span>
-            </div>
+            {!mine && !blocked && (
+              <Button variant="secondary" className="min-h-10 px-3" onClick={() => nav(`/czat/${openChat(listing)}`)}>
+                {t('l.write')}
+              </Button>
+            )}
           </div>
-          {!mine && (
-            <div className="text-center">
-              <div className="tnum font-display text-xl font-bold">{trust}</div>
-              <div className="text-[10px] font-semibold tracking-wide text-muted uppercase">zaufanie</div>
-            </div>
-          )}
-        </div>
+        </Group>
 
-        <p className="leading-relaxed">{listing.description}</p>
-        <p className="text-sm text-muted">
-          {listing.place.city} · {formatDistance(distanceKm(here, listing.place))} od Ciebie
-          {listing.value ? ` · wartość ${formatPLN(listing.value)}` : ''}
-        </p>
+        <Group>
+          <Row icon="pin" title={listing.place.town} detail={mine ? undefined : t('l.distance', { d: formatDistance(distanceKm(account.place, listing.place)) })} />
+          {listing.garageDate && <Row icon="calendar" title={formatDay(listing.garageDate, localeOf(lang))} detail={listing.pickupHours} />}
+          {listing.pickupHours && !listing.garageDate && <Row icon="calendar" title={t('l.pickup')} detail={listing.pickupHours} />}
+          {listing.stock !== undefined && <Row icon="bag" title={t('l.stock', { n: listing.stock, unit: t(`unit.${listing.unit}`) })} />}
+          {listing.shipping && <Row icon="truck" title={t('l.shipping')} />}
+          {listing.deposit ? <Row icon="lock" title={t('l.deposit', { amount: formatPLN(listing.deposit) })} /> : null}
+          {listing.swapFor && <Row icon="list" title={t('l.swapFor', { what: listing.swapFor })} />}
+        </Group>
+
+        <p className="px-4 leading-relaxed">{listing.description}</p>
 
         {mine ? (
-          <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4">
-            <p className="font-semibold">Promuj ogłoszenie</p>
-            <p className="text-sm text-muted">Wyróżnienie na 7 dni: na górze wyników w Twojej okolicy za 4,99 zł.</p>
-            <Button variant="soft" onClick={() => boost(listing.id)} disabled={(listing.boostedUntil ?? 0) > Date.now()}>
-              {(listing.boostedUntil ?? 0) > Date.now() ? 'Wyróżnione' : 'Wyróżnij za 4,99 zł'}
-            </Button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4">
-            {listing.mode === 'rent' && (
-              <div className="grid grid-cols-2 gap-3">
-                <label htmlFor="from" className="flex flex-col gap-1 text-sm font-medium">
-                  Od
-                  <input id="from" type="date" value={from} min={iso(today)} onChange={(e) => setFrom(e.target.value)} className="min-h-11 rounded-xl border border-line bg-bg px-3" />
-                </label>
-                <label htmlFor="to" className="flex flex-col gap-1 text-sm font-medium">
-                  Do
-                  <input id="to" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className="min-h-11 rounded-xl border border-line bg-bg px-3" />
-                </label>
+          <div className="px-4"><Notice tone="ok">{t('l.yours')}</Notice></div>
+        ) : blocked ? null : listing.kind === 'garage' ? null : (
+          <section className="mx-4 flex flex-col gap-4 rounded-xl border border-line bg-surface p-4">
+            {countable && (
+              <Field id="qty" label={t('l.qty')}>
+                <div className="flex items-center gap-3">
+                  <button type="button" className="grid size-11 place-items-center rounded-lg border border-line text-[20px]" onClick={() => setQty((q) => Math.max(step, +(q - step).toFixed(1)))} aria-label="−">−</button>
+                  <span id="qty" className="tnum min-w-16 text-center text-[18px] font-semibold">{String(qty).replace('.', ',')} {t(`unit.${listing.unit}`)}</span>
+                  <button type="button" className="grid size-11 place-items-center rounded-lg border border-line text-[20px]" onClick={() => setQty((q) => Math.min(listing.stock ?? 999, +(q + step).toFixed(1)))} aria-label="+">+</button>
+                </div>
+              </Field>
+            )}
+            {listing.kind === 'sell' && (
+              <Field id="pickup" label={t('l.when')}>
+                <select id="pickup" value={pickup} onChange={(e) => setPickup(e.target.value)} className={inputCls}>
+                  {PICKUPS.map((p) => <option key={p} value={p}>{t(p)}</option>)}
+                </select>
+              </Field>
+            )}
+            {(listing.kind === 'rent' || listing.kind === 'service') && (
+              <div className={cx('grid gap-3', listing.kind === 'rent' && 'grid-cols-2')}>
+                <Field id="from" label={t('l.from')}>
+                  <Input id="from" type="date" value={from} min={iso(today)} onChange={(e) => setFrom(e.target.value)} />
+                </Field>
+                {listing.kind === 'rent' && (
+                  <Field id="to" label={t('l.to')}>
+                    <Input id="to" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} />
+                  </Field>
+                )}
               </div>
             )}
-            {listing.mode === 'rent' && (
-              <Toggle
-                id="protection"
-                checked={protection}
-                onChange={setProtection}
-                label="Ochrona przed zniszczeniem"
-                hint={rel.circle === 1 ? 'Między znajomymi opcjonalna.' : 'Pokrywa naprawę lub wartość rzeczy, gdy coś pójdzie nie tak.'}
-              />
+            {listing.kind !== 'sell' && (
+              <Field id="note" label={t('l.note')}>
+                <Input id="note" value={note} onChange={(e) => setNote(e.target.value)} />
+              </Field>
             )}
-            {listing.mode === 'sell' && rel.circle > 1 && (
-              <Toggle id="safebuy" checked={safeBuy} onChange={setSafeBuy} label="Bezpieczny zakup" hint="Pieniądze trafią do sprzedającego, gdy potwierdzisz odbiór." />
+            {listing.kind === 'sell' && (
+              <div role="radiogroup" className="grid grid-cols-2 gap-2">
+                {(['blik', 'cash'] as const).map((p) => (
+                  <button key={p} type="button" role="radio" aria-checked={pay === p} onClick={() => setPay(p)} className={cx('min-h-11 rounded-lg border px-2 text-[14px] font-semibold', pay === p ? 'border-ink bg-ink text-bg' : 'border-line')}>
+                    {p === 'blik' ? t('l.payBlik') : t('l.payCash')}
+                  </button>
+                ))}
+              </div>
             )}
-            <QuoteView quote={quote} totalLabel={listing.mode === 'rent' ? 'Płacisz' : 'Razem'} />
-            {!quote.inApp && listing.mode !== 'lend' && listing.mode !== 'swap' && (
-              <p className="text-xs text-muted">Rozliczacie się sami: gotówka, BLIK na telefon albo przelew.</p>
+            {listing.kind === 'sell' && pay === 'blik' && (
+              <Field id="blik" label={t('l.blikCode')} hint={t('l.blikHint')}>
+                <Input id="blik" inputMode="numeric" maxLength={6} value={blik} onChange={(e) => setBlik(e.target.value.replace(/\D/g, ''))} className="tnum text-center text-[20px] tracking-[0.3em]" placeholder="••• •••" />
+              </Field>
             )}
-            <div className="grid grid-cols-[auto_1fr] gap-2">
-              <Button variant="ghost" onClick={() => nav(`/czat/${openChat(listing)}`)}>Napisz</Button>
-              <Button onClick={act}>{cta}</Button>
-            </div>
-          </div>
+            {total > 0 && (
+              <div className="tnum flex items-baseline justify-between border-t border-line pt-3">
+                <span className="text-muted">{t('l.total')}</span>
+                <span className="text-[20px] font-bold">{formatPLN(total)}</span>
+              </div>
+            )}
+            <Button disabled={!canSubmit} onClick={submit}>{cta}</Button>
+            {(listing.kind === 'sell' || listing.kind === 'rent') && <p className="text-[13px] text-muted">{t('l.noFee')}</p>}
+          </section>
         )}
       </div>
-    </>
+
+      {share && <ShareSheet text={`${listing.title} · ${priceText(listing, t)}`} url={listingUrl(listing.id)} t={t} onClose={() => setShare(false)} />}
+    </div>
   )
 }

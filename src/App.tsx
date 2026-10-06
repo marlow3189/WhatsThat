@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react'
-import { HashRouter, MemoryRouter, NavLink, Route, Routes } from 'react-router'
+import { HashRouter, Link, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router'
 import { StoreProvider, useStore } from './data/store'
 import { cx } from './components/ui'
-import { Discover } from './screens/Discover'
+import { Icon } from './components/icons'
+import { Onboarding } from './screens/Onboarding'
+import { Home } from './screens/Home'
+import { Search } from './screens/Search'
 import { ListingScreen } from './screens/Listing'
-import { AddListing } from './screens/AddListing'
-import { Chats, ChatScreen } from './screens/Chats'
-import { CircleScreen } from './screens/Circle'
-import { Profile } from './screens/Profile'
-import { Protocol } from './screens/Protocol'
+import { OrderScreen } from './screens/Order'
+import { ChatScreen, Messages } from './screens/Messages'
+import { Add } from './screens/Add'
+import { Me, MyListings, NotificationSettings, Orders } from './screens/Me'
+import { Friends, Install, Notifications, Restrict, Trusted } from './screens/Safety'
 
 // Podgląd jednoplikowy działa w ramce bez dostępu do adresu, więc trasy trzyma w pamięci.
 const Router = import.meta.env.MODE === 'preview' ? MemoryRouter : HashRouter
@@ -17,28 +20,86 @@ export function App() {
   return (
     <StoreProvider>
       <Router>
-        <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg sm:border-x sm:border-line">
-          <main className="flex flex-1 flex-col pb-24">
-            <Routes>
-              <Route path="/" element={<Discover />} />
-              <Route path="/l/:id" element={<ListingScreen />} />
-              <Route path="/dodaj" element={<AddListing />} />
-              <Route path="/czaty" element={<Chats />} />
-              <Route path="/czat/:id" element={<ChatScreen />} />
-              <Route path="/krag" element={<CircleScreen />} />
-              <Route path="/ja" element={<Profile />} />
-              <Route path="/protokol/:id" element={<Protocol />} />
-            </Routes>
-          </main>
-          <TabBar />
-        </div>
+        <Shell />
       </Router>
     </StoreProvider>
   )
 }
 
+function Shell() {
+  const { account } = useStore()
+  if (!account.onboarded) return <Onboarding />
+  return (
+    <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg sm:border-x sm:border-line">
+      <RestrictedBanner />
+      <Toast />
+      <main className="flex flex-1 flex-col pb-24">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/szukaj" element={<Search />} />
+          <Route path="/l/:id" element={<ListingScreen />} />
+          <Route path="/zamowienie/:id" element={<OrderScreen />} />
+          <Route path="/zamowienia" element={<Orders />} />
+          <Route path="/dodaj" element={<AddRoute />} />
+          <Route path="/wiadomosci" element={<Messages />} />
+          <Route path="/czat/:id" element={<ChatScreen />} />
+          <Route path="/ja" element={<Me />} />
+          <Route path="/moje" element={<MyListings />} />
+          <Route path="/znajomi" element={<Friends />} />
+          <Route path="/zastrzez" element={<Restrict />} />
+          <Route path="/zaufani" element={<Trusted />} />
+          <Route path="/instaluj" element={<Install />} />
+          <Route path="/powiadomienia" element={<Notifications />} />
+          <Route path="/ustawienia/powiadomienia" element={<NotificationSettings />} />
+        </Routes>
+      </main>
+      <TabBar />
+    </div>
+  )
+}
+
+/** Każde wejście w „Dodaj” zaczyna od nowa, także po stuknięciu zakładki ponownie. */
+function AddRoute() {
+  const location = useLocation()
+  const { addNonce } = useStore()
+  return <Add key={`${location.key}-${addNonce}`} />
+}
+
+function RestrictedBanner() {
+  const { t, account } = useStore()
+  if (!account.restricted) return null
+  return (
+    <Link to="/zastrzez" className="flex items-center gap-2 bg-danger px-4 py-2.5 text-[14px] text-white">
+      <Icon name="lock" size={18} />
+      <span className="min-w-0 flex-1">{t('r.banner')}</span>
+      <span className="font-semibold underline">{t('r.unlock')}</span>
+    </Link>
+  )
+}
+
+/** Powiadomienie w stylu systemowego pusha (w aplikacji natywnej: prawdziwy push). */
+function Toast() {
+  const { toast, dismissToast } = useStore()
+  if (!toast) return null
+  const body = (
+    <span className="flex items-start gap-3">
+      <Icon name="bell" className="mt-0.5 shrink-0 text-accent" />
+      <span className="min-w-0 flex-1 text-[15px]">{toast.text}</span>
+    </span>
+  )
+  return (
+    <div className="fixed inset-x-0 z-50 mx-auto max-w-[34rem] px-3" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 8px)' }} role="status">
+      {toast.link ? (
+        <Link to={toast.link} onClick={dismissToast} className="toast-in block rounded-2xl border border-line bg-surface p-3.5 shadow-lg">{body}</Link>
+      ) : (
+        <button type="button" onClick={dismissToast} className="toast-in block w-full rounded-2xl border border-line bg-surface p-3.5 text-left shadow-lg">{body}</button>
+      )}
+    </div>
+  )
+}
+
 function TabBar() {
-  const { chats, readAt } = useStore()
+  const { t, chats, readAt, restartAdd } = useStore()
   const unread = chats.filter((c) => {
     const last = c.messages.at(-1)
     return last && last.from !== 'me' && last.at > (readAt[c.id] ?? 0)
@@ -47,34 +108,25 @@ function TabBar() {
     <nav
       className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[34rem] border-t border-line bg-surface/95 backdrop-blur"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-      aria-label="Główna nawigacja"
+      aria-label="Menu"
     >
-      <div className="grid grid-cols-5 items-end px-2 pt-1.5 pb-2">
-        <Tab to="/" label="Odkrywaj" icon={<path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm10 2-4.35-4.35" />} />
-        <Tab to="/krag" label="Krąg" icon={<><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" /></>} />
-        <NavLink to="/dodaj" className="flex flex-col items-center gap-0.5" aria-label="Dodaj ogłoszenie">
-          <span className="-mt-5 grid size-13 place-items-center rounded-2xl bg-brand text-brand-ink shadow-lg">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
-          </span>
-          <span className="text-[11px] font-semibold text-muted">Dodaj</span>
-        </NavLink>
-        <Tab to="/czaty" label="Czaty" badge={unread} icon={<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" />} />
-        <Tab to="/ja" label="Ja" icon={<><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>} />
+      <div className="grid h-16 grid-cols-5">
+        <Tab to="/" label={t('nav.home')} icon="home" />
+        <Tab to="/szukaj" label={t('nav.search')} icon="search" />
+        <Tab to="/dodaj" label={t('nav.add')} icon="plus" onClick={restartAdd} />
+        <Tab to="/wiadomosci" label={t('nav.messages')} icon="chat" badge={unread} />
+        <Tab to="/ja" label={t('nav.me')} icon="user" />
       </div>
     </nav>
   )
 }
 
-function Tab({ to, label, icon, badge }: { to: string; label: string; icon: ReactNode; badge?: number }) {
+function Tab({ to, label, icon, badge, onClick }: { to: string; label: string; icon: string; badge?: number; onClick?: () => void }): ReactNode {
   return (
-    <NavLink to={to} end={to === '/'} className={({ isActive }) => cx('relative flex flex-col items-center gap-0.5 py-1', isActive ? 'text-brand' : 'text-muted')}>
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        {icon}
-      </svg>
-      <span className="text-[11px] font-semibold">{label}</span>
-      {!!badge && (
-        <span className="absolute top-0 right-[calc(50%-18px)] grid min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-brand-ink">{badge}</span>
-      )}
+    <NavLink to={to} onClick={onClick} end={to === '/'} className={({ isActive }) => cx('relative flex flex-col items-center justify-center gap-0.5', isActive ? 'text-accent' : 'text-muted')}>
+      <Icon name={icon} size={24} />
+      <span className="max-w-full truncate px-1 text-[11px] font-medium">{label}</span>
+      {!!badge && <span className="tnum absolute top-1.5 left-[calc(50%+6px)] grid min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[11px] font-bold text-accent-ink">{badge}</span>}
     </NavLink>
   )
 }
