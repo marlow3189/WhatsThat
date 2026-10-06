@@ -8,6 +8,7 @@ import { seedSales, seedSellerData } from '../data/seed'
 import { BRAND } from '../config'
 
 const ACT: Record<Dac7Activity, string> = { goods: 'sprzedaż towarów', property: 'najem nieruchomości', transport: 'najem pojazdów', services: 'usługi osobiste' }
+const FIELD: Record<string, string> = { name: 'imię i nazwisko', address: 'adres', taxId: 'NIP/PESEL', birthDate: 'data urodzenia' }
 const REASON: Record<string, string> = { scam: 'oszustwo', illegal: 'nielegalne', fake: 'podróbka', rights: 'naruszenie praw', offensive: 'obraźliwe', other: 'inne' }
 
 /**
@@ -54,7 +55,7 @@ export function Operator() {
             value={
               <span className="flex flex-col items-end">
                 <span className="tnum text-ink">{formatPLN(r.totalPln)}</span>
-                {r.missing.length ? <span className="text-[12px] text-danger">brak: {r.missing.join(', ')}</span> : <span className="text-[12px] text-ok">dane kompletne</span>}
+                {r.missing.length ? <span className="text-[12px] text-danger">brak: {r.missing.map((m) => FIELD[m]).join(', ')}</span> : <span className="text-[12px] text-ok">dane kompletne</span>}
               </span>
             }
           />
@@ -97,9 +98,9 @@ export function Operator() {
       </Group>
 
       <section className="flex flex-col gap-2">
-        <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">Koszty i przychód miesięcznie</h2>
+        <h2 className="px-5 text-[13px] font-medium tracking-wide text-muted uppercase">Koszty i przychód miesięcznie (aktywni użytkownicy)</h2>
         <div className="px-4">
-          <Segmented<number> label="Skala" value={mau} onChange={setMau} options={[1_000, 10_000, 100_000].map((v) => ({ value: v, label: `${v / 1000} tys. aktywnych` }))} />
+          <Segmented<number> label="Skala" value={mau} onChange={setMau} options={[1_000, 10_000, 100_000].map((v) => ({ value: v, label: `${v / 1000} tys.` }))} />
         </div>
         <div className="card mx-4 overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">
           {costs.map((c) => <Row key={c.label} title={<span className="text-[15px]">{c.label}</span>} value={<span className="tnum">{Math.round(c.pln).toLocaleString('pl-PL')} zł</span>} />)}

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, CircleButton, Field, Group, Header, Input, Notice, Row, Segmented, ShareSheet, Sheet, Thumb, cx, formatDay, inputCls, listingUrl, money, priceText, relationText } from '../components/ui'
+import { Avatar, Button, CircleButton, Field, Group, Header, Input, Notice, Row, ShareSheet, Sheet, Thumb, cx, formatDay, inputCls, listingUrl, money, priceText, relationText } from '../components/ui'
 import { Icon } from '../components/icons'
 import { categoryById, subById } from '../lib/categories'
 import { COUNTABLE, isAvailable, orderTotal } from '../lib/pricing'
@@ -196,12 +196,16 @@ export function ListingScreen() {
             {listing.kind === 'sell' && (
               sellerReady ? (
                 <Field id="pay" label={t('l.payMethod')}>
-                  <Segmented<PayMethod>
-                    label={t('l.payMethod')}
-                    value={pay}
-                    onChange={setPay}
-                    options={(delivery === 'pickup' ? (['blik', 'transfer', 'cash'] as PayMethod[]) : (['blik', 'transfer'] as PayMethod[])).map((p) => ({ value: p, label: t(`pay.${p}`) }))}
-                  />
+                  <div role="radiogroup" id="pay" className="overflow-hidden rounded-[14px] bg-fill [&>*+*]:border-t [&>*+*]:border-line">
+                    {(delivery === 'pickup' ? (['blik', 'transfer', 'cash'] as PayMethod[]) : (['blik', 'transfer'] as PayMethod[])).map((p) => (
+                      <button key={p} type="button" role="radio" aria-checked={pay === p} onClick={() => setPay(p)} className="flex min-h-12 w-full items-center justify-between px-4 text-left">
+                        {t(`pay.${p}`)}
+                        <span className={cx('grid size-6 place-items-center rounded-full border-2', pay === p ? 'border-link bg-link text-white' : 'border-fill-strong')}>
+                          {pay === p && <Icon name="check" size={14} strokeWidth={3} />}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </Field>
               ) : (
                 <Notice tone="info" icon="info">{t('l.sellerNotReady')}</Notice>

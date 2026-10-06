@@ -126,7 +126,7 @@ export function Friends() {
           <div className="h-full rounded-full bg-[#0b0b0c] transition-all" style={{ width: `${(n / 3) * 100}%` }} />
         </div>
         <p className="tnum text-[14px] opacity-80">{t('f.progress', { n })}</p>
-        <Button size="sm" className="self-start bg-[#0b0b0c] text-white" onClick={() => setShareApp(true)}><Icon name="share" size={18} /> {t('f.shareApp')}</Button>
+        <Button size="sm" className="self-start bg-[#0b0b0c]! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={18} /> {t('f.shareApp')}</Button>
       </div>
 
       <Group label={t('f.contacts')}>

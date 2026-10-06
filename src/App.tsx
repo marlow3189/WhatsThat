@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { HashRouter, Link, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router'
 import { StoreProvider, useStore } from './data/store'
 import { cx } from './components/ui'
@@ -28,6 +29,8 @@ export function App() {
 
 function Shell() {
   const { account } = useStore()
+  const { pathname } = useLocation()
+  useEffect(() => window.scrollTo(0, 0), [pathname])
   if (!account.onboarded) return <Onboarding />
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg">

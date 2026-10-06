@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useStore } from '../data/store'
 import { Avatar, Button, Field, Group, Header, Input, ListingRow, Notice, Row, Toggle, cx, inputCls, money } from '../components/ui'
 import { Icon } from '../components/icons'
@@ -49,7 +50,7 @@ export function Me() {
               <button type="button" onClick={renewFree} className="text-[14px] text-link">{t('me.renew', { price: fmt(prices.renewal) })}</button>
             </>
           ) : (
-            <Button className="bg-[#0b0b0c] text-white" onClick={() => buyPlan(plan)}>{t('me.renew', { price: fmt(plan === 'annual' ? prices.annual : prices.business) })}</Button>
+            <Button className="bg-[#0b0b0c]! text-white!" onClick={() => buyPlan(plan)}>{t('me.renew', { price: fmt(plan === 'annual' ? prices.annual : prices.business) })}</Button>
           )}
         </div>
       </section>
@@ -151,7 +152,7 @@ export function Stall() {
       </div>
 
       {account.kyc !== 'verified' && (
-        <div className="px-4"><Notice tone="info" icon="card"><a href="#/ja/platnosci" className="text-link">{t('kyc.title')}</a>: {t('kyc.none')}</Notice></div>
+        <div className="px-4"><Notice tone="info" icon="card"><Link to="/ja/platnosci" className="text-link">{t('kyc.title')}</Link>: {t('kyc.none')}</Notice></div>
       )}
 
       <Group label={t('p.toPack')}>
@@ -162,7 +163,7 @@ export function Stall() {
               <div key={o.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{l?.title}</span>
-                  <span className="tnum block text-[14px] text-muted">{users[o.buyerId].name} · {String(o.qty).replace('.', ',')} {l && t(`unit.${l.unit}`)} · {fmt(o.total)}</span>
+                  <span className="tnum block text-[14px] text-muted">{[users[o.buyerId].name, l && l.unit !== 'fixed' && `${String(o.qty).replace('.', ',')} ${t(`unit.${l.unit}`)}`, fmt(o.total)].filter(Boolean).join(' · ')}</span>
                 </span>
                 <Button size="sm" onClick={() => advanceOrder(o.id, 'ready')}>{t('o.step.ready')}</Button>
               </div>

@@ -116,7 +116,7 @@ export function Home() {
       <div className="mx-4 flex flex-col gap-3 rounded-[24px] bg-accent p-5 text-accent-ink">
         <p className="text-[20px] leading-tight font-bold">{t('home.invite')}</p>
         <p className="text-[15px] leading-snug opacity-80">{t('home.inviteText')}</p>
-        <Link to="/znajomi" className="self-start"><Button size="sm" className="bg-[#0b0b0c] text-white">{t('f.invite')}</Button></Link>
+        <Link to="/znajomi" className="self-start"><Button size="sm" className="bg-[#0b0b0c]! text-white!">{t('f.invite')}</Button></Link>
       </div>
 
       <Link to="/ja/zainteresowania" className="self-center text-[15px] text-link">{t('home.interests')}</Link>
@@ -134,5 +134,5 @@ function SectionTitle({ title, to, more }: { title: string; to?: string; more?: 
 }
 
 export function Carousel({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cx('no-scrollbar flex snap-x gap-3 overflow-x-auto px-5 pb-1 [&>*]:snap-start', className)}>{children}</div>
+  return <div className={cx('no-scrollbar flex snap-x scroll-px-5 gap-3 overflow-x-auto px-5 pb-1 [&>*]:snap-start', className)}>{children}</div>
 }
