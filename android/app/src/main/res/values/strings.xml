@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Miliorbit</string>
+    <string name="title_activity_main">Miliorbit</string>
+    <string name="package_name">com.miliorbit.app</string>
+    <string name="custom_url_scheme">com.miliorbit.app</string>
+</resources>

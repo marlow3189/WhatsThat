@@ -1,7 +1,6 @@
 node_modules
 dist
 dist-preview
-android
 ios
 .env
 .env.local

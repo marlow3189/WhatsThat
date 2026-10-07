@@ -1,0 +1,52 @@
+# Aplikacja na Androida (APK do testów) budowana w chmurze GitHuba: nie potrzebujesz Android Studio.
+# Po każdej zmianie w kodzie: Actions → „Android APK” → plik do pobrania (Artifacts).
+# Z gałęzi domyślnej dodatkowo stały link: Releases → „Miliorbit Android (test)” → miliorbit-test.apk.
+name: Android APK
+on:
+  push:
+    paths-ignore: ['docs/**', '**/*.md', 'site/**', 'extension/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - name: Aplikacja (web) do środka APK
+        run: npm run build && npx cap sync android
+      - name: Budowanie APK (wersja testowa)
+        working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Nazwa pliku
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk miliorbit-test.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: miliorbit-android-${{ github.run_number }}
+          path: miliorbit-test.apk
+          retention-days: 30
+      - name: Stały link do pobrania (tylko gałąź domyślna)
+        if: github.ref_name == github.event.repository.default_branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-test --yes --cleanup-tag || true
+          gh release create android-test miliorbit-test.apk \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Miliorbit Android (test) #${{ github.run_number }}" \
+            --notes "Wersja testowa z dnia $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Dane przykładowe, zapis tylko na telefonie. Instalacja: docs/START.md."
