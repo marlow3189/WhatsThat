@@ -2,6 +2,9 @@
 
 Ta instrukcja prowadzi od zera do działającej aplikacji. Nie zakłada wiedzy programistycznej.
 
+> **Na teraz (testy u siebie):** zacznij od [START.md](START.md) i [PLAN.md](PLAN.md). Ta instrukcja to droga do startu
+> publicznego: domena, ochrona, płatności, sklepy.
+
 **Jak to jest ułożone:** Miliorbit to przede wszystkim **aplikacja na telefon** (Android z Google Play, iPhone z App
 Store). Domena **miliorbit.com** to strona, która prowadzi do instalacji: telefon z Androidem trafia do Google Play,
 iPhone do App Store, komputer widzi kod QR. Ta sama aplikacja działa też w przeglądarce pod **miliorbit.com/app/**

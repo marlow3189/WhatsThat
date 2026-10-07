@@ -31,7 +31,7 @@ bez haseł i bez prowizji. Marka jest w `src/config.ts` (miliorbit.com).
 - **Nowoczesne API przeglądarki:** płynne przejścia (View Transitions), licznik na ikonie (Badging), wyszukiwanie głosem.
 - **Komputer:** rozszerzenie do Chrome, Edge i Safari z menu „Wystaw na Miliorbit”.
 
-Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Analiza konkurencji: **[docs/ANALIZA.md](docs/ANALIZA.md)** · Wdrożenie krok po kroku: **[docs/WDROZENIE.md](docs/WDROZENIE.md)** · Bezpieczeństwo: **[docs/BEZPIECZENSTWO.md](docs/BEZPIECZENSTWO.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
+**Testowanie u siebie (APK, strona testowa): [docs/START.md](docs/START.md)** · Plan połączenia z bazą: **[docs/PLAN.md](docs/PLAN.md)** · Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Analiza konkurencji: **[docs/ANALIZA.md](docs/ANALIZA.md)** · Wdrożenie krok po kroku: **[docs/WDROZENIE.md](docs/WDROZENIE.md)** · Bezpieczeństwo: **[docs/BEZPIECZENSTWO.md](docs/BEZPIECZENSTWO.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
 
 ## Uruchomienie
 
@@ -55,10 +55,10 @@ Kod SMS i BLIK w wersji demo: dowolne 6 cyfr. „Wyloguj i wyczyść dane demo�
 Aplikacja na telefon to główny produkt; wersja w przeglądarce (`/app/`, także jako PWA) jest dodatkiem.
 Wersje do sklepów z tego samego kodu (szczegóły, uprawnienia i linki do aplikacji: etap 9 w `docs/WDROZENIE.md`):
 
-```bash
-npx cap add android && npm run cap:android   # wymaga Android Studio
-npx cap add ios && npm run cap:ios           # wymaga macOS i Xcode
-```
+- **Android:** projekt jest w `android/`. Plik APK do testów buduje GitHub Actions po każdej zmianie
+  (`.github/workflows/android.yml`), stały link: Releases → `android-test` → `miliorbit-test.apk` (instrukcja: docs/START.md).
+  Lokalnie: `npm run cap:android` (Android Studio).
+- **iPhone:** projekt iOS dodamy z kontem Apple Developer (TestFlight, budowanie na macOS w GitHub Actions), docs/PLAN.md faza 7.
 
 ## Struktura
 

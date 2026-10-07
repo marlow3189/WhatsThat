@@ -6,6 +6,27 @@ import { monthlyCosts, monthlyRevenue, sum } from '../lib/costs'
 import { formatPLN } from '../lib/money'
 import { seedSales, seedSellerData } from '../data/seed'
 import { BRAND } from '../config'
+import { BACKEND_HOST, LIVE, checkConnection, type Health } from '../lib/backend'
+
+/** Tryb pracy i test połączenia z bazą: pierwsze, co sprawdzasz po wdrożeniu (docs/START.md). */
+function BackendCard() {
+  const [h, setH] = useState<Health>()
+  const [busy, setBusy] = useState(false)
+  const test = async () => {
+    setBusy(true)
+    setH(await checkConnection())
+    setBusy(false)
+  }
+  return (
+    <Group label="Baza danych" footer={LIVE ? 'Dane zapisują się w Supabase.' : 'Dane przykładowe zapisują się tylko na tym urządzeniu. Tryb na żywo włącza się po dodaniu VITE_SUPABASE_URL i VITE_SUPABASE_ANON_KEY w Cloudflare (docs/PLAN.md, faza 1).'}>
+      <Row icon="chart" title="Tryb" value={<span className={cx('rounded-full px-2.5 py-0.5 text-[13px] font-bold', LIVE ? 'bg-ok-soft text-ok' : 'bg-fill text-muted')}>{LIVE ? 'na żywo' : 'demo'}</span>} detail={BACKEND_HOST || undefined} />
+      <div className="flex flex-col gap-2 p-4">
+        <Button size="sm" variant="secondary" disabled={busy} onClick={test}>{busy ? 'Sprawdzam…' : 'Sprawdź połączenie z bazą'}</Button>
+        {h && <Notice tone={h.ok ? 'ok' : 'warn'} icon={h.ok ? 'check' : 'info'}>{h.detail}</Notice>}
+      </div>
+    </Group>
+  )
+}
 
 const ACT: Record<Dac7Activity, string> = { goods: 'sprzedaż towarów', property: 'najem nieruchomości', transport: 'najem pojazdów', services: 'usługi osobiste' }
 const FIELD: Record<string, string> = { name: 'imię i nazwisko', address: 'adres', taxId: 'NIP/PESEL', birthDate: 'data urodzenia' }
@@ -38,6 +59,8 @@ export function Operator() {
   return (
     <div className="flex flex-col gap-7 pb-10">
       <Header back title="Panel operatora" />
+
+      <BackendCard />
 
       <Group label="Raport DAC7 za 2026" footer={`Informacja DPI-IS do Szefa KAS w XML według schematu Ministerstwa Finansów. Termin ${due.toLocaleDateString('pl-PL')}. W tym samym terminie sprzedawcy dostają swoje dane.`}>
         <div className="p-4">

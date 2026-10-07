@@ -27,6 +27,10 @@ jobs:
           cache: gradle
       - run: npm ci
       - name: Aplikacja (web) do środka APK
+        # Tryb na żywo, gdy w Settings → Secrets and variables → Actions → Variables są adres i klucz anon Supabase.
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
         run: npm run build && npx cap sync android
       - name: Budowanie APK (wersja testowa)
         working-directory: android
