@@ -15,12 +15,12 @@ export function cx(...parts: (string | false | undefined | null)[]) {
 /** Odcień tła zastępczego dla kategorii (miękkie, pastelowe kafelki). */
 const HUES: Record<string, number> = {
   farm: 95, cars: 212, homes: 30, services: 265, jobs: 190, tools: 38, home: 45, beauty: 335,
-  fashion: 250, kids: 48, electronics: 200, sport: 160, events: 12, pets: 28, community: 220, other: 240,
+  fashion: 250, kids: 48, electronics: 200, sport: 160, events: 12, pets: 28, community: 220, heating: 18, other: 240,
 }
 export const hueOf = (category: string) => HUES[category] ?? 240
 
-/** Pastelowe tło dla ikon w listach: stałe dla danej ikony, żeby ekran nie „mrugał” kolorami. */
-const PASTELS = ['bg-peach', 'bg-sky', 'bg-mint', 'bg-lilac', 'bg-sun']
+/** Kolorowy kwadrat ikony w listach (kolor zależy od motywu): stały dla danej ikony, żeby ekran nie „mrugał”. */
+const PASTELS = ['tile-1', 'tile-2', 'tile-3', 'tile-4', 'tile-5']
 export function pastelOf(key: string) {
   let h = 0
   for (const c of key) h = (h * 31 + c.charCodeAt(0)) >>> 0
@@ -28,13 +28,18 @@ export function pastelOf(key: string) {
 }
 
 export function Avatar({ user, size = 40, anonymous }: { user: User; size?: number; anonymous?: boolean }) {
+  const ordinal = user.name?.match(/#(\d+)/)
   const initials = anonymous
     ? '?'
-    : (user.name || '?')
-        .split(' ')
-        .map((p) => p[0])
-        .slice(0, 2)
-        .join('')
+    : ordinal
+      ? `#${ordinal[1]}`
+      : (user.name || '?')
+          .split(/\s+/)
+          // tylko słowa zaczynające się literą i dłuższe niż jeden znak („Heniek z Lipowej” → HL)
+          .filter((w, _i, all) => (/^\p{L}/u.test(w) && w.length > 1) || all.length === 1)
+          .map((p) => p[0].toUpperCase())
+          .slice(0, 2)
+          .join('') || '?'
   return (
     <span
       className={cx('inline-grid shrink-0 place-items-center rounded-full font-bold', anonymous && 'bg-fill-strong text-muted')}

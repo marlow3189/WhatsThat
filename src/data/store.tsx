@@ -1,9 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Account, AppNotification, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, User } from '../lib/types'
 import { relationTo, type Relation } from '../lib/circles'
-import { DAY, FREE_PER_MONTH, PRICES, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, handoverCode, inviteMonths, isAvailable, isCommunity, isShown, listingsThisMonth, needsRefresh, renewalReminder, withBonusMonths } from '../lib/pricing'
+import { DAY, FREE_PER_MONTH, PRICES, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, handoverCode, isAvailable, isCommunity, isShown, listingsThisMonth, needsRefresh, renewalReminder } from '../lib/pricing'
 import { relocateDemo, shiftPlace } from '../lib/demo'
 import { track } from '../lib/analytics'
+import { ordinals } from '../lib/privacy'
+import { demoStations, validPrice, type Fuel, type PriceSource, type Station } from '../lib/fuel'
 import { town } from '../lib/geo'
 import { zl } from '../lib/money'
 import { localeOf, translator } from '../i18n'
@@ -20,6 +22,8 @@ interface State {
   readAt: Record<string, number>
   /** obejrzane relacje znajomych (id ogłoszeń) */
   seen: string[]
+  /** ceny paliw zgłoszone przez stację (API) albo użytkowników; nadpisują orientacyjne */
+  fuel: Record<string, { prices: Partial<Record<Fuel, number>>; at: number; source: PriceSource }>
   friendDemoDone: boolean
   remindedAt?: number
 }
@@ -30,7 +34,7 @@ export interface Toast {
   link?: string
 }
 
-const KEY = 'orbifolk:v5'
+const KEY = 'miliorbit:v6'
 
 /** Wszystko włączone (sugerowane); cisza nocna chroni przed nadmiarem. */
 export const DEFAULT_NOTIF: NotificationPrefs = { friendsNew: true, messages: true, orders: true, fofNew: true, nearby: true, quiet: true }
@@ -59,7 +63,8 @@ function initial(): State {
       unlockApprovals: [],
       notif: DEFAULT_NOTIF,
       invited: [],
-      inviteRewards: 0,
+      favorites: [{ id: 'piekarnia', topic: 'Chleb i bułki' }],
+      warnings: true,
       contactsAllowed: false,
       muted: [],
       forgotten: [],
@@ -77,6 +82,7 @@ function initial(): State {
     ],
     readAt: {},
     seen: [],
+    fuel: {},
     friendDemoDone: false,
   }
 }
@@ -128,6 +134,9 @@ function useStoreValue() {
     document.documentElement.lang = state.account.lang
   }, [state.account.lang])
   useEffect(() => {
+    document.documentElement.dataset.skin = state.account.skin ?? 'color'
+  }, [state.account.skin])
+  useEffect(() => {
     if (!toast) return
     const id = window.setTimeout(() => setToast(null), 5000)
     return () => clearTimeout(id)
@@ -145,6 +154,8 @@ function useStoreValue() {
       [ME]: {
         ...me,
         name: state.account.name || '—',
+        pseudonym: state.account.pseudonym,
+        phone: state.account.phone,
         place: state.account.place,
         restricted: state.account.restricted,
         payouts: state.account.kyc === 'verified',
@@ -153,6 +164,26 @@ function useStoreValue() {
     }
   }, [state.users, state.account])
   const relation = useCallback((userId: string): Relation => relationTo(ME, userId, users), [users])
+
+  /** Numery porządkowe osób prywatnych (stałe), używane zamiast imienia poza kręgiem znajomych. */
+  const ordinal = useMemo(() => ordinals(Object.values(state.users).filter((u) => !u.business && u.id !== ME).map((u) => u.id)), [state.users])
+  /**
+   * Jak pokazać osobę: znajomych z imienia, firmy z nazwy, resztę po pseudonimie albo „Osoba #n”.
+   * `short`: samo imię znajomego (na kafelkach).
+   */
+  const nameOf = useCallback(
+    (id: string, short = false): string => {
+      const u = users[id]
+      if (!u) return '—'
+      if (id === ME) return u.name
+      if (u.business) return u.name
+      if (relation(id).circle === 1) return short ? u.name.split(' ')[0] : u.name
+      return u.pseudonym ?? translator(state.account.lang)('anon.person', { n: ordinal[id] ?? 0 })
+    },
+    [users, relation, ordinal, state.account.lang],
+  )
+  /** Ten sam użytkownik z nazwą do wyświetlenia (Avatar bierze z niej inicjały). */
+  const shown = useCallback((id: string): User => ({ ...users[id], name: nameOf(id) }), [users, nameOf])
 
   const notify = (n: Omit<AppNotification, 'id' | 'at' | 'read'>, pref: keyof NotificationPrefs) => {
     const item = { ...n, id: uid(), at: Date.now(), read: false }
@@ -206,23 +237,48 @@ function useStoreValue() {
   }
 
   const setLang = (lang: Lang) => patchAccount({ lang })
+  const setSkin = (skin: 'color' | 'blue') => patchAccount({ skin })
   const setPlace = (place: Place) => patchAccount({ place })
   const setInterests = (interests: string[]) => patchAccount({ interests })
   const setNotif = (key: keyof NotificationPrefs, value: boolean) =>
     setState((s) => ({ ...s, account: { ...s.account, notif: { ...s.account.notif, [key]: value } } }))
   const setTrusted = (trusted: string[]) => patchAccount({ trusted: trusted.slice(0, 2) })
 
-  /** Zaproszenia: każde 100 unikalnych numerów = miesiąc planu Rocznego gratis. */
+  /**
+   * Zaproszenia bez nagród pieniężnych: liczy się to, że w orbicie jest więcej ludzi, więc następną sprawę
+   * załatwisz bliżej i szybciej. Zapisujemy tylko, kogo już zaproszono (żeby nie wysyłać dwa razy).
+   */
   const invite = (...contacts: string[]) => {
-    let months = 0
     track('invite', { count: contacts.length })
+    setState((s) => ({ ...s, account: { ...s.account, invited: [...new Set([...s.account.invited, ...contacts])] } }))
+  }
+  const setPseudonym = (pseudonym: string) => patchAccount({ pseudonym: pseudonym.trim().slice(0, 24) || undefined })
+  const setAddress = (address: Account['address']) => patchAccount({ address })
+  /** Ulubiony dostawca (piekarz, warzywniak…) z tematem; ponowne stuknięcie usuwa. */
+  const toggleFavorite = (id: string, topic = '') =>
     setState((s) => {
-      const invited = [...new Set([...s.account.invited, ...contacts])]
-      months = inviteMonths(invited.length, s.account.inviteRewards)
-      const bonus = months ? withBonusMonths(s.account, months) : {}
-      return { ...s, account: { ...s.account, invited, inviteRewards: s.account.inviteRewards + months, ...bonus } }
+      const has = s.account.favorites.some((f) => f.id === id)
+      return { ...s, account: { ...s.account, favorites: has ? s.account.favorites.filter((f) => f.id !== id) : [...s.account.favorites, { id, topic: topic.trim() }] } }
     })
-    later(50, () => months && notify({ text: translator(latest.current.account.lang)('f.bonus', { n: months }), link: '/ja' }, 'orders'))
+  const setWarnings = (on: boolean) => patchAccount({ warnings: on })
+
+  /** Stacje w okolicy: orientacyjne ceny demo nadpisane zgłoszeniami stacji (API) i użytkowników. */
+  const stations = useMemo<Station[]>(
+    () =>
+      demoStations(state.account.place).map((st) => {
+        const o = state.fuel[st.id]
+        return o ? { ...st, prices: { ...st.prices, ...o.prices }, updatedAt: o.at, source: o.source } : st
+      }),
+    [state.account.place, state.fuel],
+  )
+  /** Zgłoszenie ceny: od użytkownika (po zdjęciu pylonu) albo z panelu stacji; nierealne kwoty odrzucamy. */
+  const reportFuel = (stationId: string, fuel: Fuel, grosze: number, source: PriceSource = 'users'): boolean => {
+    if (!validPrice(fuel, grosze)) return false
+    setState((s) => {
+      const prev = s.fuel[stationId]
+      return { ...s, fuel: { ...s.fuel, [stationId]: { prices: { ...prev?.prices, [fuel]: grosze }, at: Date.now(), source } } }
+    })
+    return true
   }
   const hideAd = () => patchAccount({ adHiddenAt: Date.now() })
 
@@ -473,6 +529,7 @@ function useStoreValue() {
     mustRefresh,
     finishOnboarding,
     setLang,
+    setSkin,
     setPlace,
     setInterests,
     setNotif,
@@ -480,6 +537,14 @@ function useStoreValue() {
     buyPlan,
     refresh,
     invite,
+    setPseudonym,
+    setAddress,
+    toggleFavorite,
+    setWarnings,
+    stations,
+    reportFuel,
+    nameOf,
+    shown,
     hideAd,
     startKyc,
     mute,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, orderTotal, handoverCode, inviteMonths, rentalUnits, withBonusMonths, renewalReminder } from './pricing'
+import { COMMISSION, DAY, PRICES, afterPayment, canPublish, daysLeft, effectivePlan, isAvailable, isShown, listingsThisMonth, needsRefresh, orderTotal, handoverCode, rentalUnits, renewalReminder } from './pricing'
 
 const now = Date.UTC(2026, 9, 15, 12)
 
@@ -26,14 +26,6 @@ describe('plany', () => {
     expect(renewalReminder(daysLeft({ plan: 'annual', planUntil: now + 25 * DAY }, now))).toBe(30)
     expect(renewalReminder(daysLeft({ plan: 'business', planUntil: now + 5 * DAY }, now))).toBe(7)
     expect(renewalReminder(daysLeft({ plan: 'annual', planUntil: now + DAY / 2 }, now))).toBe(1)
-  })
-  it('100 wysłanych zaproszeń = miesiąc gratis, najwyżej 12', () => {
-    expect(inviteMonths(99, 0)).toBe(0)
-    expect(inviteMonths(100, 0)).toBe(1)
-    expect(inviteMonths(250, 1)).toBe(1)
-    expect(inviteMonths(5000, 0)).toBe(12)
-    expect(withBonusMonths({ plan: 'free' }, 1, now)).toEqual({ plan: 'annual', planUntil: now + 30 * DAY })
-    expect(withBonusMonths({ plan: 'annual', planUntil: now + 10 * DAY }, 1, now)).toEqual({ plan: 'annual', planUntil: now + 40 * DAY })
   })
   it('ogłoszenia sąsiedzkie nie liczą się do limitu', () => {
     expect(listingsThisMonth([{ createdAt: now, category: 'community' }, { createdAt: now, category: 'tools' }], now)).toBe(1)

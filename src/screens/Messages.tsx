@@ -8,7 +8,7 @@ import { ME } from '../data/seed'
 const LINK = /(https?:\/\/|www\.)\S+/i
 
 export function Messages() {
-  const { t, chats, users, listings, readAt } = useStore()
+  const { t, chats, users, listings, readAt, nameOf } = useStore()
   const sorted = [...chats].filter((c) => c.messages.length).sort((a, b) => (b.messages.at(-1)?.at ?? 0) - (a.messages.at(-1)?.at ?? 0))
   return (
     <div className="pb-6">
@@ -26,7 +26,7 @@ export function Messages() {
                 <Avatar user={other} size={50} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate font-semibold">{other.name}</span>
+                    <span className="truncate font-semibold">{nameOf(other.id)}</span>
                     <span className={cx('tnum shrink-0 text-[13px]', unread ? 'font-semibold text-link' : 'text-muted')}>{timeAgo(last.at, t)}</span>
                   </div>
                   <div className="truncate text-[14px] text-muted">{listing?.title}</div>
@@ -44,7 +44,7 @@ export function Messages() {
 
 export function ChatScreen() {
   const { id } = useParams()
-  const { t, locale, account, chats, users, listings, orders, sendMessage, relation, markRead } = useStore()
+  const { t, locale, account, chats, users, listings, orders, sendMessage, relation, markRead, nameOf } = useStore()
   const chat = chats.find((c) => c.id === id)
   const [text, setText] = useState('')
   const end = useRef<HTMLDivElement>(null)
@@ -72,7 +72,7 @@ export function ChatScreen() {
         back
         title={
           <span className="inline-flex max-w-full flex-col items-center leading-tight">
-            <span className="truncate text-[17px]">{other.name}</span>
+            <span className="truncate text-[17px]">{nameOf(other.id)}</span>
             <span className="truncate text-[12px] font-normal text-muted">{relationText(relation(other.id), other, users, t)}</span>
           </span>
         }

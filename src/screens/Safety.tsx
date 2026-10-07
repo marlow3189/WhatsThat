@@ -4,7 +4,12 @@ import { Avatar, Button, Group, Header, Notice, Row, ShareSheet, cx, timeAgo } f
 import { Icon } from '../components/icons'
 import { BRAND } from '../config'
 import { ME } from '../data/seed'
-import { INVITES_PER_MONTH } from '../lib/pricing'
+import { Link } from 'react-router'
+import { distanceKm, formatDistance } from '../lib/geo'
+import { bestMode, formatMinutes, minutes } from '../lib/travel'
+import { isOpen, maskPhone } from '../lib/privacy'
+import { missingInOrbit, orbitLevel, orbitScore, planCoverage } from '../lib/orbit'
+import { categoryById } from '../lib/categories'
 
 /** Zastrzeżenie numeru: jak zastrzeżenie PESEL, tylko dla konta w aplikacji. */
 export function Restrict() {
@@ -107,72 +112,120 @@ export function Trusted() {
 
 /** Kontakty z telefonu, których jeszcze tu nie ma (w aplikacji natywnej: wtyczka Contacts). */
 const PHONE_CONTACTS = ['Agnieszka, sąsiadka', 'Wujek Staszek', 'Kuba z pracy', 'Monika', 'Paweł rower', 'Basia']
-/** Reszta książki adresowej w demo (w aplikacji: numery z telefonu, które jeszcze nie mają konta). */
-const MORE_CONTACTS = Array.from({ length: 128 }, (_, i) => `kontakt-${i + 1}`)
 
-/** Polecanie jak w WhatsAppie: SMS z linkiem do instalacji, wysyłany z telefonu użytkownika (koszt 0 zł). */
+/**
+ * Znajomi i polecanie bez nagród pieniężnych: pokazujemy „siłę orbity”, czyli ile spraw załatwisz u swoich,
+ * i czego w okolicy brakuje. Zaproszenie to SMS z telefonu użytkownika (koszt 0 zł) albo kod QR.
+ */
 export function Friends() {
-  const { t, users, listings, relation, account, invite } = useStore()
+  const { t, users, listings, relation, account, invite, visibleListings, nameOf, shown } = useStore()
   const [shareApp, setShareApp] = useState(false)
+  const here = account.place
   const friends = users[ME].friends.map((id) => users[id])
   const fof = Object.values(users).filter((u) => u.id !== ME && relation(u.id).circle === 2)
-  const sent = account.invited.length
-  const inCycle = sent % INVITES_PER_MONTH
-  const toGo = INVITES_PER_MONTH - inCycle
-  const all = [...PHONE_CONTACTS, ...MORE_CONTACTS]
-  const left = all.filter((c) => !account.invited.includes(c)).length
+  const pool = visibleListings.map((r) => ({ ...r, km: distanceKm(here, r.listing.place) }))
+  const near = pool.filter((h) => h.km <= 5).length
+  const score = orbitScore(friends.filter((u) => !u.restricted).length, fof.length, near)
+  const level = orbitLevel(score)
+  const cover = planCoverage(pool)
+  const missing = missingInOrbit(account.interests, pool.filter((h) => h.rel.circle <= 2).map((h) => h.listing)).slice(0, 4)
   const link = `https://${BRAND.domain}/z/${ME}`
   const msg = t('f.inviteMsg', { link })
+  const km = (id: string) => distanceKm(here, users[id].place)
+  const eta = (id: string) => {
+    const d = km(id)
+    const mode = bestMode(d)
+    return `${formatDistance(d)} · ${formatMinutes(minutes(d, mode))} ${t(`go.${mode}`)}`
+  }
 
   return (
     <div className="flex flex-col gap-6 pb-8">
       <Header back title={t('f.title')} />
-      <div className="mx-4 flex flex-col gap-3 rounded-[28px] bg-primary p-5 text-white shadow-[0_14px_34px_rgb(46_91_255/0.3)]">
-        <p className="text-[20px] leading-tight font-extrabold">{t('f.reward', { n: INVITES_PER_MONTH })}</p>
-        <div className="h-2.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuemin={0} aria-valuemax={INVITES_PER_MONTH} aria-valuenow={inCycle}>
-          <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${(inCycle / INVITES_PER_MONTH) * 100}%` }} />
+      <section className="hero mx-4 flex flex-col gap-3 rounded-[28px] p-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-[20px] leading-tight font-extrabold">{t('f.strength')}</p>
+          <p className="tnum text-[28px] leading-none font-extrabold">{score}</p>
         </div>
-        <p className="tnum text-[14px] text-white/85">{t('f.progress', { n: inCycle, total: INVITES_PER_MONTH, left: toGo })}</p>
-        {account.inviteRewards > 0 && <p className="flex items-center gap-2 rounded-[14px] bg-white/15 px-3 py-2 text-[14px] font-semibold"><Icon name="check" size={16} strokeWidth={3} /> {t('f.earned', { n: account.inviteRewards })}</p>}
-        <div className="flex flex-wrap gap-2">
-          {left > 0 && (
-            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(...all)} className="press inline-flex min-h-10 items-center gap-2 rounded-full bg-white px-4 text-[15px] font-bold text-primary">
-              <Icon name="send" size={17} /> {t('f.inviteAll', { n: left })}
-            </a>
-          )}
-          <Button size="sm" className="min-h-10 bg-white/20! text-white!" onClick={() => setShareApp(true)}><Icon name="share" size={17} /> {t('f.shareApp')}</Button>
+        <div className="h-2.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={score} aria-label={t('f.strength')}>
+          <div className="h-full rounded-full bg-white transition-all" style={{ width: `${score}%` }} />
         </div>
-        <p className="text-[12px] leading-snug text-white/70">{t('f.fair')}</p>
-      </div>
+        <p className="text-[15px] leading-snug font-semibold">{t(`f.level.${level}`)}</p>
+        <p className="text-[15px] leading-snug font-semibold">{t('f.cover', { done: cover.done, total: cover.total })}</p>
+        {missing.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-[14px] font-semibold">{t('f.missing')}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {missing.map((c) => <span key={c} className="rounded-full bg-white/20 px-3 py-1 text-[13px] font-bold">{categoryById(c).label[account.lang]}</span>)}
+            </div>
+          </div>
+        )}
+        <div className="flex flex-wrap gap-2 pt-1">
+          <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(...PHONE_CONTACTS)} className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-[15px] font-bold text-ink">
+            <Icon name="send" size={17} /> {t('f.inviteNear')}
+          </a>
+          <Link to="/qr" className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-white/20 px-4 text-[15px] font-bold"><Icon name="qr" size={17} /> {t('qr.short')}</Link>
+          <button type="button" onClick={() => setShareApp(true)} className="press inline-flex min-h-11 items-center gap-2 rounded-full bg-white/20 px-4 text-[15px] font-bold"><Icon name="share" size={17} /> {t('f.shareApp')}</button>
+        </div>
+      </section>
+
+      {account.favorites.length > 0 && (
+        <Group label={t('fav.title')} footer={t('fav.hint')}>
+          {account.favorites.filter((f) => users[f.id]).map((f) => {
+            const u = users[f.id]
+            const open = isOpen(u.hours)
+            return (
+              <Link key={f.id} to={`/u/${f.id}`} className="flex min-h-16 items-center gap-3 px-4 py-2.5 active:bg-fill">
+                <Avatar user={shown(f.id)} size={40} />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center gap-1.5"><Icon name="star" size={15} className="shrink-0 text-accent" /><span className="truncate font-semibold">{nameOf(f.id)}</span></span>
+                  <span className="block truncate text-[14px] text-muted">{[f.topic, u.hours].filter(Boolean).join(' · ')}</span>
+                  <span className="block truncate text-[13px] text-muted">{eta(f.id)}</span>
+                </span>
+                {open !== undefined && <span className={cx('shrink-0 rounded-full px-2.5 py-0.5 text-[12px] font-bold', open ? 'bg-ok-soft text-ok' : 'bg-fill text-muted')}>{t(open ? 'fav.open' : 'fav.closed')}</span>}
+              </Link>
+            )
+          })}
+        </Group>
+      )}
+
+      <Group label={t('f.inApp')}>
+        {friends.map((u) => (
+          <Link key={u.id} to={`/u/${u.id}`} className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-fill">
+            <Avatar user={u} size={36} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{u.name}</span>
+              <span className={cx('block truncate text-[14px]', u.restricted ? 'text-danger' : 'text-muted')}>
+                {u.restricted ? t('rel.restricted') : [u.work && categoryById(u.work).label[account.lang], t('f.items', { n: listings.filter((l) => l.ownerId === u.id).length }), eta(u.id)].filter(Boolean).join(' · ')}
+              </span>
+            </span>
+            <Icon name="chevron" size={16} strokeWidth={2.4} className="shrink-0 text-fill-strong" />
+          </Link>
+        ))}
+      </Group>
+
+      <Group label={t('f.fof')} footer={t('f.fofHint')}>
+        {fof.map((u) => (
+          <Link key={u.id} to={`/u/${u.id}`} className="flex min-h-14 items-center gap-3 px-4 py-2 active:bg-fill">
+            <Avatar user={shown(u.id)} size={36} />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{nameOf(u.id)} <span className="tnum text-[13px] text-muted">{maskPhone(u.phone)}</span></span>
+              <span className="block truncate text-[14px] text-muted">{t('rel.fof', { names: relation(u.id).via.map((v) => users[v].name.split(' ')[0]).join(', ') })} · {eta(u.id)}</span>
+            </span>
+            <Icon name="chevron" size={16} strokeWidth={2.4} className="shrink-0 text-fill-strong" />
+          </Link>
+        ))}
+      </Group>
 
       <Group label={t('f.contacts')}>
         {PHONE_CONTACTS.map((c) => (
           <div key={c} className="flex min-h-14 items-center gap-3 px-4 py-2">
             <span className="grid size-9 place-items-center rounded-full bg-fill font-semibold text-muted">{c[0]}</span>
             <span className="min-w-0 flex-1 truncate">{c}</span>
-            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(c)} className="press inline-flex min-h-9 items-center rounded-full bg-sky px-3.5 text-[15px] font-bold text-primary">
+            <a href={`sms:?&body=${encodeURIComponent(msg)}`} onClick={() => invite(c)} className="press inline-flex min-h-9 items-center rounded-full bg-fill px-3.5 text-[15px] font-bold text-link">
               {account.invited.includes(c) ? t('f.again') : t('f.invite')}
             </a>
           </div>
         ))}
-      </Group>
-
-      <Group label={t('f.inApp')}>
-        {friends.map((u) => (
-          <div key={u.id} className="flex min-h-14 items-center gap-3 px-4 py-2">
-            <Avatar user={u} size={36} />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate">{u.name}</span>
-              <span className={cx('block text-[14px]', u.restricted ? 'text-danger' : 'text-muted')}>
-                {u.restricted ? t('rel.restricted') : t('f.items', { n: listings.filter((l) => l.ownerId === u.id).length })}
-              </span>
-            </span>
-          </div>
-        ))}
-      </Group>
-
-      <Group label={t('f.fof')}>
-        {fof.map((u) => <Row key={u.id} title={u.name} detail={t('rel.fof', { names: relation(u.id).via.map((v) => users[v].name.split(' ')[0]).join(', ') })} />)}
       </Group>
       {shareApp && <ShareSheet text={msg} url={link} t={t} onClose={() => setShareApp(false)} />}
     </div>

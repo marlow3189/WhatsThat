@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { HashRouter, Link, MemoryRouter, NavLink, Route, Routes, useLocation } from 'react-router'
+import { Suspense, lazy, useEffect, useState, type MouseEvent } from 'react'
+import { flushSync } from 'react-dom'
+import { HashRouter, Link, MemoryRouter, NavLink, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { StoreProvider, useStore } from './data/store'
 import { cx } from './components/ui'
 import { Icon } from './components/icons'
@@ -12,7 +13,12 @@ import { ChatScreen, Messages } from './screens/Messages'
 import { Add } from './screens/Add'
 import { Interests, Me, Muted, MyListings, NotificationSettings, Orders, Payouts, Privacy, Stall, Terms } from './screens/Me'
 import { Friends, Install, Notifications, Restrict, Trusted } from './screens/Safety'
-import { Operator } from './screens/Operator'
+import { Profile } from './screens/Profile'
+
+// Rzadziej otwierane ekrany ładują się dopiero, gdy są potrzebne (mniejszy start aplikacji).
+const Operator = lazy(() => import('./screens/Operator').then((m) => ({ default: m.Operator })))
+const Fuel = lazy(() => import('./screens/Fuel').then((m) => ({ default: m.Fuel })))
+const Qr = lazy(() => import('./screens/Qr').then((m) => ({ default: m.Qr })))
 import { getConsent, hasTrackers, setConsent } from './lib/analytics'
 
 // Podgląd jednoplikowy działa w ramce bez dostępu do adresu, więc trasy trzyma w pamięci.
@@ -29,17 +35,30 @@ export function App() {
 }
 
 function Shell() {
-  const { account } = useStore()
+  const { account, chats, readAt } = useStore()
   const { pathname } = useLocation()
   useEffect(() => window.scrollTo(0, 0), [pathname, account.onboarded])
+  // Liczba nieprzeczytanych na ikonie aplikacji (Badging API: Android, iOS 16.4+ dla aplikacji z ekranu początkowego).
+  const unread = chats.filter((c) => {
+    const last = c.messages.at(-1)
+    return last && last.from !== 'me' && last.at > (readAt[c.id] ?? 0)
+  }).length
+  useEffect(() => {
+    const nav = navigator as Navigator & { setAppBadge?: (n: number) => Promise<void>; clearAppBadge?: () => Promise<void> }
+    ;(unread ? nav.setAppBadge?.(unread) : nav.clearAppBadge?.())?.catch(() => {})
+  }, [unread])
   if (!account.onboarded) return <Onboarding />
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg">
       <RestrictedBanner />
       <Toast />
       <main className="flex flex-1 flex-col pb-28">
+        <Suspense fallback={<div className="grid flex-1 place-items-center p-10 text-muted" aria-busy="true">…</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/u/:id" element={<Profile />} />
+          <Route path="/paliwa" element={<Fuel />} />
+          <Route path="/qr" element={<Qr />} />
           <Route path="/szukaj" element={<Search />} />
           <Route path="/l/:id" element={<ListingScreen />} />
           <Route path="/zamowienie/:id" element={<OrderScreen />} />
@@ -63,6 +82,7 @@ function Shell() {
           <Route path="/ustawienia/powiadomienia" element={<NotificationSettings />} />
           <Route path="/operator" element={<Operator />} />
         </Routes>
+        </Suspense>
       </main>
       <TabBar />
       <ConsentBanner />
@@ -132,6 +152,15 @@ function Toast() {
 /** Pływający pasek zakładek jak w iOS 26. */
 function TabBar() {
   const { t, chats, readAt, restartAdd } = useStore()
+  const navigate = useNavigate()
+  /** Płynne przejście między zakładkami (View Transitions API); bez wsparcia w przeglądarce zwykła nawigacja. */
+  const go = (to: string, extra?: () => void) => (e: MouseEvent) => {
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
+    extra?.()
+    if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    e.preventDefault()
+    doc.startViewTransition(() => flushSync(() => navigate(to)))
+  }
   const unread = chats.filter((c) => {
     const last = c.messages.at(-1)
     return last && last.from !== 'me' && last.at > (readAt[c.id] ?? 0)
@@ -148,7 +177,7 @@ function TabBar() {
       <div className="grid h-[68px] grid-cols-5 items-center rounded-full bg-surface/95 px-1.5 shadow-[0_10px_36px_rgb(28_26_23/0.14)] backdrop-blur-xl">
         {tabs.map((tab) =>
           tab.icon === 'plus' ? (
-            <NavLink key={tab.to} to={tab.to} onClick={tab.onClick} aria-label={tab.label} className="press mx-auto grid size-[52px] place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgb(46_91_255/0.35)]">
+            <NavLink key={tab.to} to={tab.to} onClick={go(tab.to, tab.onClick)} aria-label={tab.label} className="press mx-auto grid size-[52px] place-items-center rounded-full bg-primary text-white shadow-[0_6px_16px_rgb(18_19_22/0.3)]">
               <Icon name="plus" size={26} strokeWidth={2.4} />
             </NavLink>
           ) : (
@@ -156,14 +185,14 @@ function TabBar() {
               key={tab.to}
               to={tab.to}
               end={tab.to === '/'}
-              onClick={tab.onClick}
+              onClick={go(tab.to, tab.onClick)}
               className={({ isActive }) => cx('press relative flex h-full flex-col items-center justify-center gap-0.5', isActive ? 'text-primary' : 'text-muted')}
             >
               {({ isActive }) => (
                 <>
                   <Icon name={tab.icon} size={23} strokeWidth={isActive ? 2.3 : 1.9} />
                   <span className={cx('max-w-full truncate px-1 text-[10px]', isActive ? 'font-bold' : 'font-medium')}>{tab.label}</span>
-                  {!!tab.badge && <span className="tnum absolute top-2 left-[calc(50%+4px)] grid min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-surface">{tab.badge}</span>}
+                  {!!tab.badge && <span className="tnum absolute top-2 left-[calc(50%+4px)] grid min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[11px] font-bold text-white ring-2 ring-surface">{tab.badge}</span>}
                 </>
               )}
             </NavLink>

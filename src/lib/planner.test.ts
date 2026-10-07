@@ -13,6 +13,8 @@ describe('planer', () => {
     expect(findRecipe('przeprowadzka w sobotę')?.id).toBe('moving')
     expect(findRecipe('skosić trawnik')?.id).toBe('garden')
     expect(findRecipe('jajka')).toBeUndefined()
+    expect(findRecipe('tani opał na zimę')?.id).toBe('heating')
+    expect(findRecipe('pellet')?.id).toBe('heating')
     for (const r of RECIPES) for (const goal of Object.values(r.goal)) expect(findRecipe(goal)?.id, goal).toBe(r.id)
   })
   it('normalizuje polskie znaki i odmianę', () => {

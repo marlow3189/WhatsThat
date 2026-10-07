@@ -54,6 +54,13 @@ const PATHS: Record<string, ReactNode> = {
   snow: <><path d="M7 15h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 15Z" /><path d="M8.5 19h.01M12 20.5h.01M15.5 19h.01" /></>,
   storm: <><path d="M7 15h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.5 1.6A3.3 3.3 0 0 0 7 15Z" /><path d="m12.5 15-2 3.5h3l-2 3" /></>,
   fog: <path d="M4 9h16M6 13h12M4 17h16" />,
+  flame: <path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.4 2.6-5.2 3.6-8.4.4 1.8 1.4 3 2.6 3.6.2-2.8 1.4-5 3.2-6.6.2 3.6 2.6 5.6 2.6 9.4C18 18.6 15.6 21 12 21Z" />,
+  fuel: <><path d="M5 20V5.5A1.5 1.5 0 0 1 6.5 4h6A1.5 1.5 0 0 1 14 5.5V20M3.5 20h12M5 10h9" /><path d="M14 8.5h1.5a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 0 3 0V8.2L17.5 6" /></>,
+  walk: <><circle cx="13" cy="4.5" r="1.8" /><path d="m9 21 2.2-6.2L13.5 17v4M7.5 11.5 10 8l3 1.2 2.2 3.3h2.3M11.2 14.8 12 10" /></>,
+  star: <path d="m12 3.8 2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.7l-5.1 2.7 1-5.6-4.1-4 5.7-.8Z" />,
+  qr: <><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><path d="M14 14h2v2h-2zM18 14h2M14 18h2M18 18h2v2M16 16h2v2" /></>,
+  mic: <><rect x="9" y="3.5" width="6" height="11" rx="3" /><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5" /></>,
+  alert: <><path d="M12 4 2.8 19.5h18.4z" /><path d="M12 10v4.5M12 17h.01" /></>,
   route: <><circle cx="6" cy="18" r="2" /><circle cx="18" cy="6" r="2" /><path d="M8 18h7.5a3.5 3.5 0 0 0 0-7h-7a3.5 3.5 0 0 1 0-7H16" /></>,
 }
 
@@ -69,10 +76,10 @@ export function Icon({ name, size = 22, ...props }: { name: string; size?: numbe
 export function Mark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden>
-      <rect width="96" height="96" rx="24" fill="var(--accent)" />
-      <ellipse cx="48" cy="48" rx="33" ry="15" fill="none" stroke="var(--ink)" strokeWidth="5" transform="rotate(-28 48 48)" />
-      <circle cx="48" cy="48" r="14" fill="var(--ink)" />
-      <circle cx="77" cy="32.5" r="8" fill="var(--primary)" stroke="var(--accent)" strokeWidth="3" />
+      <rect width="96" height="96" rx="24" fill="var(--mark-bg)" />
+      <ellipse cx="48" cy="48" rx="33" ry="15" fill="none" stroke="var(--mark-ink)" strokeWidth="5" transform="rotate(-28 48 48)" />
+      <circle cx="48" cy="48" r="14" fill="var(--mark-ink)" />
+      <circle cx="77" cy="32.5" r="8" fill="var(--mark-dot)" stroke="var(--mark-bg)" strokeWidth="3" />
     </svg>
   )
 }

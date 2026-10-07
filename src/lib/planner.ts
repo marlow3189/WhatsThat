@@ -58,6 +58,16 @@ export const RECIPES: Recipe[] = [
       { id: 'help', title: L('Ktoś, kto zrobi to za Ciebie', 'Someone to do it for you', 'Jemand, der es für dich macht', 'Хтось, хто зробить за вас', 'Někdo, kdo to udělá za vás', 'Niekto, kto to urobí za vás', 'Valaki, aki megcsinálja helyetted', 'Qualcuno che lo faccia per te', 'Alguien que lo haga por ti'), terms: ['skosi', 'kosze', 'ogrod', 'garden', 'gartenpfleg', 'zahrad', 'kert', 'giardin', 'jardin'] },
     ],
   },
+  {
+    id: 'heating',
+    keywords: ['opal', 'opał', 'pellet', 'peletu', 'ekogroszek', 'wegiel', 'węgiel', 'ogrzew', 'heating fuel', 'firewood', 'brennstoff', 'heizmaterial', 'kohle', 'паливо', 'пелет', 'вугілля', 'дрова', 'palivo', 'pelety', 'uhli', 'uhlí', 'uhlie', 'tuzelo', 'tüzelő', 'szen', 'szén', 'combusti', 'legna', 'carbone', 'calefacc', 'leña'],
+    goal: L('Opał na zimę', 'Heating fuel for winter', 'Brennstoff für den Winter', 'Паливо на зиму', 'Palivo na zimu', 'Palivo na zimu', 'Tüzelő télre', 'Combustibile per l’inverno', 'Combustible para el invierno'),
+    steps: [
+      { id: 'fuel', title: L('Pellet, ekogroszek, węgiel albo drewno', 'Pellets, pea coal, coal or firewood', 'Pellets, Kohle oder Brennholz', 'Пелети, вугілля або дрова', 'Pelety, uhlí nebo dřevo', 'Pelety, uhlie alebo drevo', 'Pellet, szén vagy tűzifa', 'Pellet, carbone o legna', 'Pellets, carbón o leña'), terms: ['pellet', 'ekogroszek', 'wegiel', 'węgiel', 'drewno', 'brykiet', 'kohle', 'brennholz', 'пелет', 'вугілл', 'дров', 'pelet', 'uhli', 'uhlie', 'drevo', 'szen', 'tuzifa', 'carbone', 'legna', 'carbon', 'lena'] },
+      { id: 'haul', title: L('Transport, jeśli nie ma dowozu', 'Transport if there is no delivery', 'Transport, falls keine Lieferung', 'Перевезення, якщо немає доставки', 'Doprava, pokud chybí dovoz', 'Doprava, ak chýba dovoz', 'Szállítás, ha nincs kiszállítás', 'Trasporto, se non c’è consegna', 'Transporte, si no hay entrega'), terms: ['przyczep', 'bus', 'transit', 'wywrotk', 'trailer', 'anhanger', 'причіп', 'vozik', 'utanfuto', 'rimorch', 'remolque'] },
+      { id: 'sweep', title: L('Przegląd komina i kotła', 'Chimney and boiler check', 'Schornstein- und Kesselprüfung', 'Перевірка димаря та котла', 'Revize komína a kotle', 'Revízia komína a kotla', 'Kémény- és kazánellenőrzés', 'Controllo di canna fumaria e caldaia', 'Revisión de chimenea y caldera'), terms: ['kominiar', 'komin', 'chimney', 'schornstein', 'димар', 'kominik', 'kemeny', 'spazzacamin', 'deshollin'] },
+    ],
+  },
 ]
 
 /** Małe litery, bez znaków diakrytycznych (ł → l), żeby „Piasek”, „piasku” i „PIASEK” się spotkały. */

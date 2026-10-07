@@ -1,6 +1,6 @@
 import type { Place } from './types'
 
-export type Scope = 'radius' | 'town' | 'voivodeship' | 'country'
+export type Scope = 'radius' | 'town' | 'voivodeship' | 'country' | 'europe'
 
 export interface LocationFilter {
   scope: Scope
@@ -27,6 +27,9 @@ export function matchesLocation(me: Place, item: Place, filter: LocationFilter):
     case 'voivodeship':
       return me.voivodeship === item.voivodeship
     case 'country':
+      return (me.country ?? 'PL') === (item.country ?? 'PL')
+    case 'europe':
+      // cała Europa: także przygraniczne oferty z sąsiednich krajów
       return true
   }
 }

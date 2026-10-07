@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { useStore } from '../data/store'
 import { Avatar, Button, CircleButton, Field, Group, Header, Input, Notice, Row, ShareSheet, Sheet, Thumb, cx, formatDay, inputCls, listingUrl, money, priceText, relationText } from '../components/ui'
 import { Icon } from '../components/icons'
@@ -20,7 +20,7 @@ export function ListingScreen() {
   const { id } = useParams()
   const nav = useNavigate()
   const store = useStore()
-  const { t, locale, account, listings, users, relation, openChat, sendMessage, placeOrder, mute, forget, report } = store
+  const { t, locale, account, listings, users, relation, openChat, sendMessage, placeOrder, mute, forget, report, nameOf, shown, setAddress } = store
   const listing = listings.find((l) => l.id === id)
   const [sheet, setSheet] = useState<'share' | 'rights' | 'more' | 'report' | null>(null)
   const [qty, setQty] = useState(1)
@@ -29,6 +29,8 @@ export function ListingScreen() {
   const [locker, setLocker] = useState('')
   const [pay, setPay] = useState<PayMethod>('blik')
   const [blik, setBlik] = useState('')
+  // Adres zbieramy dopiero przy pierwszej wysyłce kurierem (nie przy rejestracji), potem pamiętamy.
+  const [addr, setAddr] = useState(() => store.account.address ?? { street: '', postcode: '', city: store.account.place.town })
   const today = new Date()
   const [from, setFrom] = useState(iso(new Date(today.getTime() + 86_400_000)))
   const [to, setTo] = useState(iso(new Date(today.getTime() + 3 * 86_400_000)))
@@ -72,6 +74,7 @@ export function ListingScreen() {
   }
 
   const submit = () => {
+    if (needAddress) setAddress({ street: addr.street.trim(), postcode: addr.postcode.trim(), city: addr.city.trim() })
     const orderId = placeOrder({
       listing, qty, total, pay: listing.kind === 'sell' ? effectivePay : 'cash', delivery, lockerCode: locker || undefined,
       from: listing.kind === 'rent' || listing.kind === 'service' ? from : undefined,
@@ -91,7 +94,9 @@ export function ListingScreen() {
       : listing.kind === 'give' ? t('l.requestFree')
       : listing.kind === 'wanted' ? t('l.haveIt')
       : t('l.propose')
-  const canSubmit = available && (listing.kind !== 'sell' || effectivePay !== 'blik' || blik.length === 6) && (delivery === 'pickup' || delivery === 'courier' || locker.length >= 3 || delivery === 'other')
+  const needAddress = delivery === 'courier'
+  const addressOk = !needAddress || (addr.street.trim().length > 3 && /^\d{2}-?\d{3}$|^\d{4,5}$/.test(addr.postcode.trim()) && addr.city.trim().length > 1)
+  const canSubmit = available && addressOk && (listing.kind !== 'sell' || effectivePay !== 'blik' || blik.length === 6) && (delivery === 'pickup' || delivery === 'courier' || locker.length >= 3 || delivery === 'other')
 
   return (
     <div className="pb-8">
@@ -123,9 +128,9 @@ export function ListingScreen() {
         {flash && <div className="px-4"><Notice tone="danger">{flash}</Notice></div>}
 
         <div className="card mx-4 flex items-center gap-3 p-3.5">
-          <Avatar user={owner} size={48} anonymous={anon} />
+          {mine || anon ? <Avatar user={shown(owner.id)} size={48} anonymous={anon} /> : <Link to={`/u/${owner.id}`} aria-label={nameOf(owner.id)}><Avatar user={shown(owner.id)} size={48} /></Link>}
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{mine ? account.name : anon ? t('rel.incognito') : owner.name}</p>
+            <p className="truncate font-semibold">{mine ? account.name : anon ? t('rel.incognito') : nameOf(owner.id)}</p>
             <p className="flex items-center gap-1 text-[14px] text-muted">
               {!owner.restricted && <Icon name="shield" size={14} className="text-ok" />}
               <span className="truncate">{mine ? t('me.verified') : relationText(rel, owner, users, t, anon)}</span>
@@ -181,6 +186,16 @@ export function ListingScreen() {
               <Field id="locker" label={t('l.locker')}>
                 <Input id="locker" value={locker} onChange={(e) => setLocker(e.target.value.toUpperCase())} placeholder="WAW123M" className="bg-fill shadow-none" />
               </Field>
+            )}
+            {needAddress && (
+              <div className="flex flex-col gap-3 rounded-[18px] bg-fill p-3">
+                <p className="text-[13px] leading-snug text-muted">{t('addr.why')}</p>
+                <Field id="street" label={t('addr.street')}><Input id="street" autoComplete="street-address" value={addr.street} onChange={(e) => setAddr({ ...addr, street: e.target.value })} /></Field>
+                <div className="grid grid-cols-[7rem_1fr] gap-3">
+                  <Field id="postcode" label={t('addr.postcode')}><Input id="postcode" autoComplete="postal-code" inputMode="numeric" value={addr.postcode} onChange={(e) => setAddr({ ...addr, postcode: e.target.value })} placeholder="00-000" className="tnum" /></Field>
+                  <Field id="city" label={t('addr.city')}><Input id="city" autoComplete="address-level2" value={addr.city} onChange={(e) => setAddr({ ...addr, city: e.target.value })} /></Field>
+                </div>
+              </div>
             )}
             {listing.kind === 'sell' && delivery === 'pickup' && (
               <Field id="pickup" label={t('l.when')}>

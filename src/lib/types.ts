@@ -8,7 +8,7 @@ export type Circle = 1 | 2 | 3
 /** Co ktoś robi z ogłoszeniem. „wanted” = szukam. */
 export type Kind = 'sell' | 'rent' | 'service' | 'give' | 'swap' | 'garage' | 'wanted'
 
-export type Unit = 'item' | 'kg' | 'pack' | 'litre' | 'tonne' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
+export type Unit = 'item' | 'kg' | 'pack' | 'bag' | 'litre' | 'tonne' | 'm3' | 'hour' | 'day' | 'week' | 'month' | 'night' | 'fixed'
 
 export type Plan = 'free' | 'annual' | 'business'
 
@@ -42,6 +42,25 @@ export interface User {
   payouts?: boolean
   /** branża, w której ktoś działa (id kategorii), pokazywana znajomym przy rejestracji */
   work?: string
+  /** pseudonim widoczny dla osób spoza kręgu znajomych (zamiast imienia) */
+  pseudonym?: string
+  /** numer telefonu; obcy widzą tylko kierunkowy i dwie pierwsze cyfry */
+  phone?: string
+  /** godziny sprzedaży / pracy, np. „pon–sob 6:00–13:00” (piekarz, warzywniak) */
+  hours?: string
+}
+
+/** Ulubiony dostawca z tematem, np. piekarz: „chleb i bułki”. */
+export interface Favorite {
+  id: string
+  topic: string
+}
+
+/** Adres podajemy dopiero przy pierwszej wysyłce kurierem (minimalizacja danych). */
+export interface Address {
+  street: string
+  postcode: string
+  city: string
 }
 
 export type ListingStatus = 'active' | 'reserved' | 'sold' | 'removed'
@@ -204,8 +223,14 @@ export interface Account {
   unlockApprovals: string[]
   notif: NotificationPrefs
   invited: string[]
-  /** ile setek wysłanych zaproszeń już nagrodzono miesiącem gratis */
-  inviteRewards: number
+  /** pseudonim dla osób spoza kręgu znajomych */
+  pseudonym?: string
+  address?: Address
+  favorites: Favorite[]
+  /** komunikaty o zagrożeniach (RCB, IMGW, Meteoalarm…) na głównej */
+  warnings?: boolean
+  /** wygląd: „color” (neutralny z kolorowymi akcentami) albo „blue” (niebieski z wersji 5) */
+  skin?: 'color' | 'blue'
   /** kiedy ukryto reklamę na głównej (plan darmowy) */
   adHiddenAt?: number
   contactsAllowed: boolean

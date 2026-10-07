@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Tile, Toggle, cx, inputCls, listingUrl, money, readPhoto } from '../components/ui'
+import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Tile, Toggle, cx, hueOf, inputCls, listingUrl, money, readPhoto } from '../components/ui'
 import { Icon } from '../components/icons'
 import { CATEGORIES, categoryById } from '../lib/categories'
 import { PRICES, UNITS_BY_KIND } from '../lib/pricing'
@@ -46,6 +46,8 @@ export function Add() {
   const [share, setShare] = useState(false)
   // Ogłoszenia sąsiedzkie (zaginione zwierzę, zbiórka) są zawsze darmowe, także po wykorzystaniu limitu.
   const [community, setCommunity] = useState(false)
+  // Każdy krok zaczyna się od góry ekranu (formularz nie zostaje przewinięty w połowie).
+  useEffect(() => window.scrollTo(0, 0), [step, category])
 
   const published = publishedId ? listings.find((l) => l.id === publishedId) : undefined
   const prices = PRICES[account.currency]
@@ -167,26 +169,40 @@ export function Add() {
           </Group>
         )}
 
-        {step === 'category' && (
-          <>
-            <Group label={`${t(`kind.${kind}`)} · ${t('a.category')}`}>
+        {step === 'category' && !category && (
+          <section className="flex flex-col gap-2">
+            <h2 className="px-5 text-[15px] font-bold">{`${t(`kind.${kind}`)} · ${t('a.category')}`}</h2>
+            <div className="grid grid-cols-2 gap-2.5 px-4 sm:grid-cols-3">
               {CATEGORIES.filter((c) => c.kinds.includes(kind)).map((c) => (
-                <Row key={c.id} icon={c.icon} title={c.label[lang]} value={category === c.id ? <Icon name="check" className="text-link" strokeWidth={2.4} /> : undefined} chevron={false} onClick={() => chooseCategory(c.id)} />
+                <button key={c.id} type="button" onClick={() => chooseCategory(c.id)} className="press flex min-h-[76px] flex-col items-start justify-between gap-2 rounded-[20px] bg-surface p-3 text-left shadow-[var(--shadow)]">
+                  <span className="tint grid size-9 place-items-center rounded-full" style={{ '--h': hueOf(c.id) } as CSSProperties}><Icon name={c.icon} size={19} /></span>
+                  <span className="text-[14px] leading-tight font-bold">{c.label[lang]}</span>
+                </button>
               ))}
-            </Group>
-            {category && (
-              <div className="flex flex-col gap-4 px-4">
-                <div className="flex flex-wrap gap-2">
-                  {categoryById(category).subs.map((s) => (
-                    <button key={s.id} type="button" onClick={() => setSub(s.id)} aria-pressed={sub === s.id} className={cx('press min-h-9 rounded-full px-3.5 text-[15px]', sub === s.id ? 'bg-ink text-white' : 'bg-surface shadow-[var(--shadow)]')}>
-                      {s.label[lang]}
-                    </button>
-                  ))}
-                </div>
-                <Button onClick={() => setStep('details')}>{t('next')}</Button>
-              </div>
-            )}
-          </>
+            </div>
+          </section>
+        )}
+
+        {step === 'category' && category && (
+          <section className="flex flex-col gap-4 px-4">
+            <div className="card flex items-center gap-3 p-3">
+              <span className="tint grid size-11 shrink-0 place-items-center rounded-full" style={{ '--h': hueOf(category) } as CSSProperties}><Icon name={categoryById(category).icon} size={22} /></span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13px] text-muted">{t('a.category')}</span>
+                <span className="block font-bold">{categoryById(category).label[lang]}</span>
+              </span>
+              <button type="button" onClick={() => setCategory('')} className="min-h-10 px-2 text-[15px] font-semibold text-link">{t('a.change')}</button>
+            </div>
+            <p className="px-1 text-[15px] font-bold">{t('a.subPick')}</p>
+            <div className="flex flex-wrap gap-2">
+              {categoryById(category).subs.map((s) => (
+                <button key={s.id} type="button" onClick={() => { setSub(s.id); setStep('details') }} className="press min-h-11 rounded-full bg-surface px-4 text-[15px] font-semibold shadow-[var(--shadow)]">
+                  {s.label[lang]}
+                </button>
+              ))}
+            </div>
+            <Button variant="secondary" onClick={() => setStep('details')}>{t('a.skip')}</Button>
+          </section>
         )}
 
         {step === 'details' && (

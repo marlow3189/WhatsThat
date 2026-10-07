@@ -13,8 +13,16 @@ const min = 60_000
 const hour = 60 * min
 const day = 24 * hour
 
+/** Numery demo: stałe dla danej osoby (obcy widzą tylko „+48 60…”). */
+const phoneOf = (id: string) => {
+  let h = 0
+  for (const c of id) h = (h * 131 + c.charCodeAt(0)) % 1_000_000_000
+  const n = String(500_000_000 + (h % 300_000_000))
+  return `+48 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
+}
+
 const user = (id: string, name: string, hue: number, place: Place, friends: string[], extra: Partial<User> = {}): User => ({
-  id, name, hue, place, friends, since: Date.UTC(2026, 3, 1), payouts: true, ...extra,
+  id, name, hue, place, friends, since: Date.UTC(2026, 3, 1), payouts: true, phone: phoneOf(id), ...extra,
 })
 
 export function seedUsers(now: number): User[] {
@@ -27,17 +35,20 @@ export function seedUsers(now: number): User[] {
     user('bartek', 'Bartek Wiśniewski', 260, near(waw, 0.08, -0.06), [ME, 'ola'], { restricted: true, since: now - 400 * day }),
     user('ania', 'Ania Lewandowska', 30, near(waw, 0.02, 0.05), ['kasia', 'marek'], { trusted: true, deals: 14 }),
     user('jozef', 'Józef Malinowski', 95, town('Tarczyn'), ['marek'], { trusted: true, deals: 212, work: 'farm' }),
-    user('piotr', 'Piotr Brukarz', 25, town('Piaseczno'), ['marek'], { trusted: true, deals: 48, work: 'services' }),
-    user('henryk', 'Henryk Wróbel', 60, near(waw, 0.005, -0.004), []),
-    user('sklad', 'Skład Budowlany Piaseczno', 35, town('Piaseczno'), [], { business: true }),
+    user('piotr', 'Piotr Brukarz', 25, town('Piaseczno'), ['marek'], { trusted: true, deals: 48, work: 'services', pseudonym: 'Brukarz Piotr' }),
+    user('henryk', 'Henryk Wróbel', 60, near(waw, 0.005, -0.004), [], { pseudonym: 'Heniek z Lipowej' }),
+    user('stefan', 'Stefan Nowicki', 200, near(waw, 0.018, 0.022), ['tomek']),
+    user('sklad', 'Skład Budowlany „Budmat”', 35, town('Piaseczno'), [], { business: true, hours: 'pon–sob 7:00–17:00' }),
+    user('opal', 'Skład Opału „Ciepły Dom”', 15, near(waw, -0.045, 0.03), [], { business: true, hours: 'pon–sob 7:00–16:00', work: 'heating' }),
+    user('piekarnia', 'Piekarnia u Zosi', 40, near(waw, 0.004, 0.006), [], { business: true, hours: 'pon–sob 6:00–13:00', work: 'farm' }),
     user('ewa', 'Ewa Szymańska', 100, town('Pruszków'), ['tomek', 'ola']),
     user('magda', 'Magda Kowalska', 340, town('Konstancin-Jeziorna'), ['ola']),
-    user('kwatery', 'Kwatery Piaseczno', 190, town('Piaseczno'), [], { business: true }),
-    user('wypozyczalnia', 'Wypożyczalnia Mokotów', 45, near(waw, -0.025, 0), [], { business: true }),
-    user('opony', 'Auto-Serwis Grójec', 205, town('Grójec'), [], { business: true }),
-    user('zlota', 'Złota Rączka Piaseczno', 160, town('Piaseczno'), [], { business: true }),
+    user('kwatery', 'Kwatery „Pod Lipą”', 190, town('Piaseczno'), [], { business: true }),
+    user('wypozyczalnia', 'Wypożyczalnia Sprzętu „Centrum”', 45, near(waw, -0.025, 0), [], { business: true, hours: 'pon–pt 8:00–18:00' }),
+    user('opony', 'Auto-Serwis „Opony24”', 205, town('Grójec'), [], { business: true }),
+    user('zlota', 'Złota Rączka 24h', 160, town('Piaseczno'), [], { business: true }),
     user('grzegorz', 'Grzegorz Pawlak', 150, town('Konstancin-Jeziorna'), []),
-    user('iryna', 'Iryna Bondarenko', 300, near(waw, 0.03, -0.01), [], { trusted: true, deals: 31 }),
+    user('iryna', 'Iryna Bondarenko', 300, near(waw, 0.03, -0.01), [], { trusted: true, deals: 31, pseudonym: 'Iryna – sprzątanie' }),
     user('jan', 'Jan Kowalczyk', 120, town('Kraków'), []),
     user('zofia', 'Zofia Mazur', 350, town('Gdańsk'), []),
     user('michal', 'Michał Krawczyk', 70, town('Poznań'), []),
@@ -105,6 +116,16 @@ export function seedListings(now: number, users: User[]): Listing[] {
     // Alerty sąsiedzkie: zawsze darmowe, z powiadomieniem dla okolicy.
     { owner: 'tomek', kind: 'wanted', category: 'community', sub: 'missing', title: 'Zaginął pies Fafik, beagle', description: 'Uciekł wczoraj ok. 19 z ogrodu. Brązowo-biały, czerwona obroża z numerem. Jeśli go widzisz, napisz albo zadzwoń. Nagroda.', ago: 3 * hour, extra: { visibility: 3 } },
     { owner: 'ania', kind: 'service', category: 'community', sub: 'meet', title: 'Zbiórka: sprzątanie parku w sobotę 10:00', description: 'Spotykamy się przy głównej bramie parku. Worki i rękawice zapewniamy, weź wodę. Potem wspólny grill.', ago: 7 * hour, extra: { visibility: 3, garageDate: new Date(now + 3 * day).toISOString().slice(0, 10) } },
+    // Sezon grzewczy: skład opału, sąsiad z nadwyżką pelletu, rolnik z drewnem.
+    { owner: 'opal', kind: 'sell', category: 'heating', sub: 'pellet', title: 'Pellet drzewny A1, worki 15 kg', description: 'Certyfikat ENplus A1, niska popielność. Paleta 65 worków taniej. Dowóz do 20 km.', price: 23.5, unit: 'bag', ago: 5 * hour, delivery: ['pickup', 'courier'], extra: { stock: 1300, shippingPrice: zl(120), promoted: true, condition: 'new' } },
+    { owner: 'opal', kind: 'sell', category: 'heating', sub: 'ecopea', title: 'Ekogroszek 26–28 MJ/kg, na tony', description: 'Workowany po 25 kg albo luzem. Świadectwo jakości paliwa przy każdej dostawie.', price: 1490, unit: 'tonne', ago: 1 * day, delivery: ['pickup', 'courier'], extra: { stock: 40, shippingPrice: zl(150), condition: 'new' } },
+    { owner: 'opal', kind: 'sell', category: 'heating', sub: 'coal', title: 'Węgiel orzech, na tony', description: 'Kaloryczność 26–28 MJ/kg. Ważenie przy odbiorze.', price: 1590, unit: 'tonne', ago: 2 * day, delivery: ['pickup', 'courier'], extra: { stock: 30, shippingPrice: zl(150), condition: 'new' } },
+    { owner: 'stefan', kind: 'sell', category: 'heating', sub: 'pellet', title: 'Zostało mi 20 worków pelletu, taniej', description: 'Zmieniłem ogrzewanie na pompę ciepła. Pellet 6 mm, suchy, w garażu. Odbiór własny.', price: 19, unit: 'bag', ago: 6 * hour, extra: { stock: 20, condition: 'new', deal: true } },
+    { owner: 'jozef', kind: 'sell', category: 'heating', sub: 'wood', title: 'Drewno kominkowe dąb i buk, sezonowane', description: 'Sezonowane 2 lata, wilgotność poniżej 20%. Przywiozę przyczepką.', price: 390, unit: 'm3', ago: 1 * day, delivery: ['pickup', 'courier'], extra: { stock: 25, shippingPrice: zl(80) } },
+    { owner: 'zlota', kind: 'service', category: 'services', sub: 'repair', title: 'Kominiarz: przegląd i czyszczenie przewodów', description: 'Protokół do ubezpieczenia, przegląd kotła na paliwo stałe.', price: 150, unit: 'fixed', ago: 3 * day },
+    // Piekarnia z rezerwacją i przedpłatą: nic się nie marnuje, odbiór o ustalonej godzinie.
+    { owner: 'piekarnia', kind: 'sell', category: 'farm', sub: 'bread', title: 'Chleb na zakwasie 800 g', description: 'Pieczony od 4 rano. Zarezerwuj i zapłać wcześniej, odłożymy na Twoje nazwisko.', price: 14, unit: 'item', ago: 2 * hour, extra: { stock: 24, pickupHours: 'pon–sob 6:00–13:00', promoted: true } },
+    { owner: 'piekarnia', kind: 'sell', category: 'farm', sub: 'bread', title: 'Bułki kajzerki, 10 sztuk', description: 'Świeże co rano. Przy przedpłacie odbierasz bez kolejki.', price: 9, unit: 'pack', ago: 2 * hour, extra: { stock: 30, pickupHours: 'pon–sob 6:00–13:00' } },
     { owner: 'ola', kind: 'give', category: 'home', sub: 'decor', title: 'Kartony po przeprowadzce, 20 sztuk', description: 'Mocne, z taśmą. Do odebrania z klatki.', ago: 1 * day },
   ]
   return items.map((s, i) => {

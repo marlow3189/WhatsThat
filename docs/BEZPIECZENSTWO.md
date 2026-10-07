@@ -1,4 +1,4 @@
-# Orbifolk: bezpieczeństwo
+# Miliorbit: bezpieczeństwo
 
 Cel: aplikacja z pieniędzmi i numerami telefonów musi wytrzymać typowe ataki. Poniżej warstwy ochrony,
 co już jest w kodzie (✅) i co trzeba włączyć przy wdrożeniu (☐). Szczegóły kroków: [WDROZENIE.md](WDROZENIE.md).
@@ -38,6 +38,15 @@ co już jest w kodzie (✅) i co trzeba włączyć przy wdrożeniu (☐). Szczeg
 - Książka adresowa nie trafia na serwer (porównujemy skróty numerów), numer telefonu ukryty przed obcymi.
 - Piksele marketingowe tylko po zgodzie, bez danych osobowych w zdarzeniach, reklamy bez profilowania.
 - Dane w UE (Frankfurt). Usunięcie konta w ustawieniach; dane DAC7 przechowujemy tyle, ile wymaga prawo.
+
+## 3a. Prywatność na mapie orbity
+
+- Znajomych widzisz z imienia; znajomych znajomych i sąsiadów pod pseudonimem albo „Osoba #n” z kierunkowym i dwiema
+  pierwszymi cyframi numeru. Firmy z nazwy.
+- Położenie osób prywatnych serwer zaokrągla do ok. 300 m (`orbit_people` w `0003_local.sql`); dokładny adres tylko w czacie.
+- Adres do wysyłek podajesz dopiero przy pierwszej wysyłce; sprzedawca widzi go po opłaceniu takiego zamówienia.
+- Ceny paliw od stacji przyjmujemy tylko z kluczem (przechowujemy skrót SHA-256), z limitem 60 zapytań na godzinę
+  i kontrolą zakresu cen; zgłoszenia kierowców z limitem 20 dziennie na osobę.
 
 ## 4. Bezpieczeństwo w okolicy (alerty sąsiedzkie)
 

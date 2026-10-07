@@ -1,8 +1,8 @@
 /** Marka w jednym miejscu. Zmiana marki = zmiana tego pliku. */
 export const BRAND = {
-  name: 'Orbifolk',
+  name: 'Miliorbit',
   /** domena główna (aplikacja, linki do ogłoszeń, zaproszenia) */
-  domain: 'orbifolk.com',
+  domain: 'miliorbit.com',
   /** punkt kontaktowy DSA (art. 11–12) */
-  email: 'hello@orbifolk.com',
+  email: 'hello@miliorbit.com',
 }

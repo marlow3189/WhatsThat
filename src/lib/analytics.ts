@@ -22,7 +22,7 @@ export const IDS = {
 }
 export const hasTrackers = () => !!(IDS.ga4 || IDS.meta || IDS.tiktok)
 
-const KEY = 'orbifolk:consent'
+const KEY = 'miliorbit:consent'
 export type Consent = 'granted' | 'denied' | null
 
 export function getConsent(): Consent {
@@ -48,14 +48,14 @@ export function rememberSource() {
   try {
     const q = new URLSearchParams(location.search)
     const utm = Object.fromEntries([...q].filter(([k]) => k.startsWith('utm_') || k === 'ref'))
-    if (Object.keys(utm).length && !localStorage.getItem('orbifolk:utm')) localStorage.setItem('orbifolk:utm', JSON.stringify(utm))
+    if (Object.keys(utm).length && !localStorage.getItem('miliorbit:utm')) localStorage.setItem('miliorbit:utm', JSON.stringify(utm))
   } catch {
     /* nic */
   }
 }
 const source = (): Record<string, string> => {
   try {
-    return JSON.parse(localStorage.getItem('orbifolk:utm') ?? '{}')
+    return JSON.parse(localStorage.getItem('miliorbit:utm') ?? '{}')
   } catch {
     return {}
   }

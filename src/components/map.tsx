@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import type { Place } from '../lib/types'
 import { distanceKm } from '../lib/geo'
 import { cx } from './ui'
@@ -11,6 +11,8 @@ export interface MapPoint {
   /** krótki napis na pinezce: numer kroku albo cena */
   label: string
   tone: 'friend' | 'fof' | 'other'
+  /** zamiast napisu: np. awatar osoby na mapie orbity */
+  node?: ReactNode
 }
 
 const TILE = 256
@@ -30,7 +32,7 @@ const mpp = (lat: number, z: number) => (156_543.03 * Math.cos((lat * Math.PI) /
  * Mapa „gdzie są moje sprawy”: Ty w środku, kręgi 1/3/5 km, pinezki z numerem kroku albo ceną.
  * Bez biblioteki i bez klucza: kafelki OSM, a gdy nie wczytają się (brak sieci), czysty plan z kręgami.
  */
-export function MapView({ center, points, selected, onSelect, height = 300, label }: { center: Place; points: MapPoint[]; selected?: string; onSelect?: (id: string) => void; height?: number; label: string }) {
+export function MapView({ center, points, selected, onSelect, height = 300, label, fitKm }: { center: Place; points: MapPoint[]; selected?: string; onSelect?: (id: string) => void; height?: number; label: string; fitKm?: number }) {
   const box = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(360)
   const [tilesOk, setTilesOk] = useState(true)
@@ -45,10 +47,10 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
   }, [])
 
   // Powiększenie dobrane tak, żeby najdalszy punkt zmieścił się z marginesem.
-  const far = Math.max(1, ...points.map((p) => distanceKm(center, p)))
+  const far = fitKm ?? Math.max(1, ...points.map((p) => distanceKm(center, p)))
   const fit = (Math.min(width, height) / 2 - 28) / (far * 1000)
   // Powiększenie ułamkowe: pozycje liczymy dokładnie, a kafelki z najbliższego niższego poziomu skalujemy.
-  const z = Math.max(8, Math.min(16, Math.log2(156_543.03 * Math.cos((center.lat * Math.PI) / 180) * fit)))
+  const z = Math.max(3, Math.min(16, Math.log2(156_543.03 * Math.cos((center.lat * Math.PI) / 180) * fit)))
   const zi = Math.floor(z)
   const size = TILE * 2 ** (z - zi)
   const c = project(center.lat, center.lng, z)
@@ -98,7 +100,7 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
           <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-1.5 text-[10px] font-bold text-primary">{km} km</span>
         </span>
       ))}
-      <span className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-white shadow-[0_0_0_6px_rgb(46_91_255/0.18)]" style={{ left: width / 2, top: height / 2 }}>
+      <span className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-white shadow-[0_0_0_6px_color-mix(in_srgb,var(--primary)_18%,transparent)]" style={{ left: width / 2, top: height / 2 }}>
         <Icon name="user" size={18} />
       </span>
       {placed.map(({ p, x, y }) => {
@@ -109,12 +111,16 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
             type="button"
             onClick={() => onSelect?.(p.id)}
             aria-pressed={on}
+            aria-label={p.label}
             className={cx(
               'press absolute flex -translate-x-1/2 -translate-y-full flex-col items-center',
               on ? 'z-20' : 'z-10',
             )}
             style={{ left: x, top: y }}
           >
+            {p.node ? (
+              <span className={cx('rounded-full p-[2px] shadow-[0_4px_12px_rgb(20_27_45/0.22)]', on ? 'bg-ink' : p.tone === 'friend' ? 'bg-accent' : 'bg-surface')}>{p.node}</span>
+            ) : (
             <span
               className={cx(
                 'tnum rounded-full px-2.5 py-1 text-[12px] font-extrabold whitespace-nowrap shadow-[0_4px_12px_rgb(20_27_45/0.18)]',
@@ -123,6 +129,7 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
             >
               {p.label}
             </span>
+            )}
             <span className={cx('-mt-1 size-2.5 rotate-45', on ? 'bg-ink' : p.tone === 'friend' ? 'bg-primary' : p.tone === 'fof' ? 'bg-lilac' : 'bg-surface')} />
           </button>
         )

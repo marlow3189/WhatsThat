@@ -1,4 +1,4 @@
--- Orbifolk: bezpieczna płatność, spory, kaucje, alerty sąsiedzkie, reklamy, zaproszenia i ochrona przed nadużyciami.
+-- Miliorbit: bezpieczna płatność, spory, kaucje, alerty sąsiedzkie, reklamy, zaproszenia i ochrona przed nadużyciami.
 -- Pieniądze trzyma operator płatności (np. Stripe Connect z ręczną wypłatą albo PayU Marketplace),
 -- baza zapisuje tylko stan i decyzje. Uruchamiać po 0001_init.sql.
 
@@ -46,7 +46,7 @@ begin
 end $$;
 create trigger dispute_open after insert on public.disputes for each row execute function public.on_dispute_open();
 
--- 3. Zaproszenia: każdy numer liczy się raz (skrót numeru), nagroda co 100
+-- 3. Zaproszenia: każdy numer liczy się raz (skrót numeru); bez nagród pieniężnych, tylko żeby nie wysyłać dwa razy
 create table public.invites (
   inviter_id uuid not null references public.profiles(id) on delete cascade,
   phone_hash text not null,                           -- sha256 numeru; numeru nie przechowujemy
@@ -57,7 +57,6 @@ create table public.invites (
 );
 alter table public.invites enable row level security;
 create policy "own invites" on public.invites for all using (inviter_id = auth.uid()) with check (inviter_id = auth.uid());
-alter table public.profiles add column invite_rewards integer not null default 0;
 
 -- 4. Reklamy lokalne (tylko na planie darmowym), z danymi wymaganymi przez DSA art. 26
 create table public.ads (

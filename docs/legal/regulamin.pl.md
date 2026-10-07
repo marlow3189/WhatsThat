@@ -1,13 +1,13 @@
-# Regulamin serwisu Orbifolk (projekt do weryfikacji przez prawnika)
+# Regulamin serwisu Miliorbit (projekt do weryfikacji przez prawnika)
 
 Wersja robocza z października 2026. Wiążąca jest wersja polska. Nazwy w nawiasach kwadratowych do uzupełnienia.
 
 ## §1. Kto prowadzi serwis
-1. Serwis i aplikację Orbifolk prowadzi [nazwa spółki z o.o.], [adres], KRS [numer], NIP [numer] („Operator”).
-2. Punkt kontaktowy dla użytkowników i organów (DSA art. 11–12): hello@orbifolk.com, w językach: polskim, angielskim.
+1. Serwis i aplikację Miliorbit prowadzi [nazwa spółki z o.o.], [adres], KRS [numer], NIP [numer] („Operator”).
+2. Punkt kontaktowy dla użytkowników i organów (DSA art. 11–12): hello@miliorbit.com, w językach: polskim, angielskim.
 
-## §2. Czym jest Orbifolk
-1. Orbifolk to platforma ogłoszeń, która łączy użytkowników chcących sprzedać, kupić, wynająć, wymienić, oddać lub
+## §2. Czym jest Miliorbit
+1. Miliorbit to platforma ogłoszeń, która łączy użytkowników chcących sprzedać, kupić, wynająć, wymienić, oddać lub
    zaoferować usługę („Transakcja”).
 2. Celem serwisu jest ułatwienie organizacji codziennych spraw w okolicy (pożyczanie, wynajem, zakupy i usługi lokalne),
    w tym przez podpowiedzi planu generowane przy pomocy sztucznej inteligencji, które mają charakter wyłącznie pomocniczy.
@@ -21,7 +21,7 @@ Wersja robocza z października 2026. Wiążąca jest wersja polska. Nazwy w nawi
 ## §3. Konto
 1. Konto zakłada się numerem telefonu potwierdzonym kodem SMS. Użytkownik może podać adres e-mail.
 2. Jedna osoba może mieć jedno konto. Konto jest niezbywalne.
-3. Użytkownik może w każdej chwili **zastrzec konto** w aplikacji albo na stronie orbifolk.com/zastrzez. Zastrzeżenie
+3. Użytkownik może w każdej chwili **zastrzec konto** w aplikacji albo na stronie miliorbit.com/zastrzez. Zastrzeżenie
    ukrywa ogłoszenia oraz blokuje wiadomości i płatności z konta. Odblokowanie wymaga kodu SMS i potwierdzenia dwóch
    osób wskazanych przez użytkownika jako zaufane.
 4. Użytkownik może usunąć konto w ustawieniach. Dane przechowywane z mocy prawa (np. na potrzeby DAC7) usuwamy po upływie
@@ -59,9 +59,13 @@ pojawia się po wyczerpaniu zapasu.
 ## §4c. Reklamy i polecenia
 1. Na planie darmowym wyświetlana jest jedna oznaczona reklama lokalnego przedsiębiorcy z informacją, kto za nią płaci
    i dlaczego jest wyświetlana. Reklamy nie są dobierane na podstawie profilowania. Plany płatne są bez reklam.
-2. Za każde 100 zaproszeń wysłanych do różnych numerów telefonu użytkownik otrzymuje miesiąc planu Rocznego,
-   łącznie nie więcej niż 12 miesięcy. Operator może odmówić nagrody przy nadużyciach (np. numery fikcyjne).
+2. Zaproszenia wysyła użytkownik ze swojego telefonu (SMS, komunikator, kod QR). Za zaproszenia nie przysługują
+   nagrody pieniężne ani rabaty; Operator zapisuje jedynie skrót numeru, żeby nie wysyłać zaproszenia dwa razy.
 3. Ogłoszenia sąsiedzkie (zaginione zwierzęta, zbiórki, rzeczy znalezione) są bezpłatne i nie wliczają się do limitu.
+4. Ostrzeżenia o zagrożeniach pochodzą z oficjalnych źródeł (np. IMGW-PIB, Meteoalarm) i są wyświetlane ze wskazaniem
+   źródła. Nie zastępują systemu Alert RCB ani numeru alarmowego 112.
+5. Osoby spoza kręgu znajomych widzą innych użytkowników pod pseudonimem albo numerem porządkowym, z przybliżonym
+   położeniem. Ceny paliw wyświetlane są ze wskazaniem źródła (stacja, użytkownicy, cena orientacyjna).
 
 ## §5. Ogłoszenia i obowiązki użytkownika
 1. Za treść ogłoszenia, opis, stan, zgodność z prawem i realizację Transakcji odpowiada wystawiający.
@@ -75,7 +79,7 @@ pojawia się po wyczerpaniu zapasu.
    wybranymi osobami.
 
 ## §6. Zgłaszanie treści (DSA)
-1. Każdy może zgłosić ogłoszenie przyciskiem „Zgłoś ogłoszenie” albo na adres hello@orbifolk.com, podając powód.
+1. Każdy może zgłosić ogłoszenie przyciskiem „Zgłoś ogłoszenie” albo na adres hello@miliorbit.com, podając powód.
 2. Operator rozpatruje zgłoszenia bez zbędnej zwłoki i informuje zgłaszającego oraz wystawiającego o decyzji
    wraz z uzasadnieniem.
 3. Operator może usunąć ogłoszenie lub ograniczyć konto, gdy narusza ono prawo lub Regulamin.

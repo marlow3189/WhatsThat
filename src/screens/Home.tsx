@@ -2,16 +2,19 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useStore } from '../data/store'
 import { Avatar, Button, Scroller, Sheet, Thumb, Tile, cx, priceText } from '../components/ui'
-import { Icon, Mark } from '../components/icons'
+import { Icon } from '../components/icons'
 import { StoryViewer } from '../components/stories'
+import { OrbitSection } from '../components/orbit'
+import { useWarnings, providersFor } from '../lib/warnings'
+import { cheapest, formatFuel } from '../lib/fuel'
+import { isOpen } from '../lib/privacy'
 import { categoryById } from '../lib/categories'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { RECIPES } from '../lib/planner'
 import { useWeather } from '../lib/weather'
 import { DAY } from '../lib/pricing'
 import { ME } from '../data/seed'
-import type { T } from '../i18n'
-import type { Listing, User } from '../lib/types'
+import type { Listing } from '../lib/types'
 
 const NEARBY_KM = 15
 /** „Sąsiedzi”: tak blisko, że oferta interesuje z definicji, bez względu na zainteresowania. */
@@ -27,7 +30,8 @@ const AD_PAUSE = 3 * DAY
  * „Twoja orbita”, relacje znajomych (stuknij, żeby obejrzeć), sąsiedzi, Twoje ogłoszenia, rzędy zainteresowań.
  */
 export function Home() {
-  const { t, locale, account, users, relation, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings } = useStore()
+  const { t, locale, account, users, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings, nameOf, stations } = useStore()
+  const warnings = useWarnings(account.place, account.country, account.warnings !== false)
   const weather = useWeather(account.place)
   const [story, setStory] = useState<number | null>(null)
   const [why, setWhy] = useState(false)
@@ -53,19 +57,23 @@ export function Home() {
 
   const garage = withKm.filter((r) => r.listing.kind === 'garage' && r.km <= 30)
   const first = account.name.split(' ')[0]
-  const friends = users[ME].friends.map((id) => users[id]).filter((u) => u && !u.restricted)
-  const fof = Object.values(users).filter((u) => u.id !== ME && relation(u.id).circle === 2)
-  const near5 = withKm.filter((r) => r.km <= 5).length
+  // Na co dzień: najtańsze paliwo, opał w okolicy, ulubieni dostawcy (piekarz…) z informacją, czy otwarte.
+  const fuelNear = stations.map((s) => ({ ...s, km: distanceKm(here, s.place) }))
+  const pb = cheapest(fuelNear, 'pb95')
+  const heat = withKm.filter((r) => r.listing.category === 'heating' && r.listing.kind === 'sell' && r.listing.price !== undefined && r.km <= 40)
+  const pellet = heat.filter((r) => r.listing.sub === 'pellet').sort((a, b) => a.listing.price! - b.listing.price!)[0]
+  const favs = account.favorites.filter((f) => users[f.id])
 
   // Jedna chmurka reklamy na darmowym planie: firma z okolicy, z oznaczeniem i „Dlaczego to widzę?” (DSA art. 26).
   const ad = plan === 'free' && (!account.adHiddenAt || now - account.adHiddenAt > AD_PAUSE) ? withKm.filter((r) => users[r.listing.ownerId].business && r.listing.promoted).sort((a, b) => a.km - b.km)[0] : undefined
   const myListings = mine.filter((l) => l.status !== 'removed').sort((a, b) => b.createdAt - a.createdAt)
 
   const ideas = [
-    { label: RECIPES[0].goal[lang], q: RECIPES[0].goal[lang], icon: 'route', bg: 'bg-sky' },
-    { label: t('plan.eggsLabel'), q: t('plan.eggs'), icon: 'leaf', bg: 'bg-mint' },
-    { label: RECIPES[2].goal[lang], q: RECIPES[2].goal[lang], icon: 'route', bg: 'bg-peach' },
-    { label: RECIPES[1].goal[lang], q: RECIPES[1].goal[lang], icon: 'truck', bg: 'bg-lilac' },
+    { label: RECIPES[0].goal[lang], q: RECIPES[0].goal[lang], icon: 'route', bg: 'tile-1' },
+    { label: t('plan.eggsLabel'), q: t('plan.eggs'), icon: 'leaf', bg: 'tile-2' },
+    { label: RECIPES[2].goal[lang], q: RECIPES[2].goal[lang], icon: 'route', bg: 'tile-3' },
+    { label: RECIPES[3].goal[lang], q: RECIPES[3].goal[lang], icon: 'flame', bg: 'tile-4' },
+    { label: RECIPES[1].goal[lang], q: RECIPES[1].goal[lang], icon: 'truck', bg: 'tile-5' },
   ]
 
   return (
@@ -103,7 +111,7 @@ export function Home() {
         <Scroller label={t('home.plan')}>
           {ideas.map((x) => (
             <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[92px] shrink-0 flex-col items-center gap-1.5 text-center">
-              <span className={cx('grid size-14 place-items-center rounded-[18px] text-ink', x.bg)}><Icon name={x.icon} size={24} /></span>
+              <span className={cx('grid size-14 place-items-center rounded-[18px]', x.bg)}><Icon name={x.icon} size={24} /></span>
               <span className="line-clamp-2 text-[12px] leading-tight font-semibold">{x.label}</span>
             </Link>
           ))}
@@ -112,6 +120,28 @@ export function Home() {
 
       {weather && weather.rainTomorrow >= 60 && (
         <p className="mx-4 -mt-3 flex items-center gap-2 rounded-[18px] bg-sky px-4 py-2.5 text-[14px] font-semibold"><Icon name="rain" size={18} /> {t('w.tomorrow', { p: weather.rainTomorrow })}</p>
+      )}
+
+      {warnings.length > 0 && (
+        <section className="mx-4 flex flex-col gap-2" aria-label={t('wr.title')}>
+          {warnings.slice(0, 2).map((w) => (
+            <div key={w.id} className={cx('flex items-start gap-3 rounded-[22px] p-4', w.level === 3 ? 'bg-danger text-white' : w.level === 2 ? 'bg-warn-soft' : 'bg-sun')}>
+              <span className={cx('grid size-10 shrink-0 place-items-center rounded-full', w.level === 3 ? 'bg-white/20' : 'bg-surface')}><Icon name="alert" size={20} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-x-2 text-[12px] font-bold tracking-wide uppercase opacity-80">
+                  {w.source} · {t('wr.level', { n: w.level })}
+                  {w.demo && <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] text-white normal-case">{t('wr.demo')}</span>}
+                </p>
+                <p className="text-[16px] leading-tight font-extrabold">{w.title} · {w.area}</p>
+                {w.until && <p className="text-[13px] opacity-80">{t('wr.until', { date: new Date(w.until.replace(' ', 'T')).toLocaleString(locale, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) })}</p>}
+                <p className="mt-1 flex flex-wrap gap-x-3 text-[13px] font-semibold">
+                  <a href={w.url} target="_blank" rel="noreferrer" className="underline">{t('wr.source')}</a>
+                  {providersFor(account.country).filter((p) => p.note !== 'meteo').map((p) => <a key={p.name} href={p.url} target="_blank" rel="noreferrer" className="underline">{p.name}</a>)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </section>
       )}
 
       {alerts.length > 0 && (
@@ -125,7 +155,7 @@ export function Home() {
                 </span>
                 <span className="min-w-0">
                   <span className="line-clamp-2 text-[15px] leading-tight font-bold">{listing.title}</span>
-                  <span className="mt-1 block truncate text-[13px] text-ink/70">{users[listing.ownerId].name.split(' ')[0]} · {formatDistance(km)}</span>
+                  <span className="mt-1 block truncate text-[13px] text-ink/70">{nameOf(listing.ownerId, true)} · {formatDistance(km)}</span>
                 </span>
               </Link>
             ))}
@@ -141,7 +171,46 @@ export function Home() {
         </Link>
       )}
 
-      <Orbit friends={friends} fof={fof} near={near5} t={t} />
+      <OrbitSection />
+
+      <section className="flex flex-col gap-3">
+        <SectionTitle title={t('daily.title')} />
+        <Scroller label={t('daily.title')}>
+          {pb && (
+            <Link to="/paliwa" draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
+              <span className="tile-1 grid size-10 place-items-center rounded-[12px]"><Icon name="fuel" size={20} /></span>
+              <span>
+                <span className="block text-[13px] text-muted">{t('daily.fuel')}</span>
+                <span className="tnum block text-[22px] leading-tight font-extrabold">{formatFuel(pb.prices.pb95!)}</span>
+                <span className="block truncate text-[12px] text-muted">{formatDistance(pb.km)} · {t(`fuel.src.${pb.source}`)}</span>
+              </span>
+            </Link>
+          )}
+          {heat.length > 0 && (
+            <Link to="/szukaj?k=heating" draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
+              <span className="tile-3 grid size-10 place-items-center rounded-[12px]"><Icon name="flame" size={20} /></span>
+              <span>
+                <span className="block text-[13px] text-muted">{t('daily.heating')}</span>
+                <span className="tnum block text-[22px] leading-tight font-extrabold">{pellet ? priceText(pellet.listing, t, locale) : heat.length}</span>
+                <span className="block truncate text-[12px] text-muted">{t('daily.heatingD', { n: heat.length })}</span>
+              </span>
+            </Link>
+          )}
+          {favs.map((f) => {
+            const open = isOpen(users[f.id].hours)
+            return (
+              <Link key={f.id} to={`/u/${f.id}`} draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
+                <span className="tile-4 grid size-10 place-items-center rounded-[12px]"><Icon name="star" size={20} /></span>
+                <span>
+                  <span className="block truncate text-[13px] text-muted">{f.topic || t('fav.title')}</span>
+                  <span className="block truncate text-[16px] leading-tight font-extrabold">{nameOf(f.id)}</span>
+                  {open !== undefined && <span className={cx('mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold', open ? 'bg-ok-soft text-ok' : 'bg-fill text-muted')}>{t(open ? 'fav.open' : 'fav.closed')} · {users[f.id].hours}</span>}
+                </span>
+              </Link>
+            )
+          })}
+        </Scroller>
+      </section>
 
       <section className="flex flex-col gap-3">
         <SectionTitle title={t('home.friendsNew')} sub={storyOwners.length ? t('home.storiesD') : undefined} />
@@ -152,7 +221,7 @@ export function Home() {
                 const fresh = o.items.some((l) => !seen.includes(l.id))
                 return (
                   <button key={o.id} type="button" onClick={() => setStory(i)} className="press flex w-[68px] shrink-0 flex-col items-center gap-1" aria-label={`${users[o.id].name}: ${o.items.length}`}>
-                    <span className={cx('rounded-full p-[2.5px]', fresh ? 'bg-[conic-gradient(var(--primary),#7c9bff,var(--accent),var(--primary))]' : 'bg-fill-strong')}>
+                    <span className={cx('rounded-full p-[2.5px]', fresh ? 'ring-story' : 'bg-fill-strong')}>
                       <span className="block rounded-full bg-bg p-[2px]"><Avatar user={users[o.id]} size={56} /></span>
                     </span>
                     <span className={cx('w-full truncate text-center text-[12px]', fresh ? 'font-bold' : 'text-muted')}>{users[o.id].name.split(' ')[0]}</span>
@@ -192,7 +261,7 @@ export function Home() {
         <section className="flex flex-col gap-3">
           <SectionTitle title={t('home.neighbors')} sub={t('home.neighborsD')} />
           <Scroller label={t('home.neighbors')}>
-            {neighbors.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={`${users[listing.ownerId].name.split(' ')[0]} · ${formatDistance(km)}`} />)}
+            {neighbors.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={`${nameOf(listing.ownerId, true)} · ${formatDistance(km)}`} />)}
           </Scroller>
         </section>
       )}
@@ -267,55 +336,6 @@ function viewsOf(l: Listing, all: Listing[]) {
   let h = 7
   for (const c of l.id) h = (h * 31 + c.charCodeAt(0)) % 97
   return 3 + (h % 40) + (all.length % 3)
-}
-
-/**
- * „Twoja orbita”: karta-bohater w kolorze marki. Ty w środku, znajomi na bliskim pierścieniu, ich znajomi na dalszym.
- * Każda liczba prowadzi dalej: znajomi → lista i zaproszenia, oferty do 5 km → mapa.
- */
-function Orbit({ friends, fof, near, t }: { friends: User[]; fof: User[]; near: number; t: T }) {
-  const ring = (people: User[], r: number, size: number, offset: number) =>
-    people.slice(0, 6).map((u, i, arr) => {
-      const a = (i / arr.length) * Math.PI * 2 + offset
-      return (
-        <span key={u.id} className="absolute" style={{ left: `calc(50% + ${(Math.cos(a) * r).toFixed(1)}px - ${size / 2}px)`, top: `calc(50% + ${(Math.sin(a) * r).toFixed(1)}px - ${size / 2}px)` }}>
-          <span className="block rounded-full ring-2 ring-primary"><Avatar user={u} size={size} /></span>
-        </span>
-      )
-    })
-  return (
-    <section className="mx-4 flex flex-col gap-4 overflow-hidden rounded-[28px] bg-primary p-5 text-white shadow-[0_14px_34px_rgb(46_91_255/0.32)]">
-      <div className="flex items-center gap-4">
-        <div className="relative size-[128px] shrink-0" aria-hidden>
-          <span className="absolute inset-[4px] rounded-full border-[1.5px] border-dashed border-white/35" />
-          <span className="absolute inset-[30px] rounded-full border-[1.5px] border-white/35" />
-          <div className="orbit-spin absolute inset-0">
-            {ring(fof, 60, 22, 0.4)}
-            {ring(friends, 34, 26, 0)}
-          </div>
-          <span className="absolute top-1/2 left-1/2 grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-primary"><Mark size={24} /></span>
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <p className="text-[19px] leading-tight font-extrabold tracking-[-0.02em]">{t('home.orbit')}</p>
-          <p className="text-[13px] leading-snug text-white/80">{t('home.orbitD')}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <OrbitStat to="/znajomi" n={friends.length} label={t('home.orbitFriends')} />
-        <OrbitStat to="/znajomi" n={fof.length} label={t('home.orbitFof')} />
-        <OrbitStat to="/szukaj?mapa=1" n={near} label={t('home.orbitNear')} />
-      </div>
-    </section>
-  )
-}
-
-function OrbitStat({ to, n, label }: { to: string; n: number; label: string }) {
-  return (
-    <Link to={to} className="press flex flex-col rounded-[18px] bg-white/15 px-3 py-2.5 hover:bg-white/20">
-      <span className="tnum text-[22px] leading-none font-extrabold">{n}</span>
-      <span className="mt-1 truncate text-[12px] text-white/85">{label}</span>
-    </Link>
-  )
 }
 
 function SectionTitle({ title, sub, to, more }: { title: string; sub?: string; to?: string; more?: string }) {

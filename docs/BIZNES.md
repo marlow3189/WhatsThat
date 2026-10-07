@@ -1,4 +1,4 @@
-# Orbifolk: koncept, model biznesowy, koszty i prawo
+# Miliorbit: koncept, model biznesowy, koszty i prawo
 
 > **Twoja orbita: znajomi i sąsiedzi.** Aplikacja do ogarniania codziennych spraw z ludźmi obok:
 > potrzebujesz piasku, wpisujesz „piasek” i widzisz, kto w okolicy go ma; sąsiad wynajmuje kosiarkę za 20 zł za dzień.
@@ -7,7 +7,7 @@
 > potem okolica (promień w km, miejscowość, region, kraj). Konto to numer telefonu. Bez haseł, bez prowizji.
 > Startujemy w Polsce, aplikacja jest gotowa na 9 języków i 11 krajów.
 
-Kolejność priorytetów: **UX, potem UI, potem nazwa**. Marka siedzi w jednym pliku (`src/config.ts`): **Orbifolk**, `orbifolk.com`.
+Kolejność priorytetów: **UX, potem UI, potem nazwa**. Marka siedzi w jednym pliku (`src/config.ts`): **Miliorbit**, `miliorbit.com`.
 
 ---
 
@@ -26,18 +26,18 @@ Nie automatycznie. Aplikację o tej nazwie da się uruchomić. Problem pojawia s
 
 Do tego „what’s that” to zwykła fraza i nazwa wielu aplikacji, więc trudno wygrać w wyszukiwarce.
 
-### Decyzja: Orbifolk
-**Orbi** (orbita: krąg ludzi wokół Ciebie) + **folk** (ludzie, swojacy). Jedno słowo, dwa człony, które rozumie się
-bez tłumaczenia w większości języków europejskich; wymowa prosta („or-bi-folk”). Pasuje do mechaniki aplikacji:
+### Decyzja: Miliorbit (domena `miliorbit.com` kupiona)
+**Mili** (po polsku: mili ludzie, sympatyczni sąsiedzi; w wielu językach brzmi jak „mile”, czyli bliska odległość)
++ **orbit** (krąg ludzi wokół Ciebie). Wymowa prosta w 9 językach („mi-li-or-bit”). Pasuje do mechaniki aplikacji:
 znajomi na bliskiej orbicie, ich znajomi na dalszej, sąsiedzi w promieniu kilku km. Hasło: *„Twoja orbita”*.
 
-Co sprawdziłem (wyszukiwarka, październik 2026): nie znalazłem aplikacji ani firmy o tej nazwie w handlu lokalnym.
-Strony orbifolk.com z tego środowiska nie da się otworzyć (sieć blokuje domenę), więc jej treści nie widziałem.
-**Do zrobienia przed wydaniem pieniędzy na reklamę:** wyszukanie „ORBIFOLK” w EUIPO TMview i WIPO Global Brand Database
-(klasy 9, 35, 38, 42), sprawdzenie App Store i Google Play, rezerwacja `orbifolk.app`, `.pl`, `.eu` i nazw w social media
-(@orbifolk). Zgłoszenie znaku UE: 850 € za klasę 9 + 50 € za 35 + 150 € za każdą kolejną.
+Co sprawdziłem (wyszukiwarka, 7 października 2026): nie znalazłem firmy, aplikacji ani znaku o nazwie „Miliorbit”.
+Wyszukiwarka to nie baza znaków towarowych. **Do zrobienia przed wydaniem pieniędzy na reklamę:** wyszukanie „MILIORBIT”
+w EUIPO TMview i WIPO Global Brand Database (klasy 9, 35, 38, 42), sprawdzenie App Store i Google Play, rezerwacja
+`miliorbit.app`, `.pl`, `.eu` i nazw w social media (@miliorbit). Zgłoszenie znaku UE: 850 € za klasę 9 + 50 € za drugą
++ 150 € za każdą kolejną.
 
-Odrzucone wcześniej: Obok (znaczenie tylko po polsku, nie podobało się), Neiby, Mamto (zostają jako zapas),
+Odrzucone wcześniej: Orbifolk (zastąpiony przez Miliorbit), Obok (znaczenie tylko po polsku), Neiby, Mamto (zostają jako zapas),
 Okolo, Blizo, Blisko, Krugo, Obbo (zajęte).
 
 ## 2. Konkurencja i co z niej bierzemy
@@ -120,6 +120,27 @@ pasek postępu, „Zobacz ofertę” i „Napisz”. Na komputerze rzędy przewi
 **Alerty sąsiedzkie:** zaginione zwierzę, zbiórka (np. poszukiwania, sprzątanie parku), znaleziona rzecz. Zawsze
 za darmo, poza limitem, na górze głównej u sąsiadów do 10 km.
 
+**Ostrzeżenia o zagrożeniach (zależnie od kraju):** w Polsce ostrzeżenia meteo IMGW-PIB z oficjalnego API (po kodach
+TERYT województwa) i link do komunikatów RCB. Alert RCB to SMS wysyłany przez operatorów do wszystkich telefonów
+w zasięgu; RCB nie udostępnia publicznego API, więc go nie powielamy, tylko kierujemy do źródła. Niemcy: NINA (BBK),
+reszta UE: Meteoalarm (CC BY 4.0). Ostrzeżenie zawsze ze źródłem; wyłączysz je w ustawieniach powiadomień.
+
+**Twoja orbita na mapie:** pod kartą orbity mapa ludzi wokół: znajomi z imienia, ich znajomi i sąsiedzi pod
+pseudonimem albo „Osoba #n” z dwiema pierwszymi cyframi numeru, z przybliżonym położeniem. Stuknięcie pokazuje, co ktoś
+oferuje lub umie zrobić i ile minut zajmie dotarcie (pieszo, rowerem, autem; szacunek bez korków, w produkcji serwer
+tras). Zasięg: 2 km, 5 km, 25 km, kraj, cała Europa (sprawy przygraniczne).
+
+**Ulubieni z tematem:** gwiazdka na profilu, np. „Piekarnia u Zosi · chleb i bułki · pon–sob 6:00–13:00 · otwarte”.
+Rezerwacja z przedpłatą działa już dziś (odbiór o ustalonej godzinie, nic się nie marnuje). Docelowo: szafka
+z kodem QR przed piekarnią, otwierana po zapłacie.
+
+**Opał i ogrzewanie:** osobna kategoria (pellet, ekogroszek, węgiel, drewno i brykiet, olej opałowy, gaz w butlach),
+jednostki „worek”, „t”, „m³”, plan „Opał na zimę” (opał → transport → przegląd komina) i plakietka „Najtaniej”
+przy porównaniu w tej samej jednostce. Skład opału albo sąsiad z zalegającym pelletem wystawia to w minutę.
+
+**Adres dopiero przy wysyłce:** przy rejestracji pytamy tylko o miejscowość. Ulicę i kod podajesz przy pierwszej
+wysyłce kurierem; sprzedawca widzi adres dopiero po opłaceniu takiego zamówienia (minimalizacja danych, RODO art. 5).
+
 **Rolnik, krok po kroku** (ekran „Mój stragan”):
 1. Jednym stuknięciem dodaje produkt z listy (jajka, mleko, ser, ziemniaki, marchew, cebula, pomidory, ogórki, kapusta,
    jabłka, truskawki, miód, drewno) albo **„Inne, dopisz sam”**; podaje cenę i zapas.
@@ -151,8 +172,9 @@ podręczną pamięć. Prototyp (bez serwera) zapisuje dane demo w przeglądarce.
 | **Firma** | **499 zł** · 100 € · 119 $ | faktury, profil firmy, kilka osób na koncie: wypożyczalnie, gospodarstwa, kwatery |
 
 - **0% prowizji** od transakcji. Zawsze.
-- **Polecenia:** każde **100 wysłanych zaproszeń** (unikalne numery) = **miesiąc planu Rocznego gratis**, najwyżej 12.
-  Na darmowym koncie to próba planu bez limitu, co samo w sobie zwiększa szansę na zakup.
+- **Polecenia bez nagród pieniężnych:** „Siła Twojej orbity” pokazuje, ile spraw załatwisz u swoich i czego w okolicy
+  brakuje. Ludzie zapraszają, bo sami na tym zyskują (szybciej i bliżej), a nie dla rabatu; to też chroni przed
+  wyłudzaniem nagród fikcyjnymi numerami. Do tego kod QR do aplikacji (plakaty u lokalnych firm).
 - **Reklamy tylko na planie darmowym:** jedna chmurka „Reklama” na głównej, znika po stuknięciu X (wraca po 3 dniach),
   z „Dlaczego to widzę?” (DSA art. 26). Plan Roczny i Firma: bez reklam.
 - **Koniec subskrypcji:** data ważności w profilu, przypomnienia 30, 7 i 1 dzień przed końcem (powiadomienie i baner).
@@ -262,19 +284,22 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
   Android: Chrome → „Zainstaluj aplikację”, a do Google Play ta sama aplikacja jako Trusted Web Activity.
   Plan kupuje się na stronie, więc nie płacimy Apple ani Google 15–30%.
 - **Komputer: rozszerzenie** do Chrome i Edge (otwiera się w panelu bocznym) oraz Safari (konwersja `npm run safari:extension`,
-  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Orbifolk”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
+  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Miliorbit”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
   do formularza: można wystawić coś, co oglądasz na OLX czy Allegro. Budowanie: `npm run build:extension`.
 - **Etap 2: App Store i Google Play** natywnie (Capacitor), gdy będzie ruch.
 
-## 9. Panel okolicy: pogoda i ceny paliw
+## 9. Panel okolicy: pogoda, paliwa, ostrzeżenia
 
 - **Pogoda (jest):** temperatura i stan nieba w pasku na głównej, ostrzeżenie „jutro opady 70%” (przyda się, gdy ktoś
   pożycza kosiarkę albo planuje brukowanie). Źródło: Open-Meteo, bez klucza i bez śledzenia; gdy brak sieci, panel znika.
   Przy ruchu komercyjnym Open-Meteo wymaga płatnego planu (ok. kilkudziesięciu euro miesięcznie) albo własnej instancji.
-- **Ceny paliw (następny krok):** w Polsce nie ma darmowego, oficjalnego API cen ze stacji. Opcje: umowa z serwisem
-  zbierającym ceny (np. e-petrol, AutoCentrum) albo ceny zgłaszane przez użytkowników (jak w Waze: zdjęcie pylonu,
-  potwierdzenie przez drugą osobę). W UE część krajów publikuje ceny oficjalnie (np. Niemcy: Tankerkönig/MTS-K,
-  Włochy: MIMIT, Hiszpania: Geoportal), co ułatwia wejście tam.
+- **Ceny paliw (jest moduł):** ekran „Paliwa w okolicy”: Pb95, ON, LPG, najtańsza stacja, odległość i minuty dojazdu,
+  źródło ceny i godzina. Trzy źródła: **stacja przez API** (funkcja `fuel-prices`, klucz stacji, ceny z systemu kasowego),
+  **zgłoszenia kierowców** (z limitem 20 dziennie na osobę) i **cena orientacyjna** (wyraźnie oznaczona).
+  W Polsce nie ma darmowego, oficjalnego API cen ze stacji, więc stacje zapraszamy do podawania cen same
+  (darmowa widoczność, później płatne wyróżnienie). W UE część krajów publikuje ceny oficjalnie (np. Niemcy:
+  MTS-K przez Tankerkönig, Włochy: MIMIT, Hiszpania: Geoportal, Francja: prix-carburants), co ułatwia wejście tam.
+- **Model dla stacji:** wpis i API za darmo; wyróżnienie „Polecana stacja” w okolicy jako reklama lokalna.
 
 ## 10. Plan startu
 

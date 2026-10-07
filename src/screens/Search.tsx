@@ -11,14 +11,38 @@ import { findRecipe, plan, searchByCircle, type Hit } from '../lib/planner'
 import { MapView, routeUrl, type MapPoint } from '../components/map'
 import { formatMoney } from '../lib/money'
 
+/** Rozpoznawanie mowy w przeglądarce (Chrome, Edge, Safari); bez wsparcia przycisk mikrofonu się nie pokazuje. */
+interface Recognizer {
+  lang: string
+  interimResults: boolean
+  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void
+  onend: () => void
+  onerror: () => void
+  start: () => void
+}
+type RecognizerCtor = new () => Recognizer
+const Speech: RecognizerCtor | undefined = typeof window === 'undefined' ? undefined : ((window as unknown as Record<string, RecognizerCtor | undefined>).SpeechRecognition ?? (window as unknown as Record<string, RecognizerCtor | undefined>).webkitSpeechRecognition)
+
 const KINDS: Kind[] = ['sell', 'rent', 'service', 'give', 'swap', 'garage', 'wanted']
-const RADII = [2, 5, 10, 25, 50, 100]
+const RADII = [2, 5, 10, 25, 50, 100, 250]
 
 /** Szukanie: pole tekstowe, krąg jako przełącznik, miejsce i rodzaj jako dwa menu. */
 export function Search() {
   const { t, locale, account, users, visibleListings } = useStore()
   const [params, setParams] = useSearchParams()
   const [q, setQ] = useState(() => params.get('q') ?? '')
+  const [listening, setListening] = useState(false)
+  const listen = () => {
+    if (!Speech) return
+    const r = new Speech()
+    r.lang = locale
+    r.interimResults = false
+    r.onresult = (e) => setQ(e.results[0]?.[0]?.transcript ?? '')
+    r.onend = () => setListening(false)
+    r.onerror = () => setListening(false)
+    setListening(true)
+    r.start()
+  }
   const [circle, setCircle] = useState<Circle>(3)
   const [where, setWhere] = useState('25')
   const [kind, setKind] = useState<Kind | 'all'>('all')
@@ -45,7 +69,8 @@ export function Search() {
   )
   const query = q.trim()
   const recipe = query ? findRecipe(query) : undefined
-  const steps = recipe ? plan(recipe, pool) : []
+  // W planie tylko oferty (bez „Szukam” i ogłoszeń sąsiedzkich), żeby krok nie podsuwał cudzych próśb.
+  const steps = recipe ? plan(recipe, pool.filter((h) => h.listing.kind !== 'wanted' && h.listing.category !== 'community'), 4) : []
   const groups = query ? searchByCircle(query, pool) : null
   const results = groups ? [...groups.friends, ...groups.fof, ...groups.nearby] : pool
   const [view, setView] = useState<'list' | 'map'>(() => (params.get('mapa') ? 'map' : 'list'))
@@ -58,6 +83,14 @@ export function Search() {
     ? planStops.map(({ hit, n }) => ({ id: hit.listing.id, lat: hit.listing.place.lat, lng: hit.listing.place.lng, label: `${n}`, tone: tone(hit) }))
     : results.slice(0, 40).map((h) => ({ id: h.listing.id, lat: h.listing.place.lat, lng: h.listing.place.lng, label: short(h), tone: tone(h) }))
   const selected = sel ? (recipe ? planStops.map((x) => x.hit) : results).find((h) => h.listing.id === sel) : undefined
+  /** Najtańsze oferty w kroku: porównujemy tylko w tej samej jednostce (zł za worek z zł za worek). */
+  const cheapestIn = (hits: Hit[]): Set<Hit> => {
+    const best = new Set<Hit>()
+    const byUnit = new Map<string, Hit[]>()
+    for (const h of hits) if (h.listing.price !== undefined) byUnit.set(h.listing.unit, [...(byUnit.get(h.listing.unit) ?? []), h])
+    for (const group of byUnit.values()) if (group.length > 1) best.add(group.reduce((a, b) => (b.listing.price! < a.listing.price! ? b : a)))
+    return best
+  }
   const metaOf = (h: Hit) => (h.rel.circle === 1 ? users[h.listing.ownerId].name.split(' ')[0] : `${relationText(h.rel, users[h.listing.ownerId], users, t, h.listing.incognito)} · ${formatDistance(h.km)}`)
 
   const setCat = (k: string, p = '') => {
@@ -77,6 +110,11 @@ export function Search() {
           <Icon name="search" size={19} />
           <input id="q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPh')} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-muted focus-visible:outline-none" />
           {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-lilac px-2.5 py-1 text-[12px] font-bold text-ink"><Icon name="sparkle" size={13} /> AI</span>}
+          {Speech && (
+            <button type="button" onClick={listen} aria-label={t('search.voice')} aria-pressed={listening} className={cx('press grid size-9 shrink-0 place-items-center rounded-full', listening ? 'bg-danger text-white' : 'bg-fill text-ink')}>
+              <Icon name="mic" size={18} />
+            </button>
+          )}
         </label>
         <Segmented<Circle>
           label={t('search.who')}
@@ -91,6 +129,7 @@ export function Search() {
               <option value="town">{account.place.town}</option>
               <option value="voivodeship">{account.place.voivodeship}</option>
               <option value="country">{t('scope.country')}</option>
+              <option value="europe">{t('scope.europe')}</option>
             </select>
             <Icon name="chevron" size={14} className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 rotate-90 text-muted" />
           </div>
@@ -166,7 +205,7 @@ export function Search() {
                     </p>
                     {hits.length ? (
                       <div className="[&>*+*]:border-t [&>*+*]:border-line">
-                        {hits.map((h) => <ListingRow key={h.listing.id} listing={h.listing} t={t} locale={locale} meta={metaOf(h)} />)}
+                        {hits.map((h) => <ListingRow key={h.listing.id} listing={h.listing} t={t} locale={locale} meta={cheapestIn(hits).has(h) ? `${t('fuel.cheapest')} · ${metaOf(h)}` : metaOf(h)} />)}
                       </div>
                     ) : (
                       <div className="flex items-center justify-between gap-3 px-4 pt-1 pb-3">

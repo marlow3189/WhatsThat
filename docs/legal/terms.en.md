@@ -1,17 +1,17 @@
-# Orbifolk Terms of Service (draft for legal review)
+# Miliorbit Terms of Service (draft for legal review)
 
 Working draft, October 2026. The Polish version prevails. This English text is the source for other translations
 (DE, UK, CS, SK, HU, IT, ES). Items in square brackets are to be filled in.
 
-1. **Operator.** Orbifolk is run by [company name sp. z o.o.], [address], KRS [no.], NIP [no.]. Contact point (DSA
-   Articles 11–12): hello@orbifolk.com.
-2. **What Orbifolk is.** A listings platform connecting users who sell, buy, rent, swap, give away or offer services.
+1. **Operator.** Miliorbit is run by [company name sp. z o.o.], [address], KRS [no.], NIP [no.]. Contact point (DSA
+   Articles 11–12): hello@miliorbit.com.
+2. **What Miliorbit is.** A listings platform connecting users who sell, buy, rent, swap, give away or offer services.
    **The Operator is not a party to any deal between users** and does not sell, buy, rent or provide the listed items or services.
 3. **Money.** The Operator never receives or holds users’ funds. In-app payments are processed by a licensed payment
    service provider [name] directly to the seller’s account under that provider’s terms. The Operator is neither a
    deposit holder nor an insurer; deposits, hand-over and return are agreed between users, and the app only records them.
 4. **Account.** One account per person, created with a phone number confirmed by SMS. Users may **block their account**
-   in the app or at orbifolk.com/zastrzez; unblocking requires an SMS code and confirmation from two trusted people.
+   in the app or at miliorbit.com/zastrzez; unblocking requires an SMS code and confirmation from two trusted people.
    Users can delete their account in settings.
 5. **Plans.** Free: 2 new listings per calendar month; the first year is free, after that a yearly refresh of
    [10 PLN / 2.50 EUR / 2.99 USD] keeps listing enabled. Buying, messaging and browsing are free. Annual
@@ -42,4 +42,6 @@ pauses the payout; the other party has 48 hours to propose a solution, otherwise
 days with reasons, and the payment provider refunds or pays out accordingly. Court remedies remain available.
 
 **Ads and referrals.** The free plan shows one labelled local ad (who pays and why you see it; no profiling).
-Every 100 invites to distinct phone numbers earn one free month of the Annual plan (max. 12).
+Invites are sent by users from their own phones; there are no cash rewards or discounts for invites.
+Hazard warnings come from official sources (e.g. IMGW-PIB, Meteoalarm), shown with their source; they do not replace
+national emergency alerts or 112.

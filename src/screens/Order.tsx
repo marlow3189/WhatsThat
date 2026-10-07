@@ -20,7 +20,7 @@ export function stepsFor(kind: Kind, pay: Order['pay']): Step[] {
 
 export function OrderScreen() {
   const { id } = useParams()
-  const { t, locale, account, orders, listings, users, payOrder, advanceOrder, addProtocolPhoto, openDispute, settleDispute } = useStore()
+  const { t, locale, account, orders, listings, users, payOrder, advanceOrder, addProtocolPhoto, openDispute, settleDispute, nameOf } = useStore()
   const [problem, setProblem] = useState(false)
   const [code, setCode] = useState('')
   const [blik, setBlik] = useState('')
@@ -61,7 +61,7 @@ export function OrderScreen() {
       {order.dispute && <DisputeCard order={order} mine={order.dispute.by === ME} amount={(v) => money(v, order.currency, locale)} onSettle={(ok) => settleDispute(order.id, ok)} t={t} />}
 
       <div className="flex flex-col gap-3 px-4">
-        {seller && order.status === 'paid' && <Notice tone="ok" icon="card">{t('o.sellerPaid', { name: other.name, amount })}</Notice>}
+        {seller && order.status === 'paid' && <Notice tone="ok" icon="card">{t('o.sellerPaid', { name: nameOf(other.id), amount })}</Notice>}
         {!seller && order.status === 'paid' && <Notice tone="ok" icon="check">{t('o.paidInfo')}</Notice>}
         {order.status === 'ready' && !seller && !order.dispute && <Notice tone="ok" icon="bag">{t('n.ready', { title: listing.title })}</Notice>}
         {order.pay === 'cash' && listing.kind === 'sell' && order.status !== 'done' && <Notice tone="info" icon="info">{t('o.cashInfo')}</Notice>}
@@ -70,7 +70,7 @@ export function OrderScreen() {
       </div>
 
       <Group>
-        <ListingRow listing={listing} t={t} locale={locale} meta={other.name} />
+        <ListingRow listing={listing} t={t} locale={locale} meta={nameOf(other.id)} />
         {listing.kind === 'sell' && COUNTABLE.includes(listing.unit) && <Row title={t('l.qty')} value={`${String(order.qty).replace('.', ',')} ${t(`unit.${listing.unit}`)}`} />}
         <Row title={t('l.delivery')} value={t(`del.${order.delivery}`)} detail={order.lockerCode} />
         {when && <Row title={t('l.pickup')} value={when} />}

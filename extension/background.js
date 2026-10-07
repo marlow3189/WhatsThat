@@ -1,4 +1,4 @@
-// Orbifolk w przeglądarce: panel boczny (Chrome, Edge) albo karta (Safari, gdzie panelu bocznego nie ma).
+// Miliorbit w przeglądarce: panel boczny (Chrome, Edge) albo karta (Safari, gdzie panelu bocznego nie ma).
 const APP = 'app/index.html'
 const hasPanel = typeof chrome !== 'undefined' && !!chrome.sidePanel
 
@@ -11,7 +11,7 @@ if (!hasPanel) {
   chrome.action.onClicked.addListener(() => chrome.tabs.create({ url: chrome.runtime.getURL(APP) }))
 }
 
-// „Wystaw na Orbifolk” z dowolnej strony: tytuł, zaznaczony tekst i zdjęcie trafiają do formularza.
+// „Wystaw na Miliorbit” z dowolnej strony: tytuł, zaznaczony tekst i zdjęcie trafiają do formularza.
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   const params = new URLSearchParams()
   params.set('t', (info.selectionText || tab?.title || '').slice(0, 120))

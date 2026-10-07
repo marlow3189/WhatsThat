@@ -78,26 +78,6 @@ export function renewalReminder(days: number | null): 30 | 7 | 1 | null {
   return null
 }
 
-/**
- * Polecanie: każde 100 wysłanych zaproszeń (unikalne numery) = miesiąc planu Rocznego gratis, maksymalnie 12 miesięcy.
- * Na darmowym koncie to „próba” planu bez limitu; po miesiącu konto wraca do darmowego.
- */
-export const INVITES_PER_MONTH = 100
-export const MAX_INVITE_MONTHS = 12
-
-/** Ile nowych miesięcy należy się za zaproszenia (0, jeśli nic). */
-export function inviteMonths(sent: number, rewarded: number): number {
-  return Math.max(0, Math.min(MAX_INVITE_MONTHS, Math.floor(sent / INVITES_PER_MONTH)) - rewarded)
-}
-
-/** Plan po doliczeniu miesięcy: darmowy dostaje Roczny na próbę, płatny się wydłuża. */
-export function withBonusMonths(account: Pick<Account, 'plan' | 'planUntil'>, months: number, now = Date.now()): Pick<Account, 'plan' | 'planUntil'> {
-  if (months <= 0) return account
-  const plan = effectivePlan(account, now)
-  const from = plan === 'free' ? now : Math.max(now, account.planUntil ?? now)
-  return { plan: plan === 'free' ? 'annual' : plan, planUntil: from + months * 30 * DAY }
-}
-
 /** Ogłoszenia sąsiedzkie (zaginione zwierzę, zbiórka, pomoc) są zawsze darmowe i nie liczą się do limitu. */
 export const isCommunity = (l: Pick<Listing, 'category'>) => l.category === 'community'
 
@@ -110,7 +90,7 @@ export function handoverCode(rand = Math.random): string {
 export const AUTO_RELEASE_H = 48
 
 export const UNITS_BY_KIND: Record<Kind, Unit[]> = {
-  sell: ['item', 'kg', 'pack', 'litre', 'tonne', 'fixed'],
+  sell: ['item', 'kg', 'pack', 'bag', 'litre', 'tonne', 'm3', 'fixed'],
   rent: ['day', 'week', 'month', 'night', 'hour'],
   service: ['hour', 'fixed'],
   give: ['fixed'],
@@ -120,7 +100,7 @@ export const UNITS_BY_KIND: Record<Kind, Unit[]> = {
 }
 
 /** Jednostki, w których kupujący wybiera ilość. */
-export const COUNTABLE: Unit[] = ['item', 'kg', 'pack', 'litre', 'tonne']
+export const COUNTABLE: Unit[] = ['item', 'kg', 'pack', 'bag', 'litre', 'tonne', 'm3']
 
 export function rentalUnits(from: string, to: string, unit: Unit): number {
   const days = Math.max(1, Math.round((Date.parse(to) - Date.parse(from)) / DAY) || 1)

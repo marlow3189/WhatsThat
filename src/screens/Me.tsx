@@ -8,11 +8,12 @@ import { PRICES, isAvailable } from '../lib/pricing'
 import { VOIVODESHIPS } from '../lib/geo'
 import { CATEGORIES, FARM_TEMPLATES } from '../lib/categories'
 import { KeyTerms, TermsSheet } from '../components/terms'
+import { providersFor } from '../lib/warnings'
 import type { Lang, Unit } from '../lib/types'
 import { ME } from '../data/seed'
 
 export function Me() {
-  const { t, locale, account, users, orders, mine, plan, daysLeft, addedThisMonth, freeLimit, buyPlan, refresh, setLang, setPlace, reset } = useStore()
+  const { t, locale, account, users, orders, mine, plan, daysLeft, addedThisMonth, freeLimit, buyPlan, refresh, setLang, setSkin, setPlace, reset } = useStore()
   const me = users[ME]
   const prices = PRICES[account.currency]
   const open = orders.filter((o) => !['done', 'cancelled'].includes(o.status)).length
@@ -61,6 +62,8 @@ export function Me() {
         <Row to="/zamowienia" icon="bag" title={t('me.orders')} value={open || undefined} />
         <Row to="/moje" icon="list" title={t('me.mine')} value={mine.length} />
         <Row to="/znajomi" icon="users" title={t('me.invite')} detail={t('home.inviteText')} />
+        <Row to="/qr" icon="qr" title={t('qr.title')} />
+        <Row to="/paliwa" icon="fuel" title={t('fuel.title')} />
       </Group>
 
       <Group label={t('me.settings')}>
@@ -69,6 +72,14 @@ export function Me() {
           <span className="flex-1">{t('me.lang')}</span>
           <select id="lang" value={account.lang} onChange={(e) => setLang(e.target.value as Lang)} className="max-w-[50%] bg-transparent text-right text-[16px] text-muted outline-none">
             {LANGS.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+          </select>
+        </label>
+        <label className="flex min-h-[52px] items-center gap-3 px-4 py-1.5">
+          <span className={cx('grid size-9 place-items-center rounded-full', pastelOf('sparkle'))}><Icon name="sparkle" size={18} /></span>
+          <span className="flex-1">{t('me.skin')}</span>
+          <select id="skin" value={account.skin ?? 'color'} onChange={(e) => setSkin(e.target.value as 'color' | 'blue')} className="max-w-[50%] bg-transparent text-right text-[16px] text-muted outline-none">
+            <option value="color">{t('skin.color')}</option>
+            <option value="blue">{t('skin.blue')}</option>
           </select>
         </label>
         {account.country === 'PL' && (
@@ -103,7 +114,7 @@ export function Me() {
 
 /** „Mój stragan”: rolnik prowadzi sprzedaż z jednego ekranu. */
 export function Stall() {
-  const { t, locale, account, mine, orders, listings, users, updateListing, advanceOrder, addListing, canAdd, buyPlan } = useStore()
+  const { t, locale, account, mine, orders, listings, updateListing, advanceOrder, addListing, canAdd, buyPlan, nameOf } = useStore()
   const [adding, setAdding] = useState<string | null>(null)
   const [customName, setCustomName] = useState('')
   const [price, setPrice] = useState('')
@@ -163,7 +174,7 @@ export function Stall() {
               <div key={o.id} className="flex items-center gap-3 px-4 py-3">
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-medium">{l?.title}</span>
-                  <span className="tnum block text-[14px] text-muted">{[users[o.buyerId].name, l && l.unit !== 'fixed' && `${String(o.qty).replace('.', ',')} ${t(`unit.${l.unit}`)}`, fmt(o.total)].filter(Boolean).join(' · ')}</span>
+                  <span className="tnum block text-[14px] text-muted">{[nameOf(o.buyerId), l && l.unit !== 'fixed' && `${String(o.qty).replace('.', ',')} ${t(`unit.${l.unit}`)}`, fmt(o.total)].filter(Boolean).join(' · ')}</span>
                 </span>
                 <Button size="sm" onClick={() => advanceOrder(o.id, 'ready')}>{t('o.step.ready')}</Button>
               </div>
@@ -307,13 +318,13 @@ export function Interests() {
 }
 
 export function Muted() {
-  const { t, account, users, mute } = useStore()
+  const { t, account, mute, nameOf } = useStore()
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('me.muted')} />
       <Group>
         {account.muted.length ? (
-          account.muted.map((id) => <Row key={id} title={users[id]?.name} value={<span className="text-link">{t('l.unmute').split(' ')[0]}</span>} onClick={() => mute(id, false)} chevron={false} />)
+          account.muted.map((id) => <Row key={id} title={nameOf(id)} value={<span className="text-link">{t('l.unmute').split(' ')[0]}</span>} onClick={() => mute(id, false)} chevron={false} />)
         ) : (
           <p className="px-4 py-3 text-muted">{t('mu.empty')}</p>
         )}
@@ -323,10 +334,21 @@ export function Muted() {
 }
 
 export function Privacy() {
-  const { t, reset } = useStore()
+  const { t, reset, account, setPseudonym, setAddress } = useStore()
+  const [nick, setNick] = useState(account.pseudonym ?? '')
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('me.privacy')} />
+      <section className="card mx-4 flex flex-col gap-3 p-4">
+        <Field id="nick" label={t('nick.label')} hint={t('nick.hint')}>
+          <div className="flex gap-2">
+            <Input id="nick" value={nick} maxLength={24} onChange={(e) => setNick(e.target.value)} placeholder={t('nick.ph')} className="flex-1" />
+            <Button size="sm" className="min-h-[50px]" onClick={() => setPseudonym(nick)}>{t('save')}</Button>
+          </div>
+        </Field>
+        <p className="text-[14px] leading-snug text-muted">{account.address ? `${t('addr.saved')}: ${account.address.street}, ${account.address.postcode} ${account.address.city}` : t('addr.none')}</p>
+        {account.address && <button type="button" onClick={() => setAddress(undefined)} className="min-h-10 self-start text-[15px] font-semibold text-danger">{t('addr.remove')}</button>}
+      </section>
       <Group>
         {(['pr.1', 'pr.2', 'pr.3'] as const).map((k) => <Row key={k} icon="lock" title={<span className="text-[15px] leading-snug">{t(k)}</span>} />)}
       </Group>
@@ -367,7 +389,7 @@ export function MyListings() {
 }
 
 export function NotificationSettings() {
-  const { t, account, setNotif } = useStore()
+  const { t, account, setNotif, setWarnings } = useStore()
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('me.notif')} />
@@ -376,12 +398,15 @@ export function NotificationSettings() {
           <Toggle key={k} id={`n-${k}`} label={t(`notif.${k}`)} checked={account.notif[k]} onChange={(v) => setNotif(k, v)} />
         ))}
       </Group>
+      <Group footer={t('wr.hint')}>
+        <Toggle id="n-warnings" label={t('wr.toggle')} hint={providersFor(account.country).map((p) => p.name).join(', ')} checked={account.warnings !== false} onChange={setWarnings} />
+      </Group>
     </div>
   )
 }
 
 export function Orders() {
-  const { t, locale, orders, listings, users } = useStore()
+  const { t, locale, orders, listings, users, nameOf } = useStore()
   const groups = [
     { label: t('o.buying'), items: orders.filter((o) => o.buyerId === ME) },
     { label: t('o.selling'), items: orders.filter((o) => o.sellerId === ME) },
@@ -395,7 +420,7 @@ export function Orders() {
             g.items.map((o) => {
               const l = listings.find((x) => x.id === o.listingId)
               const other = users[o.buyerId === ME ? o.sellerId : o.buyerId]
-              return <Row key={o.id} to={`/zamowienie/${o.id}`} title={l?.title} detail={`${other.name} · ${t(`o.status.${o.status}`)}`} value={o.total ? money(o.total, o.currency, locale) : undefined} />
+              return <Row key={o.id} to={`/zamowienie/${o.id}`} title={l?.title} detail={`${nameOf(other.id)} · ${t(`o.status.${o.status}`)}`} value={o.total ? money(o.total, o.currency, locale) : undefined} />
             })
           ) : (
             <p className="px-4 py-3 text-muted">{t('o.none')}</p>

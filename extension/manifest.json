@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Orbifolk",
-  "short_name": "Orbifolk",
+  "name": "Miliorbit",
+  "short_name": "Miliorbit",
   "version": "0.1.0",
-  "description": "Twoja orbita: znajomi i okolica. Pożyczaj, kupuj, wynajmuj, wystawiaj z komputera. Kupuj, wynajmuj, wystawiaj z komputera.",
+  "description": "Twoja orbita: znajomi i okolica. Pożyczaj, kupuj, wynajmuj i wystawiaj z komputera.",
   "default_locale": "pl",
   "icons": {
     "16": "icons/icon-16.png",
@@ -12,7 +12,7 @@
     "128": "icons/icon-128.png"
   },
   "action": {
-    "default_title": "Orbifolk",
+    "default_title": "Miliorbit",
     "default_icon": {
       "16": "icons/icon-16.png",
       "32": "icons/icon-32.png"
