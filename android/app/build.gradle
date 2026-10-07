@@ -1,5 +1,7 @@
 apply plugin: 'com.android.application'
 
+def ciVersion = Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
+
 android {
     namespace = "com.miliorbit.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -8,8 +10,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Numer wersji z GitHub Actions (każde budowanie +1), żeby nowe APK instalowało się na starym.
-        versionCode (System.getenv("VERSION_CODE") ?: "1").toInteger()
-        versionName "0.7." + (System.getenv("VERSION_CODE") ?: "0")
+        versionCode ciVersion
+        versionName "0.7.${ciVersion}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -21,7 +23,7 @@ android {
         // Klucz TYLKO do wersji testowych (APK z GitHub Actions). Jest jawny w repozytorium celowo:
         // dzięki temu każde nowe APK testowe aktualizuje poprzednie. Do Google Play używamy innego,
         // tajnego klucza (sekrety GitHub), patrz docs/START.md.
-        test {
+        miliorbitTest {
             storeFile file('miliorbit-test.keystore')
             storePassword 'android'
             keyAlias 'miliorbit-test'
@@ -30,7 +32,7 @@ android {
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.test
+            signingConfig signingConfigs.miliorbitTest
         }
         release {
             minifyEnabled false
