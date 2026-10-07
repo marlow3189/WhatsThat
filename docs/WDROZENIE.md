@@ -1,7 +1,14 @@
 # Miliorbit: wdrożenie krok po kroku (dla początkujących)
 
-Ta instrukcja prowadzi od zera do działającej aplikacji pod adresem **miliorbit.com**. Nie zakłada wiedzy
-programistycznej. Każdy krok ma ten sam układ:
+Ta instrukcja prowadzi od zera do działającej aplikacji. Nie zakłada wiedzy programistycznej.
+
+**Jak to jest ułożone:** Miliorbit to przede wszystkim **aplikacja na telefon** (Android z Google Play, iPhone z App
+Store). Domena **miliorbit.com** to strona, która prowadzi do instalacji: telefon z Androidem trafia do Google Play,
+iPhone do App Store, komputer widzi kod QR. Ta sama aplikacja działa też w przeglądarce pod **miliorbit.com/app/**
+(dla tych, którzy nie chcą instalować). Linki udostępniane z aplikacji (`miliorbit.com/l/…`, zaproszenia
+`miliorbit.com/z/…`) otwierają się od razu w aplikacji, jeśli jest zainstalowana, a jeśli nie, pokazują sklep.
+
+Każdy krok ma ten sam układ:
 
 - **Gdzie jesteś:** w jakim narzędziu (strona, panel, program) wykonujesz krok.
 - **Po co:** co ten krok daje.
@@ -23,12 +30,12 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | Pojęcie | Co to znaczy po ludzku |
 |---|---|
 | **Repozytorium (repo)** | Folder z całym kodem aplikacji w internecie, u nas na GitHubie: `marlow3189/WhatsThat`. Pamięta historię każdej zmiany. |
-| **Gałąź (branch)** | Osobna „wersja robocza” kodu. Główna gałąź to `main`; nowe rzeczy powstają na gałęziach i potem się je łączy. |
+| **Gałąź (branch)** | Osobna „wersja robocza” kodu. Gałąź **domyślna** (default) to ta, którą GitHub pokazuje na start; zwykle nazywa się `main`. U Ciebie na razie jedyną i domyślną gałęzią jest `claude/p2p-rental-marketplace-bimvf6`. |
 | **Commit** | Zapisana paczka zmian z opisem („co zmieniłem i po co”). |
-| **Pull request (PR)** | Prośba o włączenie gałęzi do `main`. Tu widać zmiany, testy i można je zatwierdzić przyciskiem „Merge”. |
+| **Pull request (PR)** | Wniosek „włącz zmiany z gałęzi A do gałęzi B”. Ma opis, listę zmian, komentarze i przycisk **Merge**. PR to *propozycja zmian*. |
 | **Build (budowanie)** | Zamiana kodu źródłowego na pliki, które rozumie przeglądarka. Robi to komenda `npm run build`. |
 | **Hosting** | Serwer, który pokazuje stronę ludziom. U nas **Cloudflare Pages** (darmowy). |
-| **Domena** | Adres strony: `miliorbit.com`. Kupiona u rejestratora (np. OVH, home.pl, nazwa.pl). |
+| **Domena** | Adres strony: `miliorbit.com`. Kupiona u **rejestratora**, u Ciebie w **Hostingerze**. Rejestrator pobiera opłatę roczną; to, kto obsługuje DNS, można ustawić gdzie indziej. |
 | **DNS** | „Książka telefoniczna internetu”: mówi, na jaki serwer prowadzi domena. Wpisy w DNS to **rekordy** (A, CNAME, TXT). |
 | **Serwery nazw (nameservers)** | Kto zarządza DNS-em domeny. Przeniesiemy to do Cloudflare. |
 | **HTTPS / certyfikat** | Kłódka w przeglądarce: szyfrowane połączenie. Cloudflare robi je automatycznie. |
@@ -41,8 +48,10 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | **API** | Sposób, w jaki dwa programy rozmawiają ze sobą (np. system kasowy stacji wysyła nam ceny). |
 | **Klucz API** | Hasło dla programu. Trzymamy je jako sekret. |
 | **Webhook** | Powiadomienie wysyłane automatycznie z innej usługi, np. Stripe: „płatność przyszła”. |
-| **CI** | Automatyczne sprawdzanie kodu przy każdej zmianie (testy, budowanie). U nas GitHub Actions: `.github/workflows/ci.yml`. |
-| **PWA** | Strona, którą można zainstalować jak aplikację z ekranu telefonu, bez sklepu. |
+| **CI** | Automat, który przy każdej zmianie sprawdza kod: typy, testy, budowanie, audyt bezpieczeństwa. U nas GitHub Actions (`.github/workflows/ci.yml`). Zielony ✓ przy commicie = sprawdzenie przeszło, czerwony ✗ = coś jest zepsute. CI to *kontrola*, a nie PR: PR tylko pokazuje wynik CI. |
+| **PWA** | Strona, którą można dodać do ekranu telefonu jak aplikację. U nas to dodatek do aplikacji ze sklepu (`/app/`). |
+| **Capacitor** | Narzędzie, które z naszego kodu robi aplikację na Androida i iPhone'a (`npm run cap:android`, `cap:ios`). |
+| **App Links / Universal Links** | Link `https://miliorbit.com/l/…` otwiera się od razu w zainstalowanej aplikacji. Telefon sprawdza to w plikach `/.well-known/assetlinks.json` (Android) i `/.well-known/apple-app-site-association` (iPhone). |
 | **Piksel / tag** | Kawałek kodu Google, Meta, TikTok, który liczy, skąd przyszli ludzie z reklam. U nas ładuje się dopiero po zgodzie. |
 | **UTM** | Dopisek do linku z kampanii, np. `?utm_source=tiktok&utm_campaign=opal`. Dzięki niemu wiesz, która reklama działa. |
 | **KYC** | Weryfikacja tożsamości sprzedającego. Robi ją operator płatności (Stripe), nie my. |
@@ -90,60 +99,133 @@ Na każdym koncie włącz **logowanie dwuetapowe (2FA)**. Używaj jednego firmow
 
 ---
 
-## Etap 1. Kod w gałęzi głównej (15 minut)
+## Etap 1. Gałąź produkcyjna, PR i CI (10 minut)
 
 **Gdzie jesteś:** GitHub → repozytorium `marlow3189/WhatsThat`.
-**Po co:** cała dotychczasowa praca jest na gałęzi `claude/p2p-rental-marketplace-bimvf6`. Hosting będzie budował
-gałąź `main`, więc trzeba ją tam włączyć.
+**Po co:** hosting (Cloudflare) musi wiedzieć, z której gałęzi budować stronę, którą widzą ludzie.
 
-**Zrób:**
-1. Wejdź na github.com → repozytorium → zakładka **Pull requests** → **New pull request**.
-2. Ustaw: *base:* `main` ← *compare:* `claude/p2p-rental-marketplace-bimvf6` → **Create pull request**.
-3. Poczekaj, aż na dole PR pojawi się zielony znaczek przy **CI** (testy przeszły).
-4. Kliknij **Merge pull request** → **Confirm merge**.
+**Stan teraz (z Twojego zrzutu):** jest jedna gałąź `claude/p2p-rental-marketplace-bimvf6`, oznaczona jako
+*default*, i zielony ✓ przy ostatnim commicie. Gałęzi `main` nie ma, więc wcześniejsze polecenie „zrób PR do main”
+nie miało do czego się odnieść. Masz dwie drogi:
 
-**Sprawdź:** w zakładce *Code* przy gałęzi `main` widać pliki `docs/WDROZENIE.md` i `public/pobierz.html`.
-**Agent:** „Utwórz PR z mojej gałęzi do main i obserwuj CI” (agent zrobi PR, Ty klikasz Merge).
+| Droga | Na czym polega | Kiedy |
+|---|---|---|
+| **A. Bez `main`** | W Cloudflare (etap 3) jako *Production branch* wpisujesz `claude/p2p-rental-marketplace-bimvf6`. Każda zmiana agenta od razu trafia na stronę. | Teraz, przed startem, gdy nikt jeszcze z aplikacji nie korzysta. |
+| **B. Z `main` (zalecana na start publiczny)** | `main` = wersja dla ludzi, gałęzie agenta = praca w toku. Zmiana trafia na stronę dopiero, gdy klikniesz **Merge** w PR. | Najpóźniej przed pierwszymi użytkownikami. |
+
+**Zrób (droga B, 2 minuty):**
+1. GitHub → repozytorium → **Branches** (link nad listą plików, obok nazwy gałęzi) → **New branch**.
+2. *Branch name:* `main`, *Source:* `claude/p2p-rental-marketplace-bimvf6` → **Create branch**.
+3. **Settings** → **General** → *Default branch* → ikona strzałek → wybierz `main` → **Update** → potwierdź.
+4. (Opcjonalnie) **Settings → Branches → Add branch ruleset**: dla `main` zaznacz *Require a pull request before merging*
+   i *Require status checks to pass* → wybierz `check` (to nasze CI). Wtedy nic niesprawdzonego nie trafi do ludzi.
+
+**Jak potem wygląda praca:** agent pracuje na swojej gałęzi → robi **PR** do `main` → GitHub uruchamia **CI** →
+przy zielonym ✓ Ty klikasz **Merge pull request** → Cloudflare sam publikuje nową wersję.
+
+**Sprawdź:** w zakładce *Code* przełącznik gałęzi pokazuje `main` jako *default*, a przy ostatnim commicie jest zielony ✓.
+
+**Co już masz podłączone, a czego jeszcze nie:**
+
+| Element | Stan |
+|---|---|
+| GitHub (repozytorium, historia zmian) | ✅ |
+| Claude Code (agent zapisuje zmiany na gałęzi) | ✅ |
+| CI (automatyczne testy przy każdej zmianie, zielony ✓) | ✅ |
+| Domena miliorbit.com (kupiona w Hostingerze) | ✅ kupiona, ☐ DNS do ustawienia (etap 2) |
+| Cloudflare (hosting strony, ochrona) | ☐ etapy 2–4 |
+| Supabase (baza, logowanie SMS), Stripe (płatności) | ☐ etapy 6–7 |
+| Sklepy Google Play i App Store | ☐ etap 9 |
+| Piksele reklamowe (GA4, Meta, TikTok) | ☐ etap 5 |
+
+**Agent:** „Utwórz PR z mojej gałęzi do main i obserwuj CI” (po utworzeniu `main`; agent zrobi PR, Ty klikasz Merge).
+
+**Język Claude Code raz po polsku, raz po niemiecku:** to język interfejsu, nie projektu. Zależy od ustawień konta
+claude.ai i języka przeglądarki; czasem miesza go też automatyczne tłumaczenie Chrome (ikona tłumacza w pasku adresu,
+wyłącz „Zawsze tłumacz”). Na kod i wdrożenie nie ma to wpływu.
 
 ---
 
-## Etap 2. Domena miliorbit.com w Cloudflare (30 minut + do 24 h czekania)
+## Etap 2. Domena z Hostingera i Cloudflare (30 minut + do 24 h czekania)
 
-**Gdzie jesteś:** najpierw **Cloudflare** (dash.cloudflare.com), potem panel **rejestratora**, u którego kupiłeś domenę.
-**Po co:** Cloudflare będzie zarządzał DNS-em, da darmowy HTTPS i ochronę przed atakami (DDoS, boty).
+**Gdzie jesteś:** **Cloudflare** (dash.cloudflare.com) i **Hostinger hPanel** (hpanel.hostinger.com).
+**Po co:** domena ma prowadzić na stronę z linkami do aplikacji i na `/app/`, szybko i bezpiecznie.
 
-**Zrób:**
-1. Cloudflare → **Add a domain** (albo *Add site*) → wpisz `miliorbit.com` → wybierz plan **Free**.
-2. Cloudflare pokaże dwa **serwery nazw** (np. `ada.ns.cloudflare.com`, `bob.ns.cloudflare.com`). Skopiuj je.
-3. Panel rejestratora → Twoja domena → **Serwery DNS / Nameservers** → zmień na te dwa od Cloudflare → zapisz.
-4. Wróć do Cloudflare i kliknij **Check nameservers**. Zmiana trwa od kilku minut do 24 h.
+**Dlaczego Cloudflare:** jeden darmowy dostawca daje hosting strony (Pages), sieć serwerów blisko ludzi (w Polsce
+m.in. Warszawa, więc strona ładuje się szybko), automatyczny HTTPS, ochronę przed atakami DDoS i botami (WAF,
+Bot Fight Mode, Turnstile przy SMS), szybki DNS z DNSSEC i nagłówki bezpieczeństwa z pliku `site/_headers`.
+Hosting współdzielony w Hostingerze jest wolniejszy, nie buduje sam aplikacji z GitHuba i nie ma tej ochrony.
 
-**Sprawdź:** w Cloudflare przy domenie status **Active** (dostaniesz też e-mail).
-**Uwaga:** jeśli masz już pocztę na tej domenie (rekordy MX), sprawdź, czy Cloudflare je zaimportował.
+**Czy mogę zostawić domenę w Hostingerze?** Tak. **Nie przenosisz domeny**, zmieniasz tylko to, kto obsługuje jej DNS
+(serwery nazw). Domena nadal jest Twoja i odnawiasz ją w Hostingerze. Przeniesienie samej rejestracji do Cloudflare
+Registrar (odnowienie po kosztach, bez marży) jest możliwe, ale nieobowiązkowe i dopiero po 60 dniach od zakupu
+(blokada ICANN dla nowych domen).
+
+### Wariant A (zalecany): serwery nazw Cloudflare, domena zostaje w Hostingerze
+
+1. **Cloudflare** → **Add a domain** → `miliorbit.com` → plan **Free** → Cloudflare przejrzy obecne rekordy DNS.
+2. Sprawdź listę rekordów. Jeśli masz pocztę w Hostingerze (np. `hello@miliorbit.com`), muszą być rekordy **MX**,
+   **TXT** z `v=spf1…` i rekordy DKIM. Brakujące dopisz (skopiuj z hPanel → *Domeny* → *DNS / Serwery nazw* →
+   *Rekordy DNS*). Bez nich poczta przestanie działać.
+3. Cloudflare pokaże dwa **serwery nazw** (np. `ada.ns.cloudflare.com`, `bob.ns.cloudflare.com`). Skopiuj je.
+4. **Hostinger hPanel** → **Domeny** → **Portfolio domen** → przy `miliorbit.com` **Zarządzaj** → przy *DNS / Serwery nazw*
+   **Edytuj** → **Zmień serwery nazw** → wklej oba adresy z Cloudflare (pozostałe pola puste) → **Zapisz**.
+   Jeśli w Hostingerze był włączony **DNSSEC**, najpierw go wyłącz.
+5. Cloudflare → **Check nameservers**. Zmiana trwa od kilku minut do 24 h; dostaniesz e-mail, gdy domena będzie *Active*.
+6. Po aktywacji: Cloudflare → **DNS → Settings → DNSSEC → Enable** → skopiuj dane rekordu **DS** → hPanel → *DNS* →
+   *DNSSEC* → dodaj. (Chroni przed podszyciem się pod Twoją domenę.)
+
+### Wariant B: DNS zostaje w Hostingerze
+
+1. Strona działa tylko pod **`www.miliorbit.com`** (Cloudflare Pages podłącza domenę główną bez `www` wyłącznie wtedy,
+   gdy DNS jest w Cloudflare).
+2. hPanel → *DNS* → dodaj rekord **CNAME**: nazwa `www`, cel `<twój-projekt>.pages.dev` (adres z etapu 3).
+3. hPanel → *Domeny* → **Przekierowania** → `miliorbit.com` → **301** na `https://www.miliorbit.com`.
+4. W kodzie zmień domenę na `www.miliorbit.com` (`src/config.ts`, `site/`; poproś agenta), bo linki do aplikacji
+   muszą prowadzić dokładnie na adres z plikami `/.well-known`.
+
+### Który lepszy i szybszy?
+
+| | A: serwery nazw Cloudflare | B: DNS w Hostingerze |
+|---|---|---|
+| Szybkość strony | taka sama sieć Cloudflare | to samo, ale `miliorbit.com` robi dodatkowe przekierowanie |
+| Ochrona przed atakami (WAF, boty, Turnstile) | ✅ pełna | ❌ tylko podstawowa |
+| Adres bez `www` i linki do aplikacji | ✅ | ⚠️ tylko `www` |
+| DNSSEC, szybkie odpowiedzi DNS | ✅ | zależnie od Hostingera |
+| Gdzie płacisz za domenę | Hostinger | Hostinger |
+
+**Wybierz A.** Jest tak samo szybkie, a bezpieczniejsze dla Ciebie i użytkowników.
+
+**Sprawdź:** w Cloudflare przy domenie status **Active**; poczta na domenie dalej przychodzi (wyślij testowy e-mail).
 
 ---
 
 ## Etap 3. Strona i aplikacja w internecie (30 minut, 0 zł)
 
 **Gdzie jesteś:** Cloudflare → **Workers & Pages**.
-**Po co:** po tym kroku `https://miliorbit.com` otwiera aplikację, a każda zmiana w `main` sama się publikuje.
+**Po co:** po tym kroku `https://miliorbit.com` pokazuje stronę z linkami do sklepów, `https://miliorbit.com/app/`
+otwiera aplikację w przeglądarce, a każda zmiana w gałęzi produkcyjnej sama się publikuje.
 
 **Zrób:**
 1. **Workers & Pages** → **Create** → zakładka **Pages** → **Connect to Git** (albo *Import an existing Git repository*).
 2. Połącz konto GitHub, wybierz repozytorium `marlow3189/WhatsThat`.
 3. Ustawienia budowania:
-   - *Production branch:* `main`
+   - *Production branch:* `main` (albo `claude/p2p-rental-marketplace-bimvf6`, jeśli wybrałeś drogę A z etapu 1)
    - *Framework preset:* `Vite` (albo *None*)
    - *Build command:* `npm run build`
-   - *Build output directory:* `dist`
+   - *Build output directory:* `dist` (w środku: strona główna, `app/` z aplikacją i `.well-known/`)
    - *Environment variables:* dodaj `NODE_VERSION` = `22`
 4. **Save and Deploy**. Po 1–2 minutach dostaniesz adres `…pages.dev`.
-5. W projekcie → **Custom domains** → **Set up a custom domain** → `miliorbit.com`, potem drugi raz `www.miliorbit.com`.
+5. W projekcie → **Custom domains** → **Set up a custom domain** → `miliorbit.com`, potem drugi raz `www.miliorbit.com`
+   (w wariancie B z etapu 2 tylko `www.miliorbit.com`).
 
 **Sprawdź:**
-- `https://miliorbit.com` otwiera aplikację, w przeglądarce jest kłódka.
-- `https://miliorbit.com/pobierz` otwiera stronę pobierania (dla kodu QR).
-- Na securityheaders.com wpisz adres: wynik **A** (nagłówki są w `public/_headers`).
+- `https://miliorbit.com`: strona „Wszystko obok. Najpierw znajomi.” z przyciskami Google Play i App Store, kłódka w pasku.
+- `https://miliorbit.com/app/`: aplikacja w przeglądarce.
+- `https://miliorbit.com/pobierz`: na telefonie z Androidem od razu otwiera Google Play (cel kodów QR).
+- `https://miliorbit.com/l/test`: strona „Otwórz w Miliorbit” (tak wygląda link do ogłoszenia bez aplikacji).
+- `https://miliorbit.com/.well-known/apple-app-site-association`: pokazuje JSON (bez przekierowania).
+- Na securityheaders.com wpisz adres: wynik **A** (nagłówki są w `site/_headers`).
 
 **Agent:** „Każdy push na main ma przechodzić CI; jeśli nie przechodzi, napraw i zrób PR”.
 
@@ -183,6 +265,8 @@ gałąź `main`, więc trzeba ją tam włączyć.
    `VITE_GA4_ID`, `VITE_META_PIXEL_ID`, `VITE_TIKTOK_PIXEL_ID` (wzór w pliku `.env.example`) → **Save** →
    **Deployments → Retry deployment** (zmienne `VITE_…` działają dopiero po ponownym zbudowaniu).
 5. W każdej kampanii używaj linków z UTM, np. `https://miliorbit.com/?utm_source=tiktok&utm_campaign=opal`.
+   Strona główna przekazuje źródło do Google Play (*Install Referrer*), więc wiesz, z której reklamy jest instalacja.
+   Zdarzenia z aplikacji ze sklepu mierzysz w Firebase / Google Analytics for Firebase (agent podłączy przy etapie 9).
 
 **Sprawdź:** wejdź na stronę, kliknij „Zgadzam się”, załóż konto demo. GA4 → *Raporty* → *Czas rzeczywisty*;
 Meta → *Testuj zdarzenia*; TikTok → *Test events*. Zdarzenia: `sign_up`, `listing_created`, `invite`, `purchase`, `subscribe`.
@@ -201,17 +285,22 @@ Meta → *Testuj zdarzenia*; TikTok → *Test events*. Zdarzenia: `sign_up`, `li
    **Central EU (Frankfurt)**. Najpierw zrób drugi projekt `miliorbit-test` i na nim ćwicz.
 2. **Database → Extensions** → włącz `postgis` i `pg_cron`.
 3. **SQL Editor** → **New query** → wklej całą zawartość `supabase/migrations/0001_init.sql` → **Run**.
-   Potem tak samo `0002_safety.sql` i `0003_local.sql`. Kolejność jest ważna.
+   Potem tak samo `0002_safety.sql`, `0003_local.sql` i `0004_identity_sos.sql`. Kolejność jest ważna.
+   Przed `0004` utwórz sekret do anonimowych kluczy (SQL Editor, losowe 64 znaki, np. z menedżera haseł):
+   `select vault.create_secret('<losowe 64 znaki>', 'anon_key_secret');`. Nigdy go nie zmieniaj (zmieniłyby się klucze).
 4. **Authentication → Sign In / Providers → Phone** → włącz. Dostawca SMS: Twilio (wbudowany) albo SMSAPI przez
    **Auth Hooks → Send SMS hook**.
 5. **Authentication → Attack Protection** (albo *Bot and Abuse Protection*) → **CAPTCHA** → **Cloudflare Turnstile** →
    wklej **Secret key** z etapu 4. Ustaw limit SMS na godzinę.
-6. **Authentication → URL Configuration** → *Site URL:* `https://miliorbit.com`.
+6. **Authentication → URL Configuration** → *Site URL:* `https://miliorbit.com/app/`; w *Redirect URLs* dodaj też
+   `https://miliorbit.com/**` i `capacitor://localhost` (aplikacja na iPhonie) oraz `https://localhost` (Android).
 7. **Advisors → Security Advisor** → ma być zero ostrzeżeń (każda tabela ma RLS).
 8. **Project Settings → API** → skopiuj **Project URL** i klucz **anon public**. W Cloudflare Pages dodaj zmienne
    `VITE_SUPABASE_URL` i `VITE_SUPABASE_ANON_KEY`. Klucza **service_role** nigdy nie dawaj do aplikacji.
 
-**Sprawdź:** w **Table Editor** widać tabele `profiles`, `listings`, `orders`, `disputes`, `fuel_prices`, `favorites`.
+**Sprawdź:** w **Table Editor** widać tabele `profiles`, `listings`, `orders`, `disputes`, `fuel_prices`, `favorites`,
+`sos_alerts`, `answers`. W **SQL Editor** test blokady płci: zmiana płci przez użytkownika kończy się błędem
+„Płeć można zmienić tylko przez pomoc”.
 **Agent:** „Podłącz `src/data/store.tsx` do Supabase: logowanie numerem, ogłoszenia, czaty (realtime), zamówienia,
 ulubieni, orbita (`orbit_people`). Tryb demo ma zostać w podglądzie”. To największe zadanie; agent zrobi je w kilku PR.
 
@@ -273,21 +362,48 @@ ulubieni, orbita (`orbit_people`). Tryb demo ma zostać w podglądzie”. To naj
 
 ---
 
-## Etap 9. Kod QR, strona pobierania i sklepy z aplikacjami
+## Etap 9. Aplikacje w Google Play i App Store, kod QR i linki do aplikacji
 
-**Gdzie jesteś:** Google Play Console, App Store Connect, a potem plik `public/pobierz.js` (albo agent).
-**Po co:** jeden kod QR prowadzi każdego do właściwego miejsca: Android → Google Play, iPhone → App Store,
-komputer → oba linki i aplikacja w przeglądarce.
+**Gdzie jesteś:** Google Play Console, App Store Connect, komputer z Android Studio (Android) i Mac z Xcode (iPhone).
+**Po co:** aplikacja na telefon to główny produkt; domena prowadzi do sklepów, a linki otwierają się w aplikacji.
 
 **Zrób:**
-1. Dopóki aplikacji nie ma w sklepach, strona `/pobierz` sama podpowiada instalację ze strony (PWA). Kod QR jest
-   w aplikacji: **Ja → Kod QR aplikacji** (prowadzi na `https://miliorbit.com/pobierz?ref=…`).
-2. **Android:** Google Play Console (25 USD) → aplikacja z `npm run cap:android` (Capacitor) albo jako TWA.
-3. **iPhone:** Apple Developer (99 USD/rok) → `npm run cap:ios` na Macu z Xcode → App Store Connect.
-4. Po publikacji wpisz adresy sklepów w `public/pobierz.js` (`PLAY_URL`, `APP_STORE_URL`) i opublikuj.
-   Od tej chwili ten sam kod QR otwiera sklep właściwy dla telefonu.
+1. **Konto Google Play** (25 USD) załóż jako **organizacja** (spółka; potrzebny numer D-U-N-S, darmowy). Konto
+   prywatne musi przed publikacją przejść test zamknięty z co najmniej 12 testerami przez 14 dni.
+2. **Konto Apple Developer** (99 USD/rok), też jako organizacja (D-U-N-S).
+3. Aplikacje z naszego kodu (Capacitor), w terminalu w folderze projektu:
+   ```bash
+   npm run build
+   npx cap add android      # raz; tworzy folder android/
+   npx cap add ios          # raz, na Macu; tworzy folder ios/
+   npm run cap:android      # otwiera Android Studio → Build → Generate Signed App Bundle
+   npm run cap:ios          # otwiera Xcode → Product → Archive → wyślij do App Store Connect
+   ```
+4. **Uprawnienia i opisy** (agent dopisze je do projektów `android/` i `ios/`):
+   - Kontakty: wtyczka `@capacitor-community/contacts`; na iPhonie `NSContactsUsageDescription` = tekst z okna zgody
+     („Sprawdzamy, kto z Twoich kontaktów jest w Miliorbit. Numery zamieniamy w telefonie na skróty i nie zapisujemy
+     książki adresowej.”), na Androidzie `READ_CONTACTS`.
+   - Położenie (SOS, okolica): `NSLocationWhenInUseUsageDescription`, `ACCESS_FINE_LOCATION`.
+   - Powiadomienia push: `@capacitor/push-notifications` (Firebase dla Androida, klucz APNs dla iPhone'a).
+5. **Linki do aplikacji** (otwieranie `miliorbit.com/l/…` w aplikacji):
+   - Android: Play Console → *Integralność aplikacji* → *Podpisywanie aplikacji* → skopiuj **SHA-256** certyfikatu
+     → wpisz do `site/.well-known/assetlinks.json`. W `android/app/src/main/AndroidManifest.xml` dodaj `intent-filter`
+     z `android:autoVerify="true"` dla `https://miliorbit.com` i ścieżek `/l/`, `/u/`, `/z/`, `/sos`, `/zastrzez`.
+   - iPhone: w `site/.well-known/apple-app-site-association` zamień `TEAMID` na swój *Team ID* (Apple Developer →
+     *Membership*). W Xcode → *Signing & Capabilities* → **Associated Domains** → `applinks:miliorbit.com`.
+   - Aplikacja odbiera link sama (`src/App.tsx`, `useDeepLinks`) i otwiera właściwy ekran.
+6. **Sklepy wymagają:** adresu polityki prywatności `https://miliorbit.com/prywatnosc` (wersja robocza w `site/prywatnosc.html`,
+   uzupełnij dane firmy i daj prawnikowi), adresu do usuwania konta `https://miliorbit.com/prywatnosc#usun-konto`
+   (Google Play), formularza **Data safety** (Google) i **App Privacy** (Apple): telefon, imię, przybliżone i dokładne
+   położenie (SOS), kontakty (tylko do dopasowania, nie zapisywane), wiadomości, zakupy.
+7. **Po publikacji** wpisz adresy sklepów w **`site/stores.json`** (jedno miejsce dla strony, kodu QR i aplikacji):
+   `"android"` jest już wpisany (adres znany z nazwy pakietu `com.miliorbit.app`), `"ios"` uzupełnij adresem
+   `https://apps.apple.com/app/id…` z App Store Connect. Od tej chwili przyciski i kod QR prowadzą do obu sklepów,
+   a Safari na iPhonie pokazuje systemowy pasek „Otwórz w App Store”.
 
-**Agent:** „Uzupełnij PLAY_URL i APP_STORE_URL w public/pobierz.js: …” albo „przygotuj wersję Android z Capacitora”.
+**Sprawdź:** na telefonie z zainstalowaną aplikacją link `https://miliorbit.com/l/…` z SMS-a otwiera aplikację, nie
+przeglądarkę. Kod QR z **Ja → Kod QR aplikacji** na Androidzie otwiera Google Play.
+**Agent:** „Dodaj projekty Capacitor dla Androida i iOS z uprawnieniami, App Links i Universal Links według etapu 9”.
 
 ---
 
@@ -321,6 +437,8 @@ na produkcji, zmian regulaminu bez prawnika, wysyłki reklam bez zgody użytkown
 | Objaw | Najczęstsza przyczyna | Co zrobić |
 |---|---|---|
 | Strona nie otwiera się pod domeną | DNS jeszcze się nie przeniósł | sprawdź status domeny w Cloudflare (*Active*), poczekaj do 24 h |
+| Po zmianie serwerów nazw nie działa poczta | brak rekordów MX/SPF/DKIM w Cloudflare | przepisz je z Hostingera (etap 2, krok 2) |
+| Link `miliorbit.com/l/…` otwiera przeglądarkę zamiast aplikacji | zły SHA-256 / Team ID w `site/.well-known` albo brak `autoVerify` | sprawdź pliki z etapu 9, zainstaluj aplikację ponownie |
 | Build w Cloudflare jest czerwony | błąd w kodzie albo brak `NODE_VERSION=22` | otwórz log builda, wklej agentowi: „napraw build” |
 | Piksele nic nie liczą | brak zgody albo zmienne bez ponownego wdrożenia | kliknij „Zgadzam się”, zrób *Retry deployment* |
 | SMS nie przychodzi | brak środków u dostawcy SMS albo limit | Supabase → *Auth → Logs*; doładuj konto SMS |

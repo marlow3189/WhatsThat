@@ -250,3 +250,27 @@ textarea:focus-visible {
 nav[aria-label='Menu'] {
   view-transition-name: tabbar;
 }
+
+/* Krótki wskaźnik pracy (np. porównywanie kontaktów). */
+.spin {
+  animation: orbit 1.2s linear infinite;
+}
+
+/* SOS: pulsujący przycisk i pierścień postępu przytrzymania. */
+@keyframes sos-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 26px color-mix(in srgb, var(--danger) 0%, transparent);
+  }
+}
+.sos-pulse {
+  animation: sos-pulse 1.6s ease-out infinite;
+}
+.no-callout {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: none;
+}

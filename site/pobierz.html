@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pobierz Miliorbit</title>
+    <meta name="description" content="Miliorbit na Androida i iPhone'a: pożyczaj, wynajmuj i kupuj od znajomych i sąsiadów." />
+    <meta name="theme-color" content="#f1f2f4" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <!-- Cel kodów QR: telefon od razu trafia do swojego sklepu, komputer widzi oba linki i kod. -->
+  <body data-auto>
+    <main class="center">
+      <div class="box">
+        <img class="logo" src="/icon.svg" alt="" width="72" height="72" />
+        <h1>Miliorbit</h1>
+        <p class="lead" data-en="Your orbit: friends and neighbours. Borrow, rent and buy from people nearby.">Twoja orbita: znajomi i sąsiedzi. Pożyczaj, wynajmuj i kupuj od ludzi obok.</p>
+        <p class="status" id="status" aria-live="polite"></p>
+        <div class="stores">
+          <a class="store" data-store="android" href="#" rel="noopener">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 3.5v17a1 1 0 0 0 1.5.86l14-8.5a1 1 0 0 0 0-1.72l-14-8.5A1 1 0 0 0 5 3.5Z" /></svg>
+            <span><small data-en="Get it on">Pobierz z</small><b>Google Play</b></span>
+          </a>
+          <a class="store" data-store="ios" href="#" rel="noopener">
+            <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3" fill="none" stroke="currentColor" stroke-width="2" /><path d="M10.5 18.5h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
+            <span><small data-en="Download on the" data-soon="Wkrótce w" data-soon-en="Coming soon to the">Pobierz z</small><b>App Store</b></span>
+          </a>
+        </div>
+        <div class="qr" style="margin: 16px auto 0"><img src="/qr.svg" alt="QR" width="112" height="112" /><p class="hint" data-en="Scan with your phone">Zeskanuj telefonem</p></div>
+        <a class="browser" href="/app/" data-en="Or use it in the browser →">Albo korzystaj w przeglądarce →</a>
+      </div>
+    </main>
+    <script src="/stores.js"></script>
+    <script src="/site.js"></script>
+  </body>
+</html>

@@ -6,7 +6,7 @@
   "description": "Miliorbit — mikro-wynajem, pożyczanie, wymiana i sprzedaż najpierw w kręgu znajomych, potem lokalnie.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p . && vite build",
+    "build": "tsc -p . && vite build && node scripts/build-site.mjs",
     "build:preview": "vite build --mode preview",
     "preview": "vite preview",
     "test": "vitest run",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.2",
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
     "@fontsource-variable/manrope": "^5.3.0",

@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, CircleButton, Field, Group, Header, Input, Notice, Row, ShareSheet, Sheet, Thumb, cx, formatDay, inputCls, listingUrl, money, priceText, relationText } from '../components/ui'
+import { Avatar, Button, CircleButton, Field, Group, Header, Input, Notice, Row, ShareSheet, Sheet, Thumb, cx, formatDay, inputCls, listingUrl, money, priceText, relationText, timeAgo } from '../components/ui'
 import { Icon } from '../components/icons'
 import { categoryById, subById } from '../lib/categories'
 import { COUNTABLE, isAvailable, orderTotal } from '../lib/pricing'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { countryName } from '../lib/countries'
-import type { Delivery, PayMethod, ReportReason } from '../lib/types'
+import type { Delivery, Listing, PayMethod, ReportReason } from '../lib/types'
 import type { T } from '../i18n'
 import { ME } from '../data/seed'
 
@@ -63,7 +63,7 @@ export function ListingScreen() {
   const blocked = account.restricted || owner.restricted
   const sellerReady = !!owner.payouts
   const isMuted = account.muted.includes(owner.id)
-  const tags = [t(`kind.${listing.kind}`), listing.condition && t(`cond.${listing.condition}`), listing.deal && t('deal'), sub?.label[lang]].filter(Boolean).join(' · ')
+  const tags = [listing.category !== 'community' && t(`kind.${listing.kind}`), listing.condition && t(`cond.${listing.condition}`), listing.deal && t('deal'), sub?.label[lang]].filter(Boolean).join(' · ')
   const payable = (listing.kind === 'sell' || listing.kind === 'rent') && total > 0
   const effectivePay: PayMethod = sellerReady ? pay : 'cash'
 
@@ -139,7 +139,7 @@ export function ListingScreen() {
           {!mine && !blocked && <Button size="sm" variant="secondary" onClick={() => nav(`/czat/${openChat(listing)}`)}>{t('l.write')}</Button>}
         </div>
 
-        {!mine && !blocked && (
+        {!mine && !blocked && listing.category !== 'community' && (
           <div className="flex flex-col gap-2">
             <p className="px-5 text-[15px] font-bold">{t('l.quick')}</p>
             <div className="no-scrollbar flex gap-2 overflow-x-auto px-4">
@@ -162,7 +162,9 @@ export function ListingScreen() {
 
         {listing.description && <p className="px-5 leading-relaxed">{listing.description}</p>}
 
-        {mine ? (
+        {listing.category === 'community' ? (
+          <CommunityBlock listing={listing} mine={mine} blocked={!!blocked} />
+        ) : mine ? (
           <div className="px-4"><Notice tone="ok">{t('l.yours')}</Notice></div>
         ) : blocked || listing.kind === 'garage' ? null : (
           <section className="card mx-4 flex flex-col gap-4 p-4">
@@ -280,6 +282,75 @@ export function ListingScreen() {
           <Button className="mt-4 w-full" onClick={() => { const rid = report(listing.id, reason, reportNote.trim() || undefined); setFlash(t('report.sent', { id: rid })); setSheet(null) }}>{t('report.send')}</Button>
         </Sheet>
       )}
+    </div>
+  )
+}
+
+/**
+ * Wpis sąsiedzki: pytanie (odpowiedzi widzą wszyscy), prośba o pomoc („Pomogę” → czat), wydarzenie („Będę”),
+ * zaginione / znalezione („Widziałem” → czat). Bez płatności i bez zamówień.
+ */
+function CommunityBlock({ listing, mine, blocked }: { listing: Listing; mine: boolean; blocked: boolean }) {
+  const { t, users, relation, nameOf, shown, answer, toggleGoing, openChat, sendMessage } = useStore()
+  const nav = useNavigate()
+  const [text, setText] = useState('')
+  const sub = listing.sub ?? ''
+  const say = (key: Parameters<typeof t>[0]) => {
+    const chatId = openChat(listing)
+    sendMessage(chatId, t(key))
+    nav(`/czat/${chatId}`)
+  }
+  if (sub === 'ask') {
+    const answers = listing.answers ?? []
+    return (
+      <section className="flex flex-col gap-3">
+        <h2 className="px-5 text-[17px] font-extrabold">{t('board.answers', { n: answers.length })}</h2>
+        <div className="card mx-4 overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">
+          {answers.length ? answers.map((a) => (
+            <div key={a.id} className="flex gap-3 px-4 py-3">
+              <Avatar user={shown(a.from)} size={36} />
+              <div className="min-w-0 flex-1">
+                <p className="flex items-baseline justify-between gap-2">
+                  <span className="truncate text-[15px] font-semibold">{a.from === ME ? t('board.you') : nameOf(a.from)}</span>
+                  <span className="shrink-0 text-[12px] text-muted">{timeAgo(a.at, t)}</span>
+                </p>
+                {a.from !== ME && <p className="truncate text-[12px] text-muted">{relationText(relation(a.from), users[a.from], users, t)}</p>}
+                <p className="mt-1 text-[15px] leading-snug">{a.text}</p>
+              </div>
+            </div>
+          )) : <p className="px-4 py-3 text-muted">{t('board.noAnswers')}</p>}
+        </div>
+        {!blocked && (
+          <div className="flex gap-2 px-4">
+            <Input aria-label={t('board.reply')} value={text} onChange={(e) => setText(e.target.value)} placeholder={t(mine ? 'board.replyMine' : 'board.replyPh')} className="flex-1" />
+            <Button size="sm" className="min-h-[50px]" disabled={!text.trim()} onClick={() => { answer(listing.id, text); setText('') }}>{t('board.reply')}</Button>
+          </div>
+        )}
+        <p className="px-5 text-[13px] leading-snug text-muted">{t('board.askNote')}</p>
+      </section>
+    )
+  }
+  if (sub === 'localevents' || sub === 'meet') {
+    const going = listing.going ?? []
+    const me = going.includes(ME)
+    const friends = going.filter((id) => id !== ME && relation(id).circle === 1)
+    return (
+      <section className="card mx-4 flex flex-col gap-3 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex -space-x-2">{going.slice(0, 5).map((id) => <span key={id} className="rounded-full ring-2 ring-surface"><Avatar user={shown(id)} size={32} /></span>)}</div>
+          <p className="min-w-0 flex-1 text-[15px] font-semibold">{t('board.going', { n: going.length })}{friends.length ? ` · ${t('board.friendsGoing', { names: friends.map((id) => users[id].name.split(' ')[0]).join(', ') })}` : ''}</p>
+        </div>
+        {!mine && !blocked && <Button variant={me ? 'secondary' : 'primary'} onClick={() => toggleGoing(listing.id)}>{me ? <><Icon name="check" size={18} strokeWidth={2.6} /> {t('board.imGoing')}</> : t('board.join')}</Button>}
+      </section>
+    )
+  }
+  if (mine) return <div className="px-4"><Notice tone="ok">{t('l.yours')}</Notice></div>
+  if (blocked) return null
+  const cta = sub === 'help' ? (['board.helpBtn', 'board.helpMsg'] as const) : sub === 'missing' || sub === 'lost' ? (['board.seenBtn', 'board.seenMsg'] as const) : (['l.write', 'quick.available'] as const)
+  return (
+    <div className="flex flex-col gap-2 px-4">
+      <Button onClick={() => say(cta[1])}>{sub === 'help' && <Icon name="hand" size={18} />} {t(cta[0])}</Button>
+      {sub === 'help' && <p className="px-1 text-[13px] leading-snug text-muted">{t('board.helpNote')}</p>}
     </div>
   )
 }

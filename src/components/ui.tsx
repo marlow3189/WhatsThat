@@ -7,6 +7,7 @@ import { formatMoney } from '../lib/money'
 import type { T } from '../i18n'
 import { BRAND } from '../config'
 import { Icon } from './icons'
+import { identicon } from '../lib/identity'
 
 export function cx(...parts: (string | false | undefined | null)[]) {
   return parts.filter(Boolean).join(' ')
@@ -28,6 +29,7 @@ export function pastelOf(key: string) {
 }
 
 export function Avatar({ user, size = 40, anonymous }: { user: User; size?: number; anonymous?: boolean }) {
+  if (!anonymous && user.anon && user.anonKey) return <KeyAvatar anonKey={user.anonKey} size={size} />
   const ordinal = user.name?.match(/#(\d+)/)
   const initials = anonymous
     ? '?'
@@ -47,6 +49,18 @@ export function Avatar({ user, size = 40, anonymous }: { user: User; size?: numb
       aria-hidden
     >
       {initials}
+    </span>
+  )
+}
+
+/** Awatar z anonimowego klucza: ten sam klucz zawsze daje ten sam wzór, bez imienia i numeru. */
+export function KeyAvatar({ anonKey, size = 40 }: { anonKey: string; size?: number }) {
+  const { hue, cells } = identicon(anonKey)
+  return (
+    <span className="inline-grid shrink-0 place-items-center overflow-hidden rounded-full" style={{ width: size, height: size, background: `hsl(${hue} 70% 92%)` }} aria-hidden>
+      <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 5 5" shapeRendering="crispEdges">
+        {cells.map((on, i) => (on ? <rect key={i} x={i % 5} y={Math.floor(i / 5)} width="1" height="1" fill={`hsl(${hue} 55% 38%)`} /> : null))}
+      </svg>
     </span>
   )
 }
@@ -73,13 +87,20 @@ export function money(minor: number, currency: Currency | undefined, locale: str
 }
 
 export function priceText(l: Listing, t: T, locale = 'pl-PL'): string {
+  if (l.category === 'community') {
+    if (l.sub === 'ask') return t('board.ask')
+    if (l.sub === 'help') return t('board.help')
+    if ((l.sub === 'localevents' || l.sub === 'meet') && l.garageDate) return formatDay(l.garageDate, locale)
+  }
   if (l.kind === 'give') return t('price.free')
   if (l.kind === 'swap') return t('price.swap')
   if (l.kind === 'wanted') return t('price.wanted')
   if (l.kind === 'garage') return l.garageDate ? formatDay(l.garageDate, locale) : t('kind.garage')
   if (l.price === undefined) return ''
   const price = money(l.price, l.currency, locale)
-  return l.unit === 'fixed' ? price : t('price.per', { price, unit: t(`unit.${l.unit}`) })
+  const text = l.unit === 'fixed' ? price : t('price.per', { price, unit: t(`unit.${l.unit}`) })
+  // Praca: zawsze stawka do ręki, żeby było jasne, ile się zarobi.
+  return l.category === 'jobs' && l.kind === 'service' ? `${text} ${t('price.net')}` : text
 }
 
 export function formatDay(iso: string, locale = 'pl-PL') {

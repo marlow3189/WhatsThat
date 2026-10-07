@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Field, Group, Header, Input, ListingRow, Notice, Row, Toggle, cx, inputCls, money, pastelOf } from '../components/ui'
+import { Avatar, Button, Field, Group, Header, Input, KeyAvatar, ListingRow, Notice, Row, Toggle, cx, inputCls, money, pastelOf } from '../components/ui'
+import { GENDERS, formatKey } from '../lib/identity'
+import { isNative } from '../lib/platform'
 import { Icon } from '../components/icons'
 import { LANGS } from '../i18n'
 import { PRICES, isAvailable } from '../lib/pricing'
@@ -31,6 +33,25 @@ export function Me() {
           <p className="flex items-center gap-1 text-[14px] text-ok"><Icon name="shield" size={15} /> {t('me.verified')}</p>
         </div>
       </div>
+      {me.anonKey && (
+        <Link to="/ja/prywatnosc" className="press card -mt-4 mx-4 flex items-center gap-3 p-3.5">
+          <KeyAvatar anonKey={me.anonKey} size={40} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[12px] font-semibold text-muted">{t('key.others')}</span>
+            <span className="tnum block truncate text-[15px] font-bold">{formatKey(me.anonKey)}</span>
+          </span>
+          <Icon name="chevron" size={16} strokeWidth={2.4} className="shrink-0 text-fill-strong" />
+        </Link>
+      )}
+
+      <Link to="/sos" className="press mx-4 flex items-center gap-3 rounded-[22px] bg-danger p-4 text-white">
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white/20 text-[14px] font-extrabold">SOS</span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-extrabold">{t('sos.title')}</span>
+          <span className="block text-[14px] leading-snug opacity-85">{t('sos.meD')}</span>
+        </span>
+        <Icon name="chevron" size={16} strokeWidth={2.4} className="shrink-0 opacity-70" />
+      </Link>
 
       <section className="flex flex-col gap-2">
         <h2 className="px-5 text-[15px] font-bold">{t('me.plan')}</h2>
@@ -95,7 +116,7 @@ export function Me() {
         <Row to="/ustawienia/powiadomienia" icon="bell" title={t('me.notif')} />
         <Row to="/ja/ukryte" icon="eyeoff" title={t('me.muted')} value={account.muted.length || undefined} />
         <Row to="/zaufani" icon="shield" title={t('me.trusted')} value={`${account.trusted.length}/2`} />
-        <Row to="/instaluj" icon="download" title={t('me.install')} />
+        {!isNative() && <Row to="/instaluj" icon="download" title={t('me.install')} />}
         <Row to="/ja/prywatnosc" icon="lock" title={t('me.privacy')} />
         <Row to="/ja/regulamin" icon="doc" title={t('me.terms')} />
       </Group>
@@ -334,11 +355,38 @@ export function Muted() {
 }
 
 export function Privacy() {
-  const { t, reset, account, setPseudonym, setAddress } = useStore()
+  const { t, reset, account, users, setPseudonym, setAddress, setGender } = useStore()
   const [nick, setNick] = useState(account.pseudonym ?? '')
+  const key = users[ME].anonKey
   return (
     <div className="flex flex-col gap-4 pb-8">
       <Header back title={t('me.privacy')} />
+      <section className="card mx-4 flex flex-col gap-3 p-4">
+        <p className="text-[15px] font-bold">{t('ob.gender.title')}</p>
+        <div role="radiogroup" aria-label={t('ob.gender.title')} className="grid grid-cols-3 gap-2">
+          {GENDERS.map((g) => {
+            const on = account.gender === g
+            const off = !!account.gender && !on
+            return (
+              <button key={g} type="button" role="radio" aria-checked={on} disabled={off} onClick={() => setGender(g)} className={cx('press flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-[16px] text-[13px] font-semibold', on ? 'bg-primary text-primary-ink' : 'bg-fill', off && 'cursor-not-allowed opacity-40')}>
+                <span className="flex items-center gap-1 text-[17px] font-extrabold">{g}{(on || off) && <Icon name="lock" size={13} />}</span>
+                <span className="leading-tight">{t(`gender.${g}`)}</span>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[13px] leading-snug text-muted">{account.gender ? t('gender.locked') : t('ob.gender.text')}</p>
+        {key && (
+          <div className="flex items-center gap-3 rounded-[16px] bg-fill p-3">
+            <KeyAvatar anonKey={key} size={44} />
+            <span className="min-w-0">
+              <span className="block text-[12px] font-semibold text-muted">{t('key.yours')}</span>
+              <span className="tnum block truncate font-bold select-all">{key}</span>
+              <span className="block text-[12px] leading-snug text-muted">{t('key.hint')}</span>
+            </span>
+          </div>
+        )}
+      </section>
       <section className="card mx-4 flex flex-col gap-3 p-4">
         <Field id="nick" label={t('nick.label')} hint={t('nick.hint')}>
           <div className="flex gap-2">

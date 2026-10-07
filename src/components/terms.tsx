@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { T } from '../i18n'
 import { LANGS } from '../i18n'
-import { TERMS } from '../legal/terms'
+import type { TermsDoc } from '../legal/terms'
 import { BRAND } from '../config'
 import type { Lang } from '../lib/types'
 import { Sheet, cx } from './ui'
@@ -39,7 +39,13 @@ const fill = (s: string) => s.replace(/\{brand\}/g, BRAND.name).replace(/\{email
 /** Pełny regulamin z wyborem jednego z 9 języków (domyślnie język aplikacji). */
 export function TermsSheet({ lang, t, onClose }: { lang: Lang; t: T; onClose: () => void }) {
   const [shown, setShown] = useState<Lang>(lang)
-  const doc = TERMS[shown]
+  // Pełny regulamin (9 języków) doładowuje się dopiero po otwarciu.
+  const [terms, setTerms] = useState<Record<Lang, TermsDoc>>()
+  useEffect(() => {
+    import('../legal/terms').then((m) => setTerms(m.TERMS))
+  }, [])
+  const doc = terms?.[shown]
+  if (!doc) return <Sheet onClose={onClose}><p className="p-6 text-center text-muted" aria-busy="true">…</p></Sheet>
   return (
     <Sheet onClose={onClose}>
       <div className="flex flex-col gap-4 pb-2" lang={shown}>

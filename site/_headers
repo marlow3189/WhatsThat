@@ -1,4 +1,5 @@
 # Nagłówki bezpieczeństwa dla Cloudflare Pages (ten sam format działa w Netlify).
+# Układ: / = strona z linkami do sklepów, /app/ = aplikacja w przeglądarce, /.well-known = linki do aplikacji.
 # CSP: tylko nasze skrypty + piksele marketingowe (ładowane dopiero po zgodzie) + Supabase + pogoda + mapy.
 /*
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
@@ -10,8 +11,20 @@
   Cross-Origin-Opener-Policy: same-origin
   Cross-Origin-Resource-Policy: same-site
 
-/sw.js
+/app/sw.js
   Cache-Control: no-cache
 
-/assets/*
+/app/assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/stores.js
+  Cache-Control: public, max-age=300
+
+# Linki do aplikacji (Universal Links na iOS, App Links na Androidzie): JSON bez przekierowań.
+/.well-known/apple-app-site-association
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: public, max-age=3600

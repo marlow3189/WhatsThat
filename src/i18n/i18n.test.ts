@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { pl } from './pl'
-import { LANGS, translator } from './index'
+import { LANGS, loadLang, translator } from './index'
 import { CATEGORIES, FARM_TEMPLATES } from '../lib/categories'
 
 describe('tłumaczenia', () => {
   it('każdy język ma każdy klucz i te same zmienne', async () => {
     const keys = Object.keys(pl) as (keyof typeof pl)[]
+    await Promise.all(LANGS.map((l) => loadLang(l.id)))
     for (const { id } of LANGS) {
       const t = translator(id)
       for (const k of keys) {

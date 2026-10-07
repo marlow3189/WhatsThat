@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Scroller, Sheet, Thumb, Tile, cx, priceText } from '../components/ui'
-import { Icon } from '../components/icons'
+import { Avatar, Button, Scroller, Sheet, Thumb, Tile, cx, priceText, timeAgo } from '../components/ui'
+import { Icon, Mark } from '../components/icons'
+import { deviceOs, isNative, isStandalone } from '../lib/platform'
+import { BRAND } from '../config'
 import { StoryViewer } from '../components/stories'
 import { OrbitSection } from '../components/orbit'
 import { useWarnings, providersFor } from '../lib/warnings'
@@ -24,13 +26,33 @@ const ALERT_KM = 10
 const ALERT_SUBS = ['missing', 'meet', 'lost']
 /** Reklama wraca po 3 dniach od ukrycia; na płatnych planach jej nie ma. */
 const AD_PAUSE = 3 * DAY
+/** Pasek „Pobierz aplikację” w przeglądarce telefonu wraca po 2 tygodniach od ukrycia. */
+const APP_BANNER_PAUSE = 14 * DAY
+
+/** Tablica okolicy: prośby o pomoc, pytania, wydarzenia i praca dorywcza ze stawką netto (z 20 km, z 2 tygodni). */
+const BOARD = [
+  { id: 'all', icon: 'list' },
+  { id: 'help', icon: 'hand', subs: ['help'] },
+  { id: 'ask', icon: 'chat', subs: ['ask'] },
+  { id: 'events', icon: 'calendar', subs: ['localevents', 'meet'] },
+  { id: 'jobs', icon: 'bag' },
+] as const
+type BoardTab = (typeof BOARD)[number]['id']
+const boardTab = (l: Listing): BoardTab | null =>
+  l.category === 'jobs' && l.kind === 'service' ? 'jobs'
+  : l.category !== 'community' ? null
+  : l.sub === 'help' ? 'help'
+  : l.sub === 'ask' ? 'ask'
+  : l.sub === 'localevents' || l.sub === 'meet' ? 'events'
+  : null
 
 /**
  * Główna: pasek z miastem i pogodą, pytanie „czego potrzebujesz?” z podpowiedziami AI, alerty sąsiedzkie,
  * „Twoja orbita”, relacje znajomych (stuknij, żeby obejrzeć), sąsiedzi, Twoje ogłoszenia, rzędy zainteresowań.
  */
 export function Home() {
-  const { t, locale, account, users, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings, nameOf, stations } = useStore()
+  const { t, locale, account, users, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings, nameOf, stations, checkInSafe, hideAppBanner } = useStore()
+  const [tab, setTab] = useState<BoardTab>('all')
   const warnings = useWarnings(account.place, account.country, account.warnings !== false)
   const weather = useWeather(account.place)
   const [story, setStory] = useState<number | null>(null)
@@ -56,6 +78,11 @@ export function Home() {
   })
 
   const garage = withKm.filter((r) => r.listing.kind === 'garage' && r.km <= 30)
+  const boardAll = withKm.filter((r) => boardTab(r.listing) && r.km <= ALERT_KM * 2 && now - r.listing.createdAt < 14 * DAY).sort((a, b) => b.listing.createdAt - a.listing.createdAt)
+  const board = tab === 'all' ? boardAll : boardAll.filter((r) => boardTab(r.listing) === tab)
+  // Aplikacja jest głównie na telefon: w przeglądarce telefonu podpowiadamy pobranie (raz na 2 tygodnie, da się ukryć).
+  const os = deviceOs()
+  const appBanner = !isNative() && !isStandalone() && os !== 'desktop' && (!account.appBannerHiddenAt || now - account.appBannerHiddenAt > APP_BANNER_PAUSE)
   const first = account.name.split(' ')[0]
   // Na co dzień: najtańsze paliwo, opał w okolicy, ulubieni dostawcy (piekarz…) z informacją, czy otwarte.
   const fuelNear = stations.map((s) => ({ ...s, km: distanceKm(here, s.place) }))
@@ -94,13 +121,30 @@ export function Home() {
               </p>
             </div>
           </div>
-          <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full bg-surface shadow-[var(--shadow)]" aria-label={t('home.notifications')}>
-            <Icon name="bell" size={21} />
-            {unread > 0 && <span className="tnum absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-danger px-1 text-[12px] font-bold text-white ring-2 ring-bg">{unread}</span>}
-          </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link to="/sos" className="press grid h-11 place-items-center rounded-full bg-danger px-3.5 text-[14px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
+            <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full bg-surface shadow-[var(--shadow)]" aria-label={t('home.notifications')}>
+              <Icon name="bell" size={21} />
+              {unread > 0 && <span className="tnum absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-danger px-1 text-[12px] font-bold text-white ring-2 ring-bg">{unread}</span>}
+            </Link>
+          </div>
         </div>
         <h1 className="text-[30px] leading-[1.08] font-extrabold tracking-[-0.03em]">{t('home.title')}</h1>
       </header>
+
+      {appBanner && (
+        <div className="relative mx-4 -mt-2 flex items-center gap-3 rounded-[22px] bg-surface p-3 pr-11 shadow-[var(--shadow)]">
+          <Mark size={44} />
+          <Link to="/instaluj" className="min-w-0 flex-1">
+            <span className="block text-[15px] leading-tight font-extrabold">{t('app.bannerTitle', { app: BRAND.name })}</span>
+            <span className="block text-[13px] leading-snug text-muted">{t('app.bannerText')}</span>
+            <span className="mt-1 inline-block text-[14px] font-bold text-link">{t(os === 'ios' ? 'app.ios' : 'app.android')}</span>
+          </Link>
+          <button type="button" onClick={hideAppBanner} aria-label={t('ad.hide')} className="press absolute top-2 right-2 grid size-8 place-items-center rounded-full bg-fill text-muted">
+            <Icon name="plus" size={18} className="rotate-45" />
+          </button>
+        </div>
+      )}
 
       <section className="-mt-2 flex flex-col gap-3">
         <Link to="/szukaj" className="press mx-4 flex min-h-[56px] items-center gap-3 rounded-[20px] bg-surface pr-2 pl-4 shadow-[var(--shadow)]">
@@ -138,6 +182,11 @@ export function Home() {
                   <a href={w.url} target="_blank" rel="noreferrer" className="underline">{t('wr.source')}</a>
                   {providersFor(account.country).filter((p) => p.note !== 'meteo').map((p) => <a key={p.name} href={p.url} target="_blank" rel="noreferrer" className="underline">{p.name}</a>)}
                 </p>
+                {w.level >= 2 && (
+                  <button type="button" onClick={checkInSafe} className={cx('press mt-2 inline-flex min-h-9 items-center gap-1.5 rounded-full px-3.5 text-[13px] font-bold', w.level === 3 ? 'bg-white text-danger' : 'bg-surface')}>
+                    <Icon name="shield" size={15} /> {t('safe.btn')}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -159,6 +208,39 @@ export function Home() {
                 </span>
               </Link>
             ))}
+          </Scroller>
+        </section>
+      )}
+
+      {boardAll.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <SectionTitle title={t('board.title')} sub={t('board.sub')} to="/dodaj" more={t('board.post')} />
+          <div className="no-scrollbar flex gap-2 overflow-x-auto px-4" role="tablist" aria-label={t('board.title')}>
+            {BOARD.map((b) => (
+              <button key={b.id} type="button" role="tab" aria-selected={tab === b.id} onClick={() => setTab(b.id)} className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-semibold', tab === b.id ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+                <Icon name={b.icon} size={15} /> {t(`board.tab.${b.id}`)}
+              </button>
+            ))}
+          </div>
+          <Scroller label={t('board.title')}>
+            {board.length ? board.map(({ listing, km }) => {
+              const kind = boardTab(listing)!
+              const icon = BOARD.find((b) => b.id === kind)!.icon
+              const stat = kind === 'ask' ? t('board.answers', { n: listing.answers?.length ?? 0 }) : kind === 'events' ? t('board.going', { n: listing.going?.length ?? 0 }) : kind === 'jobs' ? priceText(listing, t, locale) : t('board.free')
+              return (
+                <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className="press flex w-[264px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
+                  <span className="flex items-center gap-2">
+                    <span className={cx('grid size-9 shrink-0 place-items-center rounded-[11px]', ({ all: 'tile-4', help: 'tile-2', ask: 'tile-1', events: 'tile-3', jobs: 'tile-5' } as Record<BoardTab, string>)[kind])}><Icon name={icon} size={18} /></span>
+                    <span className="min-w-0 truncate text-[12px] font-bold tracking-wide text-muted uppercase">{t(`board.tab.${kind}`)}</span>
+                  </span>
+                  <span className="line-clamp-2 min-h-[2.5em] text-[15px] leading-tight font-bold">{listing.title}</span>
+                  <span className="flex items-center justify-between gap-2 text-[13px]">
+                    <span className="min-w-0 truncate text-muted">{nameOf(listing.ownerId, true)} · {formatDistance(km)} · {timeAgo(listing.createdAt, t)}</span>
+                    <span className="tnum shrink-0 font-bold">{stat}</span>
+                  </span>
+                </Link>
+              )
+            }) : <p className="px-1 text-[15px] text-muted">{t('board.empty')}</p>}
           </Scroller>
         </section>
       )}

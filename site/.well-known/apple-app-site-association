@@ -1,0 +1,17 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.miliorbit.app"],
+        "components": [
+          { "/": "/l/*", "comment": "ogłoszenie" },
+          { "/": "/u/*", "comment": "profil" },
+          { "/": "/z/*", "comment": "zaproszenie od znajomego" },
+          { "/": "/sos", "comment": "SOS" },
+          { "/": "/zastrzez", "comment": "zastrzeżenie konta" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": { "apps": ["TEAMID.com.miliorbit.app"] }
+}

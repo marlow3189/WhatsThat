@@ -1,14 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { Account, AppNotification, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, User } from '../lib/types'
+import type { Account, AppNotification, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, Sos, SosKind, User } from '../lib/types'
+import { anonKey, type Gender } from '../lib/identity'
+import { bestMode, minutes } from '../lib/travel'
 import { relationTo, type Relation } from '../lib/circles'
 import { DAY, FREE_PER_MONTH, PRICES, YEAR, afterPayment, canPublish, daysLeft, effectivePlan, handoverCode, isAvailable, isCommunity, isShown, listingsThisMonth, needsRefresh, renewalReminder } from '../lib/pricing'
 import { relocateDemo, shiftPlace } from '../lib/demo'
 import { track } from '../lib/analytics'
 import { ordinals } from '../lib/privacy'
 import { demoStations, validPrice, type Fuel, type PriceSource, type Station } from '../lib/fuel'
-import { town } from '../lib/geo'
+import { distanceKm, town } from '../lib/geo'
 import { zl } from '../lib/money'
-import { localeOf, translator } from '../i18n'
+import { localeOf, translator, useTranslator } from '../i18n'
 import { ME, seedListings, seedOrders, seedUsers } from './seed'
 
 interface State {
@@ -26,6 +28,8 @@ interface State {
   fuel: Record<string, { prices: Partial<Record<Fuel, number>>; at: number; source: PriceSource }>
   friendDemoDone: boolean
   remindedAt?: number
+  /** trwający albo ostatni alarm SOS */
+  sos?: Sos
 }
 
 export interface Toast {
@@ -34,7 +38,16 @@ export interface Toast {
   link?: string
 }
 
-const KEY = 'miliorbit:v6'
+const KEY = 'miliorbit:v7'
+
+/** Język zapisany na urządzeniu (do wczytania tłumaczeń przed pierwszym ekranem). */
+export function savedLang(): Lang {
+  try {
+    return (JSON.parse(localStorage.getItem(KEY) ?? '{}') as { account?: { lang?: Lang } }).account?.lang ?? 'pl'
+  } catch {
+    return 'pl'
+  }
+}
 
 /** Wszystko włączone (sugerowane); cisza nocna chroni przed nadmiarem. */
 export const DEFAULT_NOTIF: NotificationPrefs = { friendsNew: true, messages: true, orders: true, fofNew: true, nearby: true, quiet: true }
@@ -119,7 +132,7 @@ function useStoreValue() {
   const timers = useRef<number[]>([])
   const latest = useRef(state)
   latest.current = state
-  const t = useMemo(() => translator(state.account.lang), [state.account.lang])
+  const t = useTranslator(state.account.lang)
   const locale = localeOf(state.account.lang)
 
   useEffect(() => {
@@ -149,8 +162,12 @@ function useStoreValue() {
   const users = useMemo<Record<string, User>>(() => {
     const forgotten = new Set(state.account.forgotten)
     const me = state.users[ME]
+    // Klucz anonimowy liczy serwer z sekretem (HMAC); tu wersja demo z tym samym formatem.
+    const withKeys = Object.fromEntries(
+      Object.values(state.users).map((u) => [u.id, u.business || !u.phone ? u : { ...u, anonKey: anonKey(u.place.country ?? 'PL', u.gender ?? 'x', u.phone) }]),
+    )
     return {
-      ...state.users,
+      ...withKeys,
       [ME]: {
         ...me,
         name: state.account.name || '—',
@@ -160,6 +177,8 @@ function useStoreValue() {
         restricted: state.account.restricted,
         payouts: state.account.kyc === 'verified',
         friends: me.friends.filter((f) => !forgotten.has(f)),
+        gender: state.account.gender,
+        anonKey: state.account.gender && state.account.phone ? anonKey(state.account.country, state.account.gender, state.account.phone) : undefined,
       },
     }
   }, [state.users, state.account])
@@ -182,8 +201,11 @@ function useStoreValue() {
     },
     [users, relation, ordinal, state.account.lang],
   )
-  /** Ten sam użytkownik z nazwą do wyświetlenia (Avatar bierze z niej inicjały). */
-  const shown = useCallback((id: string): User => ({ ...users[id], name: nameOf(id) }), [users, nameOf])
+  /** Ten sam użytkownik z nazwą do wyświetlenia; osoby spoza znajomych dostają awatar z anonimowego klucza. */
+  const shown = useCallback(
+    (id: string): User => ({ ...users[id], name: nameOf(id), anon: id !== ME && !users[id]?.business && relation(id).circle !== 1 }),
+    [users, nameOf, relation],
+  )
 
   const notify = (n: Omit<AppNotification, 'id' | 'at' | 'read'>, pref: keyof NotificationPrefs) => {
     const item = { ...n, id: uid(), at: Date.now(), read: false }
@@ -261,6 +283,94 @@ function useStoreValue() {
       return { ...s, account: { ...s.account, favorites: has ? s.account.favorites.filter((f) => f.id !== id) : [...s.account.favorites, { id, topic: topic.trim() }] } }
     })
   const setWarnings = (on: boolean) => patchAccount({ warnings: on })
+  const hideAppBanner = () => patchAccount({ appBannerHiddenAt: Date.now() })
+
+  /* --- tożsamość: płeć (zablokowana po wyborze) --------------------------- */
+
+  /** Płeć ustawia się raz. Zmiana tylko przez pomoc (prawo do sprostowania danych, art. 16 RODO). */
+  const setGender = (gender: Gender): boolean => {
+    if (latest.current.account.gender) return false
+    patchAccount({ gender })
+    return true
+  }
+
+  /* --- SOS i bezpieczeństwo ------------------------------------------------ */
+
+  /** Kto dostaje SOS: wybrani (do 5), a bez wyboru zaufane osoby albo pierwsi trzej znajomi. */
+  const sosRecipients = useMemo(() => {
+    const friends = (users[ME]?.friends ?? []).filter((id) => users[id] && !users[id].restricted)
+    const chosen = (state.account.sosContacts ?? []).filter((id) => friends.includes(id))
+    if (chosen.length) return chosen.slice(0, 5)
+    const trusted = state.account.trusted.filter((id) => friends.includes(id))
+    return (trusted.length ? trusted : friends).slice(0, 3)
+  }, [users, state.account.sosContacts, state.account.trusted])
+  /** Sąsiedzi do 1 km, którzy zgodzili się pomagać (w demo: osoby prywatne do 1 km). */
+  const sosNeighbors = useMemo(
+    () => Object.values(users).filter((u) => u.id !== ME && !u.business && !u.restricted && distanceKm(state.account.place, u.place) <= 1).length,
+    [users, state.account.place],
+  )
+  const setSosContacts = (ids: string[]) => patchAccount({ sosContacts: ids.slice(0, 5) })
+  const setSosHelper = (on: boolean) => patchAccount({ sosHelper: on })
+
+  /**
+   * Alarm: zapisujemy rodzaj, położenie (GPS albo przybliżone) i adresatów. W demo odpowiedzi przychodzą po chwili:
+   * odczytane, ktoś dzwoni, ktoś jedzie (z czasem dojazdu).
+   */
+  const startSos = (kind: SosKind, at?: { lat: number; lng: number }) => {
+    const to = sosRecipients
+    const place = at ?? state.account.place
+    const sos: Sos = {
+      id: uid(), kind, at: Date.now(), lat: place.lat, lng: place.lng, precise: !!at, to,
+      neighbors: state.account.restricted ? 0 : sosNeighbors,
+      replies: Object.fromEntries(to.map((id) => [id, { status: 'sent' as const, at: Date.now() }])),
+    }
+    // Alarmów nie wysyłamy do pikseli reklamowych: to dane o zdrowiu i bezpieczeństwie.
+    setState((s) => ({ ...s, sos }))
+    const reply = (id: string | undefined, status: 'seen' | 'calling' | 'coming', eta?: number) =>
+      id &&
+      setState((s) =>
+        s.sos?.id === sos.id && !s.sos.endedAt ? { ...s, sos: { ...s.sos, replies: { ...s.sos.replies, [id]: { status, at: Date.now(), eta } } } } : s,
+      )
+    later(1200, () => to.forEach((id) => reply(id, 'seen')))
+    later(2600, () => reply(to[0], 'calling'))
+    later(4200, () => {
+      const id = to[1] ?? to[0]
+      if (!id) return
+      const km = distanceKm(place, users[id].place)
+      reply(id, 'coming', Math.max(2, Math.round(minutes(km, bestMode(km)))))
+      notify({ text: translator(latest.current.account.lang)('sos.n.coming', { name: users[id].name.split(' ')[0] }), link: '/sos' }, 'messages')
+    })
+  }
+  /** Koniec alarmu: bliscy dostają „Jestem bezpieczny/a”, dokładne położenie przestaje być udostępniane. */
+  const endSos = () => setState((s) => (s.sos && !s.sos.endedAt ? { ...s, sos: { ...s.sos, endedAt: Date.now() } } : s))
+  /** „Jestem bezpieczny/a” bez alarmu, np. po ostrzeżeniu RCB. Zwraca imiona adresatów. */
+  const checkInSafe = (): string[] => {
+    const names = sosRecipients.map((id) => users[id].name.split(' ')[0])
+    setToast({ id: uid(), text: translator(state.account.lang)('safe.sent', { names: names.join(', ') }) })
+    return names
+  }
+  /** „Odprowadź mnie”: lokalizacja na żywo dla bliskich, wyłącza się sama po czasie. */
+  const shareLocation = (mins: number) => patchAccount({ share: { startedAt: Date.now(), until: Date.now() + mins * 60_000, with: sosRecipients } })
+  const stopShare = () => patchAccount({ share: undefined })
+
+  /* --- tablica okolicy: pytania i wydarzenia -------------------------------- */
+
+  /** Odpowiedź na pytanie do sąsiadów. Na własne pytanie w demo odpisują znajomi. */
+  const answer = (listingId: string, text: string) => {
+    if (state.account.restricted || !text.trim()) return
+    const push = (from: string, body: string) =>
+      setState((s) => ({ ...s, listings: s.listings.map((l) => (l.id === listingId ? { ...l, answers: [...(l.answers ?? []), { id: uid(), from, text: body, at: Date.now() }] } : l)) }))
+    push(ME, text.trim().slice(0, 500))
+  }
+  const toggleGoing = (listingId: string) =>
+    setState((s) => ({
+      ...s,
+      listings: s.listings.map((l) => {
+        if (l.id !== listingId) return l
+        const going = l.going ?? []
+        return { ...l, going: going.includes(ME) ? going.filter((x) => x !== ME) : [...going, ME] }
+      }),
+    }))
 
   /** Stacje w okolicy: orientacyjne ceny demo nadpisane zgłoszeniami stacji (API) i użytkowników. */
   const stations = useMemo<Station[]>(
@@ -317,6 +427,17 @@ function useStoreValue() {
     const id = uid()
     setState((s) => ({ ...s, listings: [{ ...l, id, ownerId: ME, status: 'active', createdAt: Date.now() }, ...s.listings] }))
     track('listing_created')
+    if (l.category === 'community' && l.sub === 'ask') {
+      // Demo: na pytanie odpowiadają sąsiedzi i znajomi, a Ty dostajesz powiadomienie.
+      const tl = translator(state.account.lang)
+      const replies: [string, string][] = [['henryk', tl('board.demoAnswer1')], ['kasia', tl('board.demoAnswer2')]]
+      replies.forEach(([from, text], i) =>
+        later(2500 * (i + 1), () => {
+          setState((s) => ({ ...s, listings: s.listings.map((x) => (x.id === id ? { ...x, answers: [...(x.answers ?? []), { id: uid(), from, text, at: Date.now() }] } : x)) }))
+          if (i === 0) notify({ text: tl('board.n.answer', { title: l.title }), link: `/l/${id}` }, 'messages')
+        }),
+      )
+    }
     return id
   }
 
@@ -541,6 +662,19 @@ function useStoreValue() {
     setAddress,
     toggleFavorite,
     setWarnings,
+    hideAppBanner,
+    setGender,
+    sosRecipients,
+    sosNeighbors,
+    setSosContacts,
+    setSosHelper,
+    startSos,
+    endSos,
+    checkInSafe,
+    shareLocation,
+    stopShare,
+    answer,
+    toggleGoing,
     stations,
     reportFuel,
     nameOf,

@@ -8,6 +8,7 @@ import { categoryById } from '../lib/categories'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { formatMinutes, minutes, type Mode } from '../lib/travel'
 import { isOpen, maskPhone } from '../lib/privacy'
+import { formatKey } from '../lib/identity'
 import { ME } from '../data/seed'
 
 const MODES: Mode[] = ['walk', 'bike', 'car']
@@ -43,6 +44,7 @@ export function Profile() {
             <p className="truncate text-[20px] font-extrabold">{nameOf(id)}</p>
             <p className="truncate text-[14px] text-muted">{relationText(rel, u, users, t)}</p>
             {!friend && !u.business && <p className="tnum text-[13px] text-muted">{maskPhone(u.phone)} · {t('up.anon')}</p>}
+            {!friend && !u.business && u.anonKey && <p className="tnum truncate text-[12px] text-muted" title={t('key.hint')}>{formatKey(u.anonKey)}</p>}
           </div>
           <button
             type="button"

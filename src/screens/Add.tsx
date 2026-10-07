@@ -13,6 +13,15 @@ const KIND_ICON: Record<Kind, string> = { sell: 'bag', rent: 'calendar', service
 const CARRIERS: Delivery[] = ['inpost', 'orlen', 'dpd', 'dhl', 'poczta', 'courier', 'other']
 
 type Step = 'kind' | 'category' | 'details' | 'who' | 'done'
+
+/** Sąsiedzkie wpisy: zawsze za darmo i bez limitu (pomoc, pytanie, wydarzenie, zaginione). */
+type CommunitySub = 'help' | 'ask' | 'localevents' | 'missing'
+const COMMUNITY: { sub: CommunitySub; kind: Kind; icon: string; bg: string }[] = [
+  { sub: 'help', kind: 'wanted', icon: 'hand', bg: 'tile-2' },
+  { sub: 'ask', kind: 'wanted', icon: 'chat', bg: 'tile-1' },
+  { sub: 'localevents', kind: 'service', icon: 'calendar', bg: 'tile-3' },
+  { sub: 'missing', kind: 'wanted', icon: 'paw', bg: 'bg-danger-soft text-danger' },
+]
 type Who = Circle | 'incognito'
 
 /** Dodawanie w czterech krótkich krokach. Z rozszerzenia przeglądarki przychodzi tytuł i zdjęcie (?t=, ?img=). */
@@ -51,10 +60,35 @@ export function Add() {
 
   const published = publishedId ? listings.find((l) => l.id === publishedId) : undefined
   const prices = PRICES[account.currency]
-  const paid = kind === 'sell' || kind === 'rent' || kind === 'service'
+  const paid = (kind === 'sell' || kind === 'rent' || kind === 'service') && category !== 'community'
   const isFarm = category === 'farm'
   const friends = users[ME].friends.map((id) => users[id]).filter(Boolean)
   const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString(locale, { day: 'numeric', month: 'long' })
+
+  const startCommunity = (c: (typeof COMMUNITY)[number]) => {
+    setCommunity(true)
+    setKind(c.kind)
+    setCategory('community')
+    setSub(c.sub)
+    setStep('details')
+  }
+  const isEvent = category === 'community' && (sub === 'localevents' || sub === 'meet')
+  const communityQuick = (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-baseline justify-between px-5">
+        <h2 className="text-[15px] font-bold">{t('a.community')}</h2>
+        <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[12px] font-bold text-ok">{t('a.communityFree')}</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2.5 px-4">
+        {COMMUNITY.map((c) => (
+          <button key={c.sub} type="button" onClick={() => startCommunity(c)} className="press flex min-h-[76px] flex-col items-start justify-between gap-2 rounded-[20px] bg-surface p-3 text-left shadow-[var(--shadow)]">
+            <span className={cx('grid size-9 place-items-center rounded-full', c.bg)}><Icon name={c.icon} size={18} /></span>
+            <span className="text-[14px] leading-tight font-bold">{t(`a.c.${c.sub}`)}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
 
   if (step !== 'done' && !canAdd && !(community && !account.restricted)) {
     return (
@@ -79,16 +113,8 @@ export function Add() {
               <p className="tnum text-center text-[13px] text-muted">{addedThisMonth} / {freeLimit}</p>
             </div>
           )}
-          {!account.restricted && (
-            <button type="button" onClick={() => { setCommunity(true); setKind('wanted'); setCategory('community'); setSub('missing'); setStep('details') }} className="press flex items-center gap-3 rounded-[22px] bg-danger-soft p-4 text-left">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-danger"><Icon name="paw" size={20} /></span>
-              <span className="min-w-0">
-                <span className="block font-bold">{t('a.alertTitle')}</span>
-                <span className="block text-[14px] leading-snug text-ink/70">{t('a.alertText')}</span>
-              </span>
-            </button>
-          )}
         </div>
+        {!account.restricted && <div className="mt-5">{communityQuick}</div>}
       </div>
     )
   }
@@ -137,7 +163,7 @@ export function Add() {
       delivery,
       shippingPrice: delivery.length > 1 && shippingPrice ? Math.round(num(shippingPrice) * 100) : undefined,
       deposit: kind === 'rent' && deposit ? Math.round(num(deposit) * 100) : undefined,
-      garageDate: kind === 'garage' ? garageDate : undefined,
+      garageDate: kind === 'garage' || isEvent ? garageDate : undefined,
       swapFor: kind === 'swap' ? swapFor.trim() || undefined : undefined,
       photo,
       place: account.place,
@@ -151,7 +177,7 @@ export function Add() {
     }
   }
 
-  const back = ({ kind: undefined, category: 'kind', details: kind === 'garage' ? 'kind' : 'category', who: 'details', done: undefined } as const)[step]
+  const back = ({ kind: undefined, category: 'kind', details: kind === 'garage' || community ? 'kind' : 'category', who: 'details', done: undefined } as const)[step]
   const stepNo = { kind: 1, category: 2, details: 3, who: 4, done: 4 }[step]
   const toggleDelivery = (d: Delivery, on: boolean) => setDelivery((xs) => (on ? [...xs, d] : xs.filter((x) => x !== d)))
 
@@ -163,6 +189,7 @@ export function Add() {
         <Header large title={t('a.title')} />
       )}
       <div className="flex flex-col gap-5 pt-2">
+        {step === 'kind' && !account.restricted && communityQuick}
         {step === 'kind' && (
           <Group label={t('a.what')}>
             {KINDS.map((k) => <Row key={k} icon={KIND_ICON[k]} title={t(`kind.${k}`)} detail={t(`kindDesc.${k}`)} onClick={() => chooseKind(k)} />)}
@@ -215,11 +242,11 @@ export function Add() {
               }} />
             </label>
             <Field id="title" label={t('a.titleLabel')}>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={kind === 'wanted' ? t('a.wantedPh') : t('a.titlePh')} />
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={community && COMMUNITY.some((c) => c.sub === sub) ? t(`a.ph.${sub as CommunitySub}`) : kind === 'wanted' ? t('a.wantedPh') : t('a.titlePh')} />
             </Field>
             {paid && (
               <div className="grid grid-cols-[1fr_8rem] gap-3">
-                <Field id="price" label={t('a.price')}>
+                <Field id="price" label={t('a.price')} hint={category === 'jobs' ? t('a.netHint') : undefined}>
                   <Input id="price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} placeholder={account.currency} className="tnum" />
                 </Field>
                 <Field id="unit" label={t('a.unit')}>
@@ -242,8 +269,8 @@ export function Add() {
                 <Input id="stock" inputMode="decimal" value={stock} onChange={(e) => setStock(e.target.value)} className="tnum" placeholder={`100 ${t(`unit.${unit}`)}`} />
               </Field>
             )}
-            {kind === 'garage' && (
-              <Field id="garageDate" label={t('a.garageDate')}><Input id="garageDate" type="date" value={garageDate} onChange={(e) => setGarageDate(e.target.value)} /></Field>
+            {(kind === 'garage' || isEvent) && (
+              <Field id="garageDate" label={isEvent ? t('a.eventDate') : t('a.garageDate')}><Input id="garageDate" type="date" value={garageDate} onChange={(e) => setGarageDate(e.target.value)} /></Field>
             )}
             {(isFarm || kind === 'garage' || kind === 'give') && (
               <Field id="pickupHours" label={t('a.pickupHours')}><Input id="pickupHours" value={pickupHours} onChange={(e) => setPickupHours(e.target.value)} placeholder={t('a.pickupPh')} /></Field>

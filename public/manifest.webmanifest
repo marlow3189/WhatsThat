@@ -1,11 +1,20 @@
 {
+  "id": "/app/",
   "name": "Miliorbit",
   "short_name": "Miliorbit",
   "description": "Twoja orbita: znajomi i okolica. Pożyczaj, kupuj, wynajmuj.",
   "lang": "pl",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f6fb",
-  "theme_color": "#f3f6fb",
-  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+  "background_color": "#f1f2f4",
+  "theme_color": "#f1f2f4",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }],
+  "shortcuts": [
+    { "name": "SOS", "short_name": "SOS", "url": "./#/sos", "icons": [{ "src": "icon.svg", "sizes": "any" }] },
+    { "name": "Dodaj ogłoszenie", "short_name": "Dodaj", "url": "./#/dodaj", "icons": [{ "src": "icon.svg", "sizes": "any" }] },
+    { "name": "Szukaj", "short_name": "Szukaj", "url": "./#/szukaj", "icons": [{ "src": "icon.svg", "sizes": "any" }] }
+  ],
+  "related_applications": [{ "platform": "play", "id": "com.miliorbit.app", "url": "https://play.google.com/store/apps/details?id=com.miliorbit.app" }],
+  "prefer_related_applications": false
 }

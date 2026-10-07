@@ -14,6 +14,8 @@ import { Add } from './screens/Add'
 import { Interests, Me, Muted, MyListings, NotificationSettings, Orders, Payouts, Privacy, Stall, Terms } from './screens/Me'
 import { Friends, Install, Notifications, Restrict, Trusted } from './screens/Safety'
 import { Profile } from './screens/Profile'
+import { Sos } from './screens/Sos'
+import { isNative, routeFromLink } from './lib/platform'
 
 // Rzadziej otwierane ekrany ładują się dopiero, gdy są potrzebne (mniejszy start aplikacji).
 const Operator = lazy(() => import('./screens/Operator').then((m) => ({ default: m.Operator })))
@@ -47,16 +49,19 @@ function Shell() {
     const nav = navigator as Navigator & { setAppBadge?: (n: number) => Promise<void>; clearAppBadge?: () => Promise<void> }
     ;(unread ? nav.setAppBadge?.(unread) : nav.clearAppBadge?.())?.catch(() => {})
   }, [unread])
+  useDeepLinks()
   if (!account.onboarded) return <Onboarding />
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col bg-bg">
       <RestrictedBanner />
+      <SafetyBanner />
       <Toast />
       <main className="flex flex-1 flex-col pb-28">
         <Suspense fallback={<div className="grid flex-1 place-items-center p-10 text-muted" aria-busy="true">…</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/u/:id" element={<Profile />} />
+          <Route path="/sos" element={<Sos />} />
           <Route path="/paliwa" element={<Fuel />} />
           <Route path="/qr" element={<Qr />} />
           <Route path="/szukaj" element={<Search />} />
@@ -117,6 +122,60 @@ function AddRoute() {
   const location = useLocation()
   const { addNonce } = useStore()
   return <Add key={`${location.key}-${addNonce}`} />
+}
+
+/**
+ * Linki https://miliorbit.com/l/… otwierają się w aplikacji ze sklepu (App Links / Universal Links).
+ * System przekazuje adres, a my zamieniamy go na ekran. W przeglądarce nic nie robi.
+ */
+function useDeepLinks() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!isNative()) return
+    let off: (() => void) | undefined
+    import('@capacitor/app').then(({ App: CapApp }) =>
+      CapApp.addListener('appUrlOpen', ({ url }) => {
+        const to = routeFromLink(url)
+        if (to) navigate(to)
+      }).then((h) => (off = () => h.remove())),
+    )
+    return () => off?.()
+  }, [navigate])
+}
+
+/** Trwający alarm SOS albo udostępnianie lokalizacji: zawsze widać, że trwa, i jednym dotknięciem da się to zakończyć. */
+function SafetyBanner() {
+  const { t, account, sos, stopShare } = useStore()
+  const [, tick] = useState(0)
+  const left = account.share ? Math.ceil((account.share.until - Date.now()) / 60_000) : 0
+  useEffect(() => {
+    if (!account.share) return
+    if (left <= 0) {
+      stopShare()
+      return
+    }
+    const id = window.setInterval(() => tick((n) => n + 1), 15_000)
+    return () => clearInterval(id)
+  }, [account.share, left]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (sos && !sos.endedAt) {
+    return (
+      <Link to="/sos" className="sticky top-0 z-30 flex items-center gap-2 bg-danger px-4 py-2.5 text-[14px] font-semibold text-white">
+        <span className="sos-pulse size-2.5 shrink-0 rounded-full bg-white" />
+        <span className="min-w-0 flex-1">{t('sos.banner')}</span>
+        <span className="underline">{t('sos.open')}</span>
+      </Link>
+    )
+  }
+  if (left > 0) {
+    return (
+      <div className="sticky top-0 z-30 flex items-center gap-2 bg-ink px-4 py-2.5 text-[14px] text-white">
+        <Icon name="walk" size={18} />
+        <Link to="/sos" className="min-w-0 flex-1 truncate">{t('share.banner', { n: left })}</Link>
+        <button type="button" onClick={stopShare} className="min-h-8 font-semibold underline">{t('share.stop')}</button>
+      </div>
+    )
+  }
+  return null
 }
 
 function RestrictedBanner() {

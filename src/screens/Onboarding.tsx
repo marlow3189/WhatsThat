@@ -1,30 +1,36 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { GENDERS, anonKey, formatKey, type Gender } from '../lib/identity'
+import { contactSource, hashContacts, readContacts } from '../lib/contacts'
 import { useStore, DEFAULT_NOTIF } from '../data/store'
-import { Avatar, Button, Field, Input, Notice, Toggle, cx, hueOf, inputCls } from '../components/ui'
+import { Avatar, Button, Field, Input, KeyAvatar, Notice, Sheet, Toggle, cx, hueOf, inputCls } from '../components/ui'
 import { KeyTerms, TermsSheet } from '../components/terms'
 import { Icon, Mark } from '../components/icons'
-import { LANGS, localeOf, translator } from '../i18n'
+import { LANGS, localeOf, useTranslator } from '../i18n'
 import { VOIVODESHIPS, TOWNS, nearestTown } from '../lib/geo'
 import { COUNTRIES, countryByCode, countryName } from '../lib/countries'
 import { CATEGORIES } from '../lib/categories'
 import { BRAND } from '../config'
 import type { Lang, NotificationPrefs, Place } from '../lib/types'
 
-const STEPS = ['lang', 'place', 'phone', 'code', 'name', 'interests', 'contacts', 'notif', 'terms'] as const
+const STEPS = ['lang', 'place', 'phone', 'code', 'name', 'gender', 'interests', 'contacts', 'notif', 'terms'] as const
 type Step = (typeof STEPS)[number]
 
-/** Rejestracja bez haseł: język, kraj i okolica, numer + SMS, imię, zainteresowania, kontakty, powiadomienia, zasady. */
+/**
+ * Rejestracja bez haseł: język, kraj i okolica, numer + SMS, imię, płeć (raz, potem zablokowana) i anonimowy klucz,
+ * zainteresowania, kontakty (tylko skróty numerów), powiadomienia, zasady.
+ */
 export function Onboarding() {
   const { finishOnboarding, users, listings, relation } = useStore()
   const [step, setStep] = useState<Step>('lang')
-  const [lang, setLang] = useState<Lang>('pl')
-  const [country, setCountry] = useState('PL')
+  // Pierwszy ekran od razu w języku telefonu (jeśli go obsługujemy), kraj dobrany do języka.
+  const [lang, setLang] = useState<Lang>(phoneLang)
+  const [country, setCountry] = useState(() => COUNTRIES.find((c) => c.lang === phoneLang())?.code ?? 'PL')
   const [voivodeship, setVoivodeship] = useState('mazowieckie')
   const [region, setRegion] = useState('')
   const [townName, setTownName] = useState('')
   const [gpsPlace, setGpsPlace] = useState<Place>()
   const [gpsError, setGpsError] = useState(false)
-  const [dial, setDial] = useState('+48')
+  const [dial, setDial] = useState(() => countryByCode(country).dial)
   const [changeDial, setChangeDial] = useState(false)
   const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
@@ -34,10 +40,16 @@ export function Onboarding() {
   const [interests, setInterests] = useState<string[]>(() => CATEGORIES.filter((c) => c.id !== 'other').map((c) => c.id))
   const [fullTerms, setFullTerms] = useState(false)
   const [contactsAllowed, setContactsAllowed] = useState(false)
+  const [gender, setGender] = useState<Gender>()
+  const [locked, setLocked] = useState(false)
+  // Kontakty: okno zgody systemu → porównanie skrótów → wynik. „denied” = bez kontaktów (też działa).
+  const [contactsStage, setContactsStage] = useState<'ask' | 'system' | 'matching' | 'done' | 'denied'>('ask')
+  const [howContacts, setHowContacts] = useState(false)
+  const [checked, setChecked] = useState(0)
   const [notif, setNotif] = useState<NotificationPrefs>(DEFAULT_NOTIF)
   const [accepted, setAccepted] = useState(false)
   const [error, setError] = useState('')
-  const t = translator(lang)
+  const t = useTranslator(lang)
   const locale = localeOf(lang)
 
   /** Kto z Twojej orbity (znajomi i ich znajomi) działa albo wystawia w danej kategorii. */
@@ -105,8 +117,32 @@ export function Onboarding() {
   const finish = () =>
     finishOnboarding({
       lang, country, currency: countryByCode(country).currency, place: place(), phone: `${dial} ${phone}`.trim(),
-      email: email.trim(), name: name.trim(), interests, contactsAllowed, notif,
+      email: email.trim(), name: name.trim(), interests, contactsAllowed, notif, gender,
     })
+  const key = gender ? anonKey(country, gender, `${dial} ${phone}`) : ''
+
+  /**
+   * Zgoda na kontakty. W aplikacji ze sklepu pokazuje się prawdziwe okno systemu (wtyczka Contacts), na Androidzie
+   * w Chrome okno wyboru kontaktów. W podglądzie pokazujemy, jak to okno wygląda.
+   */
+  const askContacts = async () => {
+    if (import.meta.env.MODE !== 'preview' && contactSource() !== 'none') {
+      const list = await readContacts()
+      if (!list) return setContactsStage('denied')
+      const hashes = await hashContacts(list, dial)
+      // Produkcja: supabase.rpc('match_contacts', { hashes }) → konta znajomych; skrótów serwer nie zapisuje.
+      return match(hashes.length)
+    }
+    setContactsStage('system')
+  }
+  const match = (n: number) => {
+    setChecked(n)
+    setContactsStage('matching')
+    window.setTimeout(() => {
+      setContactsAllowed(true)
+      setContactsStage('done')
+    }, 1300)
+  }
 
   return (
     <div className="mx-auto flex min-h-full max-w-[34rem] flex-col px-5 pt-6 pb-8">
@@ -207,6 +243,41 @@ export function Onboarding() {
         </Screen>
       )}
 
+      {step === 'gender' && (
+        <Screen title={t('ob.gender.title')} text={t('ob.gender.text')}>
+          <div role="radiogroup" aria-label={t('ob.gender.title')} className="card overflow-hidden [&>*+*]:border-t [&>*+*]:border-line">
+            {GENDERS.map((g) => {
+              const on = gender === g
+              const off = locked && !on
+              return (
+                <button key={g} type="button" role="radio" aria-checked={on} disabled={off} onClick={() => setGender(g)} className={cx('flex min-h-[60px] w-full items-center gap-3 px-4 text-left transition', off ? 'cursor-not-allowed opacity-40' : 'active:bg-fill')}>
+                  <span className={cx('tnum grid size-10 shrink-0 place-items-center rounded-full text-[16px] font-extrabold', on ? 'bg-primary text-primary-ink' : 'bg-fill')}>{g}</span>
+                  <span className="min-w-0 flex-1 text-[17px] font-semibold">{t(`gender.${g}`)}</span>
+                  {on ? <Icon name={locked ? 'lock' : 'check'} className="text-ink" strokeWidth={2.4} /> : off ? <Icon name="lock" size={16} className="text-muted" /> : null}
+                </button>
+              )
+            })}
+          </div>
+          {gender && !locked && (
+            <div className="card flex flex-col gap-3 p-4">
+              <p className="text-[15px] leading-snug">{t('ob.gender.confirm', { what: t(`gender.${gender}`) })}</p>
+              <Button onClick={() => setLocked(true)}><Icon name="lock" size={18} /> {t('ob.gender.lock')}</Button>
+            </div>
+          )}
+          {locked && key && (
+            <div className="card flex items-center gap-3 p-4">
+              <KeyAvatar anonKey={key} size={56} />
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-muted">{t('key.yours')}</p>
+                <p className="tnum truncate text-[16px] font-extrabold">{formatKey(key)}</p>
+                <p className="mt-0.5 text-[13px] leading-snug text-muted">{t('key.hint')}</p>
+              </div>
+            </div>
+          )}
+          <Footer><Button className="w-full" disabled={!locked} onClick={next}>{t('next')}</Button></Footer>
+        </Screen>
+      )}
+
       {step === 'interests' && (
         <Screen title={t('ob.interests.title')} text={t('ob.interests.text')}>
           {industries.length > 0 && (
@@ -282,6 +353,24 @@ export function Onboarding() {
 
       {step === 'contacts' && (
         <Screen title={t('ob.contacts.title')} text={t('ob.contacts.text')}>
+          {(contactsStage === 'ask' || contactsStage === 'system') && (
+            <div className="card flex flex-col gap-3 p-4">
+              {(['ob.contacts.p1', 'ob.contacts.p2', 'ob.contacts.p3'] as const).map((k, i) => (
+                <p key={k} className="flex items-start gap-3 text-[15px] leading-snug">
+                  <span className={cx('grid size-9 shrink-0 place-items-center rounded-full', ['tile-1', 'tile-2', 'tile-4'][i])}><Icon name={['lock', 'shield', 'eyeoff'][i]} size={18} /></span>
+                  <span className="pt-1.5">{t(k)}</span>
+                </p>
+              ))}
+              <button type="button" onClick={() => setHowContacts(true)} className="min-h-10 self-start text-[15px] font-bold text-link">{t('ob.contacts.how')}</button>
+            </div>
+          )}
+          {contactsStage === 'matching' && (
+            <div className="card flex items-center gap-3 p-4" role="status">
+              <span className="spin grid size-10 place-items-center rounded-full bg-fill"><Icon name="sparkle" size={20} /></span>
+              <p className="text-[15px] font-semibold">{t('ob.contacts.matching', { n: checked })}</p>
+            </div>
+          )}
+          {contactsStage === 'denied' && <Notice tone="info" icon="info">{t('ob.contacts.denied')}</Notice>}
           {contactsAllowed && (
             <div className="card flex flex-col gap-3 p-4">
               <p className="flex items-center gap-2 text-[15px] font-bold text-ok"><Icon name="check" size={18} strokeWidth={2.6} /> {t('ob.contacts.found', { n: friends.length })}</p>
@@ -293,18 +382,38 @@ export function Onboarding() {
                   </span>
                 ))}
               </div>
+              <p className="flex items-center gap-2 text-[13px] text-muted"><Icon name="shield" size={15} className="text-ok" /> {t('ob.contacts.deleted')}</p>
             </div>
           )}
           <Footer>
-            {contactsAllowed ? (
+            {contactsAllowed || contactsStage === 'denied' ? (
               <Button className="w-full" onClick={next}>{t('next')}</Button>
-            ) : (
+            ) : contactsStage === 'matching' ? null : (
               <>
-                <Button className="w-full" onClick={() => setContactsAllowed(true)}>{t('ob.contacts.allow')}</Button>
+                <Button className="w-full" onClick={askContacts}>{t('ob.contacts.allow')}</Button>
                 <Button variant="plain" className="w-full" onClick={next}>{t('later')}</Button>
               </>
             )}
           </Footer>
+          {contactsStage === 'system' && (
+            <SystemAlert
+              title={t('sys.contacts.title', { app: BRAND.name })}
+              body={t('sys.contacts.body')}
+              note={t('sys.preview')}
+              deny={t('sys.deny')}
+              allow={t('sys.allow')}
+              onDeny={() => setContactsStage('denied')}
+              onAllow={() => match(214)}
+            />
+          )}
+          {howContacts && (
+            <Sheet title={t('ob.contacts.how')} onClose={() => setHowContacts(false)}>
+              <ol className="card flex list-decimal flex-col gap-3 py-4 pr-4 pl-9 text-[15px] leading-snug">
+                {(['ob.contacts.how1', 'ob.contacts.how2', 'ob.contacts.how3', 'ob.contacts.how4'] as const).map((k) => <li key={k}>{t(k)}</li>)}
+              </ol>
+              <Button variant="secondary" className="mt-3 w-full" onClick={() => setHowContacts(false)}>{t('close')}</Button>
+            </Sheet>
+          )}
         </Screen>
       )}
 
@@ -341,6 +450,12 @@ export function Onboarding() {
   )
 }
 
+/** Język telefonu, jeśli jest wśród 9 obsługiwanych; inaczej polski. */
+function phoneLang(): Lang {
+  const code = (typeof navigator !== 'undefined' ? navigator.language : 'pl').slice(0, 2).toLowerCase()
+  return (LANGS.find((l) => l.id === code)?.id ?? 'pl') as Lang
+}
+
 function Screen({ title, text, children }: { title: string; text?: string; children: ReactNode }) {
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -349,6 +464,25 @@ function Screen({ title, text, children }: { title: string; text?: string; child
         {text && <p className="text-[16px] leading-snug text-muted">{text}</p>}
       </div>
       {children}
+    </div>
+  )
+}
+
+/** Okno zgody jak w systemie telefonu (w aplikacji ze sklepu pokazuje je sam system). */
+function SystemAlert({ title, body, note, deny, allow, onDeny, onAllow }: { title: string; body: string; note: string; deny: string; allow: string; onDeny: () => void; onAllow: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-8" role="alertdialog" aria-modal aria-label={title}>
+      <div className="w-full max-w-[18rem] overflow-hidden rounded-[18px] bg-surface/95 text-center shadow-[0_20px_60px_rgb(0_0_0/0.3)] backdrop-blur-xl">
+        <div className="flex flex-col gap-1.5 px-4 pt-5 pb-4">
+          <p className="text-[17px] leading-tight font-bold">{title}</p>
+          <p className="text-[13px] leading-snug">{body}</p>
+          <p className="text-[11px] text-muted">{note}</p>
+        </div>
+        <div className="grid grid-cols-2 border-t border-line">
+          <button type="button" onClick={onDeny} className="min-h-11 border-r border-line text-[17px] text-link">{deny}</button>
+          <button type="button" onClick={onAllow} className="min-h-11 text-[17px] font-semibold text-link">{allow}</button>
+        </div>
+      </div>
     </div>
   )
 }

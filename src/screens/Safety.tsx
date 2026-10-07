@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import { useStore } from '../data/store'
 import { Avatar, Button, Group, Header, Notice, Row, ShareSheet, cx, timeAgo } from '../components/ui'
 import { Icon } from '../components/icons'
-import { BRAND } from '../config'
+import { BRAND, STORES } from '../config'
+import { QrCode } from '../components/qr'
+import { deviceOs } from '../lib/platform'
 import { ME } from '../data/seed'
 import { Link } from 'react-router'
 import { distanceKm, formatDistance } from '../lib/geo'
@@ -232,16 +234,48 @@ export function Friends() {
   )
 }
 
+/**
+ * Pobieranie: najpierw aplikacja ze sklepu (Android, iPhone), przeglądarka jako opcja.
+ * Na komputerze kod QR prowadzi na miliorbit.com/pobierz, która sama wybiera sklep.
+ */
 export function Install() {
   const { t } = useStore()
+  const os = deviceOs()
+  const download = `https://${BRAND.domain}/pobierz?ref=${ME}`
+  const stores = [
+    { id: 'android', label: 'Google Play', sub: 'Android', url: STORES.android },
+    { id: 'ios', label: 'App Store', sub: 'iPhone, iPad', url: STORES.ios },
+  ].sort((a, b) => Number(b.id === os) - Number(a.id === os))
   return (
-    <div className="flex flex-col gap-4 pb-8">
+    <div className="flex flex-col gap-5 pb-8">
       <Header back title={t('i.title')} />
-      <p className="px-5 text-[17px]">{t('i.text')}</p>
-      <Group>
+      <p className="px-5 text-[17px] leading-snug">{t('i.text')}</p>
+      <section className="flex flex-col gap-2 px-4">
+        {stores.map((st) =>
+          st.url ? (
+            <a key={st.id} href={st.url} target="_blank" rel="noreferrer" className={cx('press flex min-h-[60px] items-center gap-3 rounded-[20px] px-4', st.id === os || os === 'desktop' ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+              <Icon name="download" size={22} />
+              <span className="min-w-0 flex-1"><span className="block text-[17px] font-extrabold">{st.label}</span><span className="block text-[13px] opacity-75">{st.sub}</span></span>
+              <Icon name="chevron" size={16} strokeWidth={2.4} />
+            </a>
+          ) : (
+            <div key={st.id} className="flex min-h-[60px] items-center gap-3 rounded-[20px] bg-fill px-4 text-muted">
+              <Icon name="download" size={22} />
+              <span className="min-w-0 flex-1"><span className="block text-[17px] font-extrabold">{st.label}</span><span className="block text-[13px]">{t('app.soon')}</span></span>
+            </div>
+          ),
+        )}
+      </section>
+      {os === 'desktop' && (
+        <section className="card mx-4 flex flex-col items-center gap-3 p-5 text-center">
+          <div className="rounded-[20px] bg-white p-2.5"><QrCode value={download} size={184} label={t('i.qr')} /></div>
+          <p className="font-bold">{t('i.qr')}</p>
+        </section>
+      )}
+      <Group label={t('i.browser')}>
         <Row icon="phone" title="iPhone, iPad" detail={t('i.ios')} />
         <Row icon="phone" title="Android" detail={t('i.android')} />
-        <Row icon="globe" title="Chrome, Edge, Safari" detail={t('i.desktop')} />
+        <Row icon="globe" title={t('i.computer')} detail={t('i.desktop', { url: `${BRAND.domain}/app` })} />
       </Group>
     </div>
   )

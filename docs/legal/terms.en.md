@@ -31,6 +31,11 @@ Working draft, October 2026. The Polish version prevails. This English text is t
 10. **Liability.** The Operator is not liable for user content or for performance of deals if, once aware of illegal
     content, it acts expeditiously to remove it. Towards businesses, liability is capped at plan fees paid in the last
     12 months, except for wilful misconduct or where the law forbids such limits.
+10a. **SOS, neighbourly help and the anonymous key.** SOS is an extra way to alert your people and neighbours, not an
+   emergency service: if life is in danger, call 112. We cannot guarantee that an alert arrives or that anyone responds.
+   False alerts may lead to account restrictions. Neighbourly help is voluntary and free; helpers act at their own risk.
+   Gender (m, w or x) is chosen once and can only be corrected by support. People outside your friends see your anonymous
+   key instead of your phone number.
 11. **Personal data.** See the Privacy Policy. The user’s address book is never uploaded; only hashed phone numbers are compared.
 12. **Changes and law.** Changes are announced in the app 15 days in advance. Polish law applies, without prejudice to
     mandatory consumer protection rules of the consumer’s country of residence.

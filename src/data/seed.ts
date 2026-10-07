@@ -1,4 +1,5 @@
 import type { Chat, Delivery, Kind, Listing, Order, Place, Unit, User } from '../lib/types'
+import type { Gender } from '../lib/identity'
 import type { SaleAggregate, SellerData } from '../lib/dac7'
 import { town } from '../lib/geo'
 import { zl } from '../lib/money'
@@ -21,8 +22,14 @@ const phoneOf = (id: string) => {
   return `+48 ${n.slice(0, 3)} ${n.slice(3, 6)} ${n.slice(6)}`
 }
 
+/** Płeć osób demo (m, w albo x = nie podaje); firmy jej nie mają. Część anonimowego klucza. */
+const GENDER: Record<string, Gender> = {
+  kasia: 'w', marek: 'm', tomek: 'm', ola: 'w', bartek: 'm', ania: 'w', jozef: 'm', piotr: 'm', henryk: 'm', stefan: 'x',
+  ewa: 'w', magda: 'w', grzegorz: 'm', iryna: 'w', jan: 'm', zofia: 'w', michal: 'x', natalia: 'w',
+}
+
 const user = (id: string, name: string, hue: number, place: Place, friends: string[], extra: Partial<User> = {}): User => ({
-  id, name, hue, place, friends, since: Date.UTC(2026, 3, 1), payouts: true, phone: phoneOf(id), ...extra,
+  id, name, hue, place, friends, since: Date.UTC(2026, 3, 1), payouts: true, phone: phoneOf(id), gender: GENDER[id], ...extra,
 })
 
 export function seedUsers(now: number): User[] {
@@ -127,6 +134,24 @@ export function seedListings(now: number, users: User[]): Listing[] {
     { owner: 'piekarnia', kind: 'sell', category: 'farm', sub: 'bread', title: 'Chleb na zakwasie 800 g', description: 'Pieczony od 4 rano. Zarezerwuj i zapłać wcześniej, odłożymy na Twoje nazwisko.', price: 14, unit: 'item', ago: 2 * hour, extra: { stock: 24, pickupHours: 'pon–sob 6:00–13:00', promoted: true } },
     { owner: 'piekarnia', kind: 'sell', category: 'farm', sub: 'bread', title: 'Bułki kajzerki, 10 sztuk', description: 'Świeże co rano. Przy przedpłacie odbierasz bez kolejki.', price: 9, unit: 'pack', ago: 2 * hour, extra: { stock: 30, pickupHours: 'pon–sob 6:00–13:00' } },
     { owner: 'ola', kind: 'give', category: 'home', sub: 'decor', title: 'Kartony po przeprowadzce, 20 sztuk', description: 'Mocne, z taśmą. Do odebrania z klatki.', ago: 1 * day },
+    // Tablica okolicy: pytania, prośby o pomoc, wydarzenia i praca z jawną stawką netto (pomysł z aplikacji sąsiedzkich).
+    {
+      owner: 'stefan', kind: 'wanted', category: 'community', sub: 'ask', title: 'Kto poleci sprawdzonego hydraulika? Cieknie bojler',
+      description: 'Najlepiej ktoś z okolicy, kto da radę przyjechać w tym tygodniu.', ago: 2 * hour,
+      extra: {
+        answers: [
+          { id: 'a1', from: 'henryk', text: 'Pan Zbyszek z Lipowej, robił mi łazienkę. Numer podam w wiadomości.', at: now - 90 * min },
+          { id: 'a2', from: 'kasia', text: 'Złota Rączka 24h z Piaseczna była u nas w dwie godziny. Polecam.', at: now - 50 * min },
+        ],
+      },
+    },
+    { owner: 'henryk', kind: 'wanted', category: 'community', sub: 'help', title: 'Pomoc przy wniesieniu pralki na 3. piętro', description: 'Sobota ok. 11:00, zajmie kwadrans. Stawiam kawę i ciasto.', ago: 4 * hour },
+    {
+      owner: 'ania', kind: 'service', category: 'community', sub: 'localevents', title: 'Piknik sąsiedzki na skwerze, niedziela 15:00',
+      description: 'Każdy przynosi coś do wspólnego stołu. Dla dzieci malowanie twarzy i bańki mydlane.', ago: 9 * hour,
+      extra: { garageDate: new Date(now + 4 * day).toISOString().slice(0, 10), going: ['kasia', 'marek', 'stefan', 'henryk'] },
+    },
+    { owner: 'piekarnia', kind: 'service', category: 'jobs', sub: 'other', title: 'Pomoc w piekarni, weekendy 5:00–11:00', description: 'Pakowanie i sprzedaż. Umowa zlecenie, stawka do ręki, bez CV.', price: 32, unit: 'hour', ago: 1 * day },
   ]
   return items.map((s, i) => {
     const owner = users.find((u) => u.id === s.owner)!

@@ -1,0 +1,9 @@
+# Cloudflare Pages. Linki z aplikacji (ogłoszenie, profil, zaproszenie, SOS, zastrzeżenie):
+# z zainstalowaną aplikacją otwiera je system (App Links / Universal Links), bez niej ta strona
+# pokazuje sklep albo wersję w przeglądarce. 200 = ten sam adres w pasku, treść z /open.
+/l/*        /open   200
+/u/*        /open   200
+/z/*        /open   200
+/sos        /open   200
+/zastrzez   /open   200
+/app        /app/   301

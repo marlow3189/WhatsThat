@@ -1,3 +1,5 @@
+import type { Gender } from './identity'
+
 export type Lang = 'pl' | 'en' | 'de' | 'uk' | 'cs' | 'sk' | 'hu' | 'it' | 'es'
 
 export type Currency = 'PLN' | 'EUR' | 'USD' | 'CZK' | 'HUF' | 'UAH' | 'GBP'
@@ -48,6 +50,12 @@ export interface User {
   phone?: string
   /** godziny sprzedaży / pracy, np. „pon–sob 6:00–13:00” (piekarz, warzywniak) */
   hours?: string
+  /** m, w albo x (nie podaję); część klucza anonimowego */
+  gender?: Gender
+  /** anonimowy klucz, np. anonymplm4829175530 (liczony na serwerze, nie zawiera numeru) */
+  anonKey?: string
+  /** tylko do wyświetlania: osoba pokazana anonimowo (awatar z klucza zamiast inicjałów) */
+  anon?: boolean
 }
 
 /** Ulubiony dostawca z tematem, np. piekarz: „chleb i bułki”. */
@@ -99,7 +107,18 @@ export interface Listing {
   soldAt?: number
   /** rolnik: „dziś niedostępne” bez kasowania */
   paused?: boolean
+  /** pytanie do sąsiadów: odpowiedzi widoczne dla wszystkich, którzy widzą pytanie */
+  answers?: Answer[]
+  /** wydarzenie lub zbiórka: kto będzie */
+  going?: string[]
   createdAt: number
+}
+
+export interface Answer {
+  id: string
+  from: string
+  text: string
+  at: number
 }
 
 export type OrderStatus = 'requested' | 'accepted' | 'paid' | 'ready' | 'done' | 'cancelled'
@@ -152,6 +171,35 @@ export interface Dispute {
   /** kwota zwrotu przy propozycji częściowej */
   amount?: number
   outcome?: 'refund' | 'partial' | 'release'
+}
+
+export type SosKind = 'danger' | 'health' | 'accident' | 'fire' | 'other'
+export type SosStatus = 'sent' | 'seen' | 'calling' | 'coming'
+
+/**
+ * Alarm SOS: trafia do wybranych bliskich (do 5 osób) i do sąsiadów, którzy zgłosili się do pomocy w promieniu 1 km.
+ * Dokładne położenie udostępniamy tylko do końca alarmu. Nie zastępuje 112.
+ */
+export interface Sos {
+  id: string
+  kind: SosKind
+  at: number
+  lat: number
+  lng: number
+  /** true = GPS telefonu, false = przybliżone (okolica z profilu) */
+  precise: boolean
+  to: string[]
+  /** ilu sąsiadów pomocników dostało alarm */
+  neighbors: number
+  replies: Record<string, { status: SosStatus; at: number; eta?: number }>
+  endedAt?: number
+}
+
+/** „Odprowadź mnie”: lokalizacja na żywo dla bliskich przez ustalony czas, potem wyłącza się sama. */
+export interface LocationShare {
+  startedAt: number
+  until: number
+  with: string[]
 }
 
 export interface Message {
@@ -233,6 +281,15 @@ export interface Account {
   skin?: 'color' | 'blue'
   /** kiedy ukryto reklamę na głównej (plan darmowy) */
   adHiddenAt?: number
+  /** kiedy ukryto pasek „Pobierz aplikację” w przeglądarce */
+  appBannerHiddenAt?: number
+  /** m, w albo x; po zatwierdzeniu nie da się zmienić samemu (tylko przez pomoc, sprostowanie z RODO) */
+  gender?: Gender
+  /** komu wysłać SOS (do 5 znajomych); brak = zaufane osoby albo pierwsi znajomi */
+  sosContacts?: string[]
+  /** zgoda na alarmy SOS od sąsiadów do 1 km */
+  sosHelper?: boolean
+  share?: LocationShare
   contactsAllowed: boolean
   /** osoby, których rzeczy nie chcę widzieć */
   muted: string[]

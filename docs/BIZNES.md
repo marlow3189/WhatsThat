@@ -280,13 +280,19 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
 
 ## 8. Telefon, strona i komputer
 
-- **Etap 1: aplikacja ze strony (PWA).** iPhone: Safari → Udostępnij → „Do ekranu początkowego” (push od iOS 16.4).
-  Android: Chrome → „Zainstaluj aplikację”, a do Google Play ta sama aplikacja jako Trusted Web Activity.
-  Plan kupuje się na stronie, więc nie płacimy Apple ani Google 15–30%.
+- **Najpierw telefon: Google Play i App Store** (Capacitor, ten sam kod). Domena `miliorbit.com` to strona, która prowadzi
+  do sklepów (Android → Google Play, iPhone → App Store, komputer → kod QR), a linki z aplikacji otwierają się w aplikacji.
+  Ta sama aplikacja działa w przeglądarce pod `miliorbit.com/app/` dla tych, którzy nie chcą instalować.
+- **Prowizje sklepów:** płatności między ludźmi za rzeczy i usługi w realu (Bezpieczna płatność przez Stripe) **nie** idą
+  przez sklepy. Plany (Roczny, Firma, odświeżenie) to usługa cyfrowa: kupione w aplikacji na iPhonie i z Google Play
+  wymagają płatności sklepu (dla małych firm 15%, programy Apple Small Business i Google Play do 1 mln USD rocznie).
+  Na stronie `/app/` plan kosztuje tyle samo bez prowizji sklepu. Czy w UE można w aplikacji podać link do zakupu na
+  stronie (DMA) i na jakich warunkach, sprawdź z prawnikiem przed startem.
 - **Komputer: rozszerzenie** do Chrome i Edge (otwiera się w panelu bocznym) oraz Safari (konwersja `npm run safari:extension`,
   wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Miliorbit”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
   do formularza: można wystawić coś, co oglądasz na OLX czy Allegro. Budowanie: `npm run build:extension`.
-- **Etap 2: App Store i Google Play** natywnie (Capacitor), gdy będzie ruch.
+- **Aplikacja w przeglądarce (PWA)** jako dodatek: iPhone Safari → Udostępnij → „Do ekranu początkowego”, Android Chrome →
+  „Dodaj do ekranu głównego”.
 
 ## 9. Panel okolicy: pogoda, paliwa, ostrzeżenia
 

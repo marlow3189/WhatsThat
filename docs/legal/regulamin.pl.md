@@ -109,6 +109,10 @@ pojawia się po wyczerpaniu zapasu.
    12 miesiącach. Ograniczenie nie dotyczy szkody wyrządzonej umyślnie ani wobec konsumentów w zakresie, w jakim
    prawo tego zakazuje.
 
+## §9a. SOS, pomoc sąsiedzka i anonimowy klucz
+
+SOS to dodatkowy sposób zawiadomienia bliskich i sąsiadów, a nie usługa ratunkowa: w zagrożeniu życia dzwoń 112. Nie gwarantujemy, że alarm dotrze ani że ktoś odpowie, bo zależy to od sieci, telefonu i innych osób. Fałszywe alarmy mogą skutkować ograniczeniem konta. Pomoc sąsiedzka jest dobrowolna i nieodpłatna, a pomagający działa na własną odpowiedzialność. Płeć (m, w albo x) wybierasz raz; poprawia ją tylko pomoc. Osoby spoza znajomych widzą Twój anonimowy klucz zamiast numeru telefonu.
+
 ## §10. Dane osobowe
 Zasady przetwarzania danych opisuje Polityka prywatności. Książka adresowa użytkownika nie jest przesyłana na serwer;
 porównujemy wyłącznie skróty numerów telefonów.

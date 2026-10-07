@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /l/
+Disallow: /u/
+Disallow: /z/
+Sitemap: https://miliorbit.com/sitemap.xml

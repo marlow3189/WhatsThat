@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.miliorbit.app",
+      "sha256_cert_fingerprints": ["UZUPELNIJ:Z:PLAY_CONSOLE:App_integrity:App_signing_key_certificate:SHA-256"]
+    }
+  }
+]
