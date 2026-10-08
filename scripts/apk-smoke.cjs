@@ -123,6 +123,52 @@ fs.mkdirSync(out, { recursive: true })
     await page.waitForSelector('text=/Miliorbit 0\\.7/')
   })
 
+  // ——— Dotyk jak palcem: prawdziwe stuknięcia przez Androida (adb input tap), nie przez JavaScript ———
+  // Położenie WebView na ekranie bierzemy z uiautomator, współrzędne elementów z przeglądarki.
+  const touch = []
+  try {
+    await device.shell('uiautomator dump /sdcard/ui.xml')
+    const xml = (await device.shell('cat /sdcard/ui.xml')).toString()
+    const m = xml.match(/class="android\.webkit\.WebView"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/)
+    const [ox, oy] = m ? [+m[1], +m[2]] : [0, 0]
+    const dpr = await page.evaluate(() => window.devicePixelRatio)
+    console.log('[dotyk] WebView od', ox, oy, 'dpr', dpr)
+    const tapTouch = async (label, selector, expect) => {
+      try {
+        const el = page.locator(selector).first()
+        await el.waitFor({ state: 'visible', timeout: 8000 })
+        await el.evaluate((node) => node.scrollIntoView({ block: 'center' }))
+        await page.waitForTimeout(300)
+        const r = await el.evaluate((node) => { const b = node.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 } })
+        const onTop = await page.evaluate(({ x, y }) => { const t = document.elementFromPoint(x, y); return t ? (t.closest('a,button,input,label')?.getAttribute('aria-label') || t.closest('a,button,input,label')?.textContent?.trim().slice(0, 30) || t.tagName) : 'nic' }, r)
+        await device.shell(`input tap ${Math.round(ox + r.x * dpr)} ${Math.round(oy + r.y * dpr)}`)
+        await page.waitForTimeout(900)
+        const ok = expect ? await page.locator(expect).first().isVisible().catch(() => false) : true
+        const where = await page.evaluate(() => location.hash)
+        touch.push(`${ok ? '✓' : '✗'} ${label} → ${where} (pod palcem: ${onTop})`)
+      } catch (e) {
+        touch.push(`✗ ${label}: ${e.message.split('\n')[0]}`)
+      }
+    }
+    await tapTouch('zakładka Główna', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await tapTouch('SOS', 'a[aria-label="SOS"]', 'text=Zadzwoń 112')
+    await tapTouch('wstecz', 'header button', 'text=Co dziś załatwiamy?')
+    await tapTouch('pomysł AI: jajka', 'a[href*="szukaj?q="]', 'input')
+    await tapTouch('zakładka Główna', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await tapTouch('kafelek tablicy', 'a[href^="#/l/"]', 'h1')
+    await tapTouch('zakładka Dodaj', 'nav a[aria-label="Dodaj"]', 'text=Co chcesz zrobić?')
+    await tapTouch('Sprzedaż', 'button:has-text("Sprzedaż")', 'text=Kategoria')
+    await tapTouch('kategoria', 'section button', '#title, text=Co dokładnie?')
+    await tapTouch('zakładka Czaty', 'nav a[href="#/wiadomosci"]', 'h1')
+    await tapTouch('zakładka Ja', 'nav a[href="#/ja"]', 'text=Twój plan')
+    await tapTouch('zakładka Szukaj', 'nav a[href="#/szukaj"]', 'input')
+  } catch (e) {
+    touch.push(`✗ dotyk: ${e.message.split('\n')[0]}`)
+  }
+  console.log('[dotyk]\n' + touch.join('\n'))
+  fs.writeFileSync(path.join(out, 'dotyk.txt'), touch.join('\n') + '\n')
+  await page.screenshot({ path: path.join(out, '11-po-dotyku.png') }).catch(() => {})
+
   await diag('na końcu').catch(() => {})
   fs.writeFileSync(path.join(out, 'wynik.txt'), errors.length ? `BŁĘDY:\n${errors.join('\n')}\n` : 'OK: wszystkie kroki przeszły\n')
   console.log(errors.length ? `Błędy:\n${errors.join('\n')}` : 'Wszystkie kroki przeszły')
