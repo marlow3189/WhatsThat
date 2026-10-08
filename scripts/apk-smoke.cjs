@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 
 const [apk, out = 'zrzuty'] = process.argv.slice(2)
-const PKG = 'com.miliorbit.app'
+const PKG = process.env.APP_PKG || 'com.miliorbit.app'
 fs.mkdirSync(out, { recursive: true })
 
 ;(async () => {
@@ -22,7 +22,7 @@ fs.mkdirSync(out, { recursive: true })
   await device.shell(`pm grant ${PKG} android.permission.READ_CONTACTS`).catch(() => {})
   const sdk = (await device.shell('getprop ro.build.version.sdk')).toString().trim()
   console.log('Android API', sdk)
-  await device.shell(`am start -W -n ${PKG}/.MainActivity`)
+  await device.shell(`am start -W -n ${PKG}/com.miliorbit.app.MainActivity`)
   const webview = await device.webView({ pkg: PKG }, { timeout: 120_000 })
   const page = await webview.page()
   page.setDefaultTimeout(20_000)
@@ -149,11 +149,31 @@ fs.mkdirSync(out, { recursive: true })
   // Położenie WebView na ekranie bierzemy z uiautomator, współrzędne elementów z przeglądarki.
   const touch = []
   try {
-    await device.shell('uiautomator dump /sdcard/ui.xml')
-    const xml = (await device.shell('cat /sdcard/ui.xml')).toString()
-    const m = xml.match(/class="android\.webkit\.WebView"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/)
-    const [ox, oy] = m ? [+m[1], +m[2]] : [0, 0]
     const dpr = await page.evaluate(() => window.devicePixelRatio)
+    // Gdzie na ekranie zaczyna się WebView: stukamy raz w środek ekranu i patrzymy, gdzie strona dostała dotyk
+    // (to stuknięcie niczego nie klika). Zapasowo: układ okien z uiautomator.
+    const calibrate = async () => {
+      const size = (await device.shell('wm size')).toString().match(/(\d+)x(\d+)/)
+      if (!size) return null
+      const sx = Math.round(+size[1] / 2), sy = Math.round(+size[2] / 2)
+      await page.evaluate(() => {
+        window.__touch = null
+        addEventListener('pointerdown', (e) => (window.__touch = { x: e.clientX, y: e.clientY }), { once: true, capture: true })
+        addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation() }, { once: true, capture: true })
+      })
+      await device.shell(`input tap ${sx} ${sy}`)
+      await page.waitForTimeout(500)
+      const t = await page.evaluate(() => window.__touch)
+      return t ? [Math.round(sx - t.x * dpr), Math.round(sy - t.y * dpr)] : null
+    }
+    let origin = await calibrate().catch(() => null)
+    if (!origin) {
+      await device.shell('uiautomator dump /sdcard/ui.xml').catch(() => {})
+      const xml = (await device.shell('cat /sdcard/ui.xml').catch(() => '')).toString()
+      const m = xml.match(/class="android\.webkit\.WebView"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/)
+      origin = m ? [+m[1], +m[2]] : [0, 0]
+    }
+    const [ox, oy] = origin
     console.log('[dotyk] WebView od', ox, oy, 'dpr', dpr)
     // Ile miejsca zajmuje pasek stanu (Android 15+ rysuje aplikację pod nim) i gdzie zaczyna się górny pasek aplikacji.
     const insets = await page.evaluate(() => {

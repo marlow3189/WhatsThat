@@ -58,7 +58,7 @@ Wersje do sklepów z tego samego kodu (szczegóły, uprawnienia i linki do aplik
 - **Android:** projekt jest w `android/`. Plik APK do testów buduje GitHub Actions po każdej zmianie
   (`.github/workflows/android.yml`), stały link: Releases → `android-test` → `miliorbit-test.apk` (instrukcja: docs/START.md).
   Lokalnie: `npm run cap:android` (Android Studio).
-- **iPhone:** projekt iOS dodamy z kontem Apple Developer (TestFlight, budowanie na macOS w GitHub Actions), docs/PLAN.md faza 7.
+- **iPhone:** projekt iOS dodamy z kontem Apple Developer (TestFlight, budowanie na macOS w GitHub Actions), docs/PLAN.md krok 9.
 
 ## Struktura
 

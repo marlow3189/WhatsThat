@@ -10,6 +10,8 @@ import { TOWNS } from '../lib/geo'
 import { COUNTRIES, countryByCode, countryName } from '../lib/countries'
 import { REGION_KIND, nearestRegion, regionsOf } from '../lib/regions'
 import { CATEGORIES } from '../lib/categories'
+import { LIVE } from '../lib/backend'
+import { AUTH_MODE, sendCode, verifyCode } from '../lib/live'
 import { BRAND } from '../config'
 import type { Lang, Place } from '../lib/types'
 
@@ -68,10 +70,34 @@ export function Onboarding() {
     setGps(undefined)
   }
 
+  const [busy, setBusy] = useState(false)
+  /** Numer → kod SMS (na żywo z SMS-em wysyła go Supabase; w demo i w fazie testów kod jest dowolny). */
+  const submitPhone = async () => {
+    if (digits.length < 7) return setError(t('ob.phone.invalid'))
+    setBusy(true)
+    const r = await sendCode(`${dial} ${phone}`)
+    setBusy(false)
+    if (!r.ok) return setError(t('live.signFail', { error: r.error ?? '?' }))
+    go('code')
+  }
   // Kod SMS sprawdza się sam po wpisaniu 6 cyfr (w aplikacji Android podpowiada go klawiatura z SMS-a).
   useEffect(() => {
-    if (step === 'code' && code.length === 6) go('profile')
-  }, [code, step])
+    if (step !== 'code' || code.length !== 6 || busy) return
+    let live = true
+    setBusy(true)
+    verifyCode(`${dial} ${phone}`, code).then((r) => {
+      if (!live) return
+      setBusy(false)
+      if (r.ok) go('profile')
+      else {
+        setCode('')
+        setError(t('live.signFail', { error: r.error ?? '?' }))
+      }
+    })
+    return () => {
+      live = false
+    }
+  }, [code, step]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const place = (): Place => {
     const r = regions.find((x) => x.region === region)
@@ -176,7 +202,7 @@ export function Onboarding() {
               {t('ob.terms.inline')}{' '}
               <button type="button" onClick={() => setFullTerms(true)} className="font-semibold text-link underline">{t('ob.terms.read')}</button>
             </p>
-            <Button className="w-full" onClick={() => (digits.length >= 7 ? go('code') : setError(t('ob.phone.invalid')))}>{t('ob.agree')}</Button>
+            <Button className="w-full" disabled={busy} onClick={submitPhone}>{t('ob.agree')}</Button>
           </Footer>
           {fullTerms && <TermsSheet lang={lang} t={t} onClose={() => setFullTerms(false)} />}
         </Screen>
@@ -185,7 +211,8 @@ export function Onboarding() {
       {step === 'code' && (
         <Screen title={t('ob.code.title')} text={t('ob.code.text', { phone: `${dial} ${phone}` })}>
           <Input id="code" inputMode="numeric" autoComplete="one-time-code" autoFocus maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} className="tnum text-center text-[26px] tracking-[0.5em]" placeholder="••••••" aria-label={t('ob.code.title')} />
-          <Button variant="plain" className="self-start" onClick={() => setCode('123456')}>{t('ob.code.demo')}</Button>
+          {error && <Notice tone="danger">{error}</Notice>}
+          {!(LIVE && AUTH_MODE === 'sms') && <Button variant="plain" className="self-start" onClick={() => setCode('123456')}>{t('ob.code.demo')}</Button>}
           <Button variant="plain" className="self-start" onClick={() => go('phone')}>{t('ob.code.change')}</Button>
         </Screen>
       )}

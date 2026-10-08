@@ -1,6 +1,9 @@
 # Aplikacja na Androida (APK do testów) budowana w chmurze GitHuba: nie potrzebujesz Android Studio.
 # Po każdej zmianie w kodzie: Actions → „Android APK” → plik do pobrania (Artifacts).
-# Z gałęzi domyślnej dodatkowo stały link: Releases → „Miliorbit Android (test)” → miliorbit-test.apk.
+# Stałe linki (Releases):
+#   - gałąź domyślna → „Miliorbit Android (test)”, plik miliorbit-test.apk (aplikacja „Miliorbit”),
+#   - gałąź dev      → „Miliorbit Android (DEV)”, plik miliorbit-dev.apk (osobna aplikacja „Miliorbit DEV”,
+#                      instaluje się obok testowej; tu sprawdzasz nowe rzeczy, zanim trafią dalej).
 name: Android APK
 on:
   push:
@@ -15,6 +18,10 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      # gałąź dev = wersja deweloperska (osobna aplikacja na telefonie)
+      MILIORBIT_DEV: ${{ github.ref_name == 'dev' && '1' || '0' }}
+      VITE_CHANNEL: ${{ github.ref_name == 'dev' && 'dev' || 'test' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,7 +52,7 @@ jobs:
           name: miliorbit-android-${{ github.run_number }}
           path: miliorbit-test.apk
           retention-days: 30
-      - name: Stały link do pobrania (tylko gałąź domyślna)
+      - name: Stały link do pobrania (gałąź domyślna)
         if: github.ref_name == github.event.repository.default_branch
         env:
           GH_TOKEN: ${{ github.token }}
@@ -54,7 +61,18 @@ jobs:
           gh release create android-test miliorbit-test.apk \
             --prerelease --target "$GITHUB_SHA" \
             --title "Miliorbit Android (test) #${{ github.run_number }}" \
-            --notes "Wersja testowa z dnia $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Dane przykładowe, zapis tylko na telefonie. Instalacja: docs/START.md."
+            --notes "Wersja testowa z dnia $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Instalacja: docs/START.md."
+      - name: Stały link do pobrania (gałąź dev)
+        if: github.ref_name == 'dev'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp miliorbit-test.apk miliorbit-dev.apk
+          gh release delete android-dev --yes --cleanup-tag || true
+          gh release create android-dev miliorbit-dev.apk \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Miliorbit Android (DEV) #${{ github.run_number }}" \
+            --notes "Wersja deweloperska z gałęzi dev, $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Osobna aplikacja „Miliorbit DEV”. Instalacja: docs/START.md."
 
   # Emulator Androida w chmurze: instaluje APK, przechodzi rejestrację, stuka palcem i robi zrzuty ekranu.
   # Dwa telefony naraz: Android 14 i Android 16 (od Androida 15 aplikacja rysuje się pod paskami systemu,
@@ -87,6 +105,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           NODE_PATH: ${{ runner.temp }}/pw/node_modules
+          APP_PKG: ${{ github.ref_name == 'dev' && 'com.miliorbit.app.dev' || 'com.miliorbit.app' }}
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
@@ -104,8 +123,9 @@ jobs:
           name: zrzuty-api${{ matrix.api }}-${{ github.run_number }}
           path: zrzuty
           retention-days: 30
-      - name: Zrzuty do wydania (gałąź domyślna)
-        if: always() && github.ref_name == github.event.repository.default_branch
+      - name: Zrzuty do wydania (gałąź domyślna albo dev)
+        if: always() && (github.ref_name == github.event.repository.default_branch || github.ref_name == 'dev')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: ls zrzuty/* >/dev/null 2>&1 && gh release upload android-test zrzuty/* --clobber || echo "brak zrzutów"
+          RELEASE: ${{ github.ref_name == 'dev' && 'android-dev' || 'android-test' }}
+        run: ls zrzuty/* >/dev/null 2>&1 && gh release upload "$RELEASE" zrzuty/* --clobber || echo "brak zrzutów"

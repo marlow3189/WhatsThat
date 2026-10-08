@@ -14,6 +14,7 @@ import { categoryById } from '../lib/categories'
 import { distanceKm, formatDistance } from '../lib/geo'
 import { RECIPES } from '../lib/planner'
 import { useWeather } from '../lib/weather'
+import { useCouncil } from '../lib/council'
 import { DAY } from '../lib/pricing'
 import type { Listing } from '../lib/types'
 
@@ -54,6 +55,7 @@ export function Home() {
   const [tab, setTab] = useState<BoardTab>('all')
   const warnings = useWarnings(account.place, account.country, account.warnings !== false)
   const weather = useWeather(account.place)
+  const council = useCouncil(account.place, { org: t('org.demoName', { town: account.place.town }), notice: t('org.demoNotice') })
   const [story, setStory] = useState<number | null>(null)
   const [why, setWhy] = useState(false)
   const unread = notifications.filter((n) => !n.read).length
@@ -187,6 +189,37 @@ export function Home() {
               </div>
             </div>
           ))}
+        </section>
+      )}
+
+      {(council.notices.length > 0 || council.pickups.length > 0) && (
+        <section className="mx-4 overflow-hidden rounded-[20px] bg-surface shadow-[var(--shadow)]" aria-label={t('org.title')}>
+          {council.notices.slice(0, 2).map((n) => (
+            <div key={n.id} className="flex items-start gap-3 border-b border-line p-3.5 last:border-b-0">
+              <span className="tile-1 grid size-10 shrink-0 place-items-center rounded-[12px]"><Icon name="bank" size={20} /></span>
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-x-1.5 text-[13px] font-semibold text-muted">
+                  <span className="truncate">{n.org}</span>
+                  <span className="inline-flex items-center gap-0.5 text-ok"><Icon name="check" size={13} strokeWidth={2.8} /> {t('org.verified')}</span>
+                </p>
+                <p className="text-[15px] leading-snug font-semibold">{n.title}</p>
+              </div>
+            </div>
+          ))}
+          {council.pickups.length > 0 && (() => {
+            const first = council.pickups[0].date
+            const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+            const what = council.pickups.filter((p) => p.date === first).map((p) => (['paper', 'plastic', 'mixed'].includes(p.fraction) ? t(`waste.${p.fraction as 'paper' | 'plastic' | 'mixed'}`) : p.fraction)).join(', ')
+            return (
+              <div className="flex items-center gap-3 bg-mint/60 p-3.5">
+                <span className="tile-2 grid size-10 shrink-0 place-items-center rounded-[12px]"><Icon name="trash" size={20} /></span>
+                <p className="min-w-0 text-[15px] leading-snug">
+                  <span className="block text-[13px] font-semibold text-muted">{t('org.waste')}</span>
+                  <span className="font-semibold">{first === tomorrow ? t('org.wasteTomorrow', { what }) : `${new Date(first).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })}: ${what}`}</span>
+                </p>
+              </div>
+            )
+          })()}
         </section>
       )}
 

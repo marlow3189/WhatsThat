@@ -12,6 +12,8 @@ import { distanceKm, town } from '../lib/geo'
 import { zl } from '../lib/money'
 import { localeOf, translator, useTranslator } from '../i18n'
 import { ME, seedListings, seedOrders, seedUsers } from './seed'
+import { LIVE } from '../lib/backend'
+import { fetchNearby, publishListing, saveProfile } from '../lib/live'
 
 interface State {
   account: Account
@@ -125,6 +127,18 @@ export interface PlaceOrderInput {
   note?: string
 }
 
+/** Dołącza ogłoszenia i osoby z bazy; własne ogłoszenia z tego telefonu (remoteId) nie dublują się. */
+function mergeRemote(s: State, r: { listings: Listing[]; users: User[] }): State {
+  const users = { ...s.users }
+  for (const u of r.users) users[u.id] = { ...users[u.id], ...u }
+  if (r.listings.some((l) => l.ownerId === 'db-hidden') && !users['db-hidden']) {
+    users['db-hidden'] = { id: 'db-hidden', name: '?', hue: 220, place: s.account.place, friends: [], since: 0, anon: true }
+  }
+  const local = s.listings.filter((l) => !l.id.startsWith('db-'))
+  const known = new Set(local.map((l) => (l.remoteId ? `db-${l.remoteId}` : '')))
+  return { ...s, users, listings: [...local, ...r.listings.filter((l) => !known.has(l.id))] }
+}
+
 function useStoreValue() {
   const [state, setState] = useState<State>(load)
   const [toast, setToast] = useState<Toast | null>(null)
@@ -146,6 +160,24 @@ function useStoreValue() {
   useEffect(() => {
     document.documentElement.lang = state.account.lang
   }, [state.account.lang])
+  // Na żywo: ogłoszenia z bazy z okolicy, po starcie, co minutę i po powrocie do aplikacji.
+  useEffect(() => {
+    if (!LIVE || !state.account.onboarded) return
+    let alive = true
+    const pull = () =>
+      fetchNearby(latest.current.account.place).then((r) => {
+        if (alive && r) setState((s) => mergeRemote(s, r))
+      })
+    pull()
+    const id = window.setInterval(pull, 60_000)
+    const onShow = () => document.visibilityState === 'visible' && pull()
+    document.addEventListener('visibilitychange', onShow)
+    return () => {
+      alive = false
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onShow)
+    }
+  }, [state.account.onboarded, state.account.place.lat, state.account.place.lng])
   useEffect(() => {
     document.documentElement.dataset.skin = state.account.skin ?? 'color'
   }, [state.account.skin])
@@ -243,6 +275,11 @@ function useStoreValue() {
       return { ...s, ...moved, account: { ...s.account, ...patch, onboarded: true, termsAcceptedAt: Date.now() } }
     })
     track('sign_up')
+    if (LIVE) {
+      saveProfile({ ...state.account, ...patch, place }).then((r) => {
+        if (!r.ok) setToast({ id: uid(), text: translator(patch.lang ?? state.account.lang)('live.saveFail', { error: r.error ?? '?' }) })
+      })
+    }
     if (!state.friendDemoDone) {
       later(9000, () => {
         const now = Date.now()
@@ -427,6 +464,13 @@ function useStoreValue() {
     const id = uid()
     setState((s) => ({ ...s, listings: [{ ...l, id, ownerId: ME, status: 'active', createdAt: Date.now() }, ...s.listings] }))
     track('listing_created')
+    // Na żywo: zapis w bazie; gdy baza odmówi (np. limit planu), mówimy o tym od razu.
+    if (LIVE) {
+      publishListing(l).then(({ id: remoteId, error }) => {
+        if (remoteId) setState((s) => ({ ...s, listings: s.listings.map((x) => (x.id === id ? { ...x, remoteId } : x)) }))
+        else if (error) setToast({ id: uid(), text: translator(latest.current.account.lang)('live.saveFail', { error }) })
+      })
+    }
     if (l.category === 'community' && l.sub === 'ask') {
       // Demo: na pytanie odpowiadają sąsiedzi i znajomi, a Ty dostajesz powiadomienie.
       const tl = translator(state.account.lang)

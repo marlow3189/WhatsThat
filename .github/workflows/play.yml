@@ -1,0 +1,91 @@
+# Wysyłka do Google Play (test wewnętrzny) jednym kliknięciem: Actions → „Google Play” → Run workflow.
+# Dzięki temu testerzy (także z Samsungiem z blokadą „Auto Blocker”) instalują aplikację ze sklepu.
+#
+# Zanim zadziała (raz, opis krok po kroku w docs/PLAN.md, krok 3):
+#   1. W Play Console utwórz aplikację com.miliorbit.app i pierwszy plik .aab wgraj ręcznie
+#      (Run workflow z zaznaczonym „Tylko zbuduj plik .aab”, plik w Artifacts przebiegu).
+#   2. Sekrety repozytorium (Settings → Secrets and variables → Actions → Secrets):
+#        ANDROID_UPLOAD_KEYSTORE_BASE64   – plik klucza do wysyłki (upload key) zakodowany base64
+#        ANDROID_UPLOAD_KEYSTORE_PASSWORD – hasło do pliku klucza
+#        ANDROID_UPLOAD_KEY_ALIAS         – alias klucza
+#        ANDROID_UPLOAD_KEY_PASSWORD      – hasło klucza
+#        PLAY_SERVICE_ACCOUNT_JSON        – klucz konta usługi Google Cloud z dostępem do Play Console
+#   Sekretów nie wklejaj nigdzie indziej (ani do repozytorium, ani do czatu).
+name: Google Play
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Ścieżka w Google Play
+        type: choice
+        default: internal
+        options: [internal, alpha, beta]
+      status:
+        description: Status wydania (pierwszy raz, zanim aplikacja przejdzie przegląd, wybierz draft)
+        type: choice
+        default: completed
+        options: [completed, draft]
+      only_file:
+        description: Tylko zbuduj plik .aab do ręcznego wgrania (pierwsze wydanie w Play Console)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: play
+  cancel-in-progress: false
+jobs:
+  aab:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - run: npm ci
+      - name: Aplikacja (web) do środka
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_CHANNEL: play
+        run: npm run build && npx cap sync android
+      - name: Klucz do wysyłki z sekretów
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "Brak sekretu ANDROID_UPLOAD_KEYSTORE_BASE64 (docs/START.md, część Google Play)"; exit 1; fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.keystore"
+          echo "ANDROID_UPLOAD_KEYSTORE=$RUNNER_TEMP/upload.keystore" >> "$GITHUB_ENV"
+          # numer wersji dla Google Play zawsze większy niż w APK testowych
+          echo "VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+      - name: Paczka do sklepu (.aab, podpisana kluczem do wysyłki)
+        working-directory: android
+        env:
+          ANDROID_UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_PASSWORD }}
+          ANDROID_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          ANDROID_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: ./gradlew bundleRelease --no-daemon --stacktrace
+      - name: Plik .aab do pobrania (Artifacts)
+        uses: actions/upload-artifact@v4
+        with:
+          name: miliorbit-play-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
+      - name: Wysyłka do Google Play
+        if: ${{ !inputs.only_file }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.miliorbit.app
+          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.track }}
+          status: ${{ inputs.status }}
+      - name: Sprzątanie klucza
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.keystore"

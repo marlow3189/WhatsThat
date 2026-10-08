@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { useStore } from '../data/store'
-import { Avatar, Button, Field, Group, Header, Input, KeyAvatar, ListingRow, Notice, Row, Toggle, cx, inputCls, money, pastelOf } from '../components/ui'
+import { Avatar, Button, Field, Group, Header, Input, KeyAvatar, ListingRow, Notice, Row, Sheet, Toggle, cx, inputCls, money, pastelOf } from '../components/ui'
 import { GENDERS, formatKey } from '../lib/identity'
 import { isNative } from '../lib/platform'
 import { LIVE } from '../lib/backend'
 import { Icon } from '../components/icons'
 import { LANGS } from '../i18n'
 import { PRICES, isAvailable } from '../lib/pricing'
-import { VOIVODESHIPS } from '../lib/geo'
+import { regionsOf } from '../lib/regions'
+import { applyForOrg } from '../lib/council'
 import { CATEGORIES, FARM_TEMPLATES } from '../lib/categories'
 import { KeyTerms, TermsSheet } from '../components/terms'
 import { providersFor } from '../lib/warnings'
@@ -22,6 +23,14 @@ export function Me() {
   const open = orders.filter((o) => !['done', 'cancelled'].includes(o.status)).length
   const date = (ms?: number) => new Date(ms ?? 0).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })
   const fmt = (v: number) => money(v, account.currency, locale)
+  const [orgOpen, setOrgOpen] = useState(false)
+  const [orgName, setOrgName] = useState('')
+  const [orgEmail, setOrgEmail] = useState('')
+  const [orgState, setOrgState] = useState<'' | 'sent' | string>('')
+  const sendOrg = async () => {
+    const r = await applyForOrg(orgName, orgEmail)
+    setOrgState(r.ok ? 'sent' : r.error ?? '?')
+  }
 
   return (
     <div className="flex flex-col gap-7 pb-8">
@@ -86,6 +95,7 @@ export function Me() {
         <Row to="/znajomi" icon="users" title={t('me.invite')} detail={t('home.inviteText')} />
         <Row to="/qr" icon="qr" title={t('qr.title')} />
         <Row to="/paliwa" icon="fuel" title={t('fuel.title')} />
+        <Row icon="bank" title={t('org.apply')} onClick={() => setOrgOpen(true)} />
       </Group>
 
       <Group label={t('me.settings')}>
@@ -104,12 +114,20 @@ export function Me() {
             <option value="blue">{t('skin.blue')}</option>
           </select>
         </label>
-        {account.country === 'PL' && (
+        {regionsOf(account.country).length > 0 && (
           <label className="flex min-h-[52px] items-center gap-3 px-4 py-1.5">
             <span className={cx('grid size-9 place-items-center rounded-full', pastelOf('pin'))}><Icon name="pin" size={18} /></span>
             <span className="flex-1">{t('me.region')}</span>
-            <select id="region" value={account.place.voivodeship} onChange={(e) => setPlace({ ...VOIVODESHIPS.find((v) => v.voivodeship === e.target.value)!, country: 'PL' })} className="max-w-[55%] bg-transparent text-right text-[16px] text-muted outline-none">
-              {VOIVODESHIPS.map((v) => <option key={v.voivodeship} value={v.voivodeship}>{v.voivodeship === account.place.voivodeship ? account.place.town : v.voivodeship}</option>)}
+            <select
+              id="region"
+              value={account.place.voivodeship}
+              onChange={(e) => {
+                const r = regionsOf(account.country).find((v) => v.region === e.target.value)!
+                setPlace({ lat: r.lat, lng: r.lng, town: r.town, voivodeship: r.region, country: account.country })
+              }}
+              className="max-w-[55%] bg-transparent text-right text-[16px] text-muted outline-none"
+            >
+              {regionsOf(account.country).map((v) => <option key={v.region} value={v.region}>{v.region === account.place.voivodeship ? `${account.place.town} · ${v.region}` : v.region}</option>)}
             </select>
           </label>
         )}
@@ -130,7 +148,27 @@ export function Me() {
         <Row to="/operator" icon="chart" title="Panel operatora (demo)" detail="DAC7, zgłoszenia DSA, plany, koszty" />
         <Row onClick={reset} title={<span className="text-danger">{t('me.logout')}</span>} chevron={false} />
       </Group>
-      <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.8 · {__BUILD__} · {LIVE ? 'live' : 'demo'}</p>
+      <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.8 · {__BUILD__} · {LIVE ? 'live' : 'demo'}{import.meta.env.VITE_CHANNEL === 'dev' ? ' · DEV' : ''}</p>
+      {orgOpen && (
+        <Sheet title={t('org.apply')} onClose={() => setOrgOpen(false)}>
+          <div className="flex flex-col gap-3">
+            <p className="px-1 text-[15px] leading-snug text-muted">{t('org.applyD')}</p>
+            <ol className="card flex list-decimal flex-col gap-2 py-3 pr-4 pl-9 text-[14px] leading-snug">
+              {(['org.how1', 'org.how2', 'org.how3'] as const).map((k) => <li key={k}>{t(k)}</li>)}
+            </ol>
+            {orgState === 'sent' ? (
+              <Notice tone="ok" icon="check">{t('org.sent')}</Notice>
+            ) : (
+              <>
+                <Field id="org-name" label={t('org.name')}><Input id="org-name" value={orgName} onChange={(e) => setOrgName(e.target.value)} /></Field>
+                <Field id="org-email" label={t('org.email')}><Input id="org-email" type="email" value={orgEmail} onChange={(e) => setOrgEmail(e.target.value)} /></Field>
+                {orgState && <Notice tone="danger">{t('live.saveFail', { error: orgState })}</Notice>}
+                <Button disabled={orgName.trim().length < 3 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(orgEmail.trim())} onClick={sendOrg}>{t('org.send')}</Button>
+              </>
+            )}
+          </div>
+        </Sheet>
+      )}
     </div>
   )
 }

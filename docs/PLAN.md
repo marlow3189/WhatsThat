@@ -1,158 +1,232 @@
-# Plan: od prototypu do działającej aplikacji
+# Master plan Miliorbit (wersja 0.8, październik 2026)
 
-Cel: aplikacja na telefon (Android, potem iPhone) i w przeglądarce, połączona z prawdziwą bazą danych, którą testujesz
-u siebie i ze znajomymi, a potem wypuszczasz publicznie. Testowanie krok po kroku: [START.md](START.md).
-Bezpieczeństwo i formalności przed startem publicznym: [WDROZENIE.md](WDROZENIE.md), [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md).
+Plan krok po kroku, od aplikacji testowej do startu w sklepach. Każdy krok ma: **kto** (Ty albo agent), **co dokładnie
+kliknąć**, **ile to trwa** i **„Gotowe, gdy”**, czyli test, po którym wiadomo, że można iść dalej.
+Testowanie na telefonie i emulatorze: [START.md](START.md). Formalności i bezpieczeństwo przed startem:
+[WDROZENIE.md](WDROZENIE.md), [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md).
 
-## Jak to jest zbudowane (całość)
+## Gdzie jesteśmy
+
+| Obszar | Stan | Co to znaczy dla Ciebie |
+|---|---|---|
+| Aplikacja Android (APK) | ✅ budowana w GitHubie po każdej zmianie, testowana na emulatorach Android 14 i 16 | instalujesz plik z Releases (START.md, 2d) |
+| Wygląd | ✅ menu jak w WhatsAppie: 5 zakładek (Okolica, Szukaj, Dodaj, Czaty, Ja), czcionka systemu | zgłaszaj, co Ci nie pasuje |
+| Rejestracja | ✅ 4 ekrany: numer + zgoda, kod, profil (imię, płeć raz, region), znajomi | |
+| Języki | ✅ 10: polski, angielski, niemiecki, ukraiński, czeski, słowacki, węgierski, włoski, hiszpański, **hindi** | |
+| Regiony | ✅ 12 krajów (województwa, Bundesländer, kraje, vármegye, obwody, stany Indii i USA…) | |
+| Baza danych | 🟡 kod gotowy (logowanie, profil, ogłoszenia z okolicy), czeka na Twój projekt Supabase | **krok 1** |
+| AI (planer) i głos | 🟡 kod gotowy: mikrofon, czytanie na głos, planer AI przez Supabase | **krok 2** |
+| Gmina i instytucje | 🟡 baza i zasady gotowe (tylko zweryfikowane konta publikują), karta na ekranie Okolica | **krok 5** |
+| Google Play | 🟡 przepływ „Google Play” w GitHubie gotowy, czeka na konto i klucze | **krok 3** |
+| Czaty, push, SOS na żywo, płatności, iPhone | ⬜ kolejne kroki | kroki 6–9 |
 
 ```
- Telefon: APK / później iPhone ──┐
+ Telefon (APK, później iPhone) ──┐
                                  ├──► Supabase (UE, Frankfurt)
  Przeglądarka: miliorbit…/app/ ──┘      ├─ Auth: konta (na testach anonimowe, potem numer + SMS)
-                                        ├─ Postgres + RLS: profile, ogłoszenia, czaty, zamówienia, SOS (migracje 0001–0004)
-                                        ├─ Storage: zdjęcia ogłoszeń i protokołów
-                                        ├─ Realtime: czaty, statusy SOS, „Kupione”
-                                        └─ Edge Functions: planer AI, ostrzeżenia, paliwa, płatności, push
-                                                └─► Stripe (płatności), SMS, Firebase/APNs (push), Anthropic, IMGW
- GitHub: kod → CI (testy) → Cloudflare Pages (strona i /app/) + GitHub Actions (APK)
+                                        ├─ Postgres + RLS: profile, ogłoszenia, czaty, SOS, instytucje (migracje 0001–0005)
+                                        ├─ Storage: zdjęcia │ Realtime: czaty, SOS │ Edge Functions: AI, push, płatności
+                                        └─► Anthropic (planer AI), Firebase (push), Stripe (płatności), SMS
+ GitHub: kod → testy → APK (gałąź domyślna = „test”, gałąź dev = „DEV”) → Google Play (test wewnętrzny)
 ```
 
-**Tryby aplikacji:** *demo* (dane przykładowe na urządzeniu, tak jest teraz) i *live* (baza). Live włącza się sam, gdy
-w budowaniu są zmienne `VITE_SUPABASE_URL` i `VITE_SUPABASE_ANON_KEY`. Prototyp w Claude zawsze zostaje w demo.
-Tryb widać w **Ja** na dole i w **Panel operatora → Baza danych** (przycisk „Sprawdź połączenie z bazą”).
+**Tryby aplikacji:** *demo* (dane przykładowe tylko na telefonie) i *na żywo* (baza). Na żywo włącza się samo, gdy
+w GitHubie są zmienne `VITE_SUPABASE_URL` i `VITE_SUPABASE_ANON_KEY` (krok 1). Tryb widać na dole zakładki **Ja**:
+`Miliorbit 0.8 · abc1234 · demo` albo `· live`. W trybie na żywo przykładowe ogłoszenia zostają (żeby ekrany nie były
+puste), a Twoje i cudze ogłoszenia z okolicy dochodzą z bazy.
 
 ## Zasady pracy
 
-1. Jedna faza naraz. Faza jest skończona, gdy przejdzie jej test „Gotowe, gdy” na Twoim telefonie.
-2. Ty robisz konta, klucze i kliknięcia w panelach (kroki **Ty**). Agent pisze kod, migracje i testy (kroki **Agent**).
-3. Po każdej zmianie: zielony ✓ w GitHubie, nowa wersja na stronie testowej (1–2 min) i nowe APK (ok. 5 min).
-4. Błędy zgłaszasz według wzoru z [START.md](START.md); agent poprawia je w tej samej fazie.
-5. Koszt do fazy 6: **0 zł** (Supabase Free, Cloudflare Free, GitHub Actions za darmo dla publicznego repozytorium).
-   Uwaga: darmowy projekt Supabase usypia się po tygodniu bez ruchu; budzisz go przyciskiem *Restore* w panelu.
+1. Jeden krok naraz. Krok jest skończony, gdy przejdzie jego „Gotowe, gdy” **na Twoim telefonie**.
+2. **Ty**: konta, klucze, kliknięcia w panelach. **Agent**: kod, migracje, testy, instrukcje.
+3. **Sekrety** (hasła, klucze `secret` / `service_role`, klucz Anthropic, klucze do Google Play) wpisujesz tylko w panelach
+   (Supabase, GitHub Secrets). Nigdy w czacie, w kodzie ani na zrzucie ekranu.
+4. Po każdej zmianie w GitHubie: zielony ✓ (testy), nowe APK w ok. 3 min, zrzuty z emulatorów w ok. 10 min.
+5. Nie uruchamiaj ponownie starych przebiegów w GitHub Actions (przycisk *Re-run*): budują starą wersję.
 
 ---
 
-## Faza 0. Testowanie (dziś)
+## Krok 0. Ścieżka deweloperska w GitHubie (Ty: 5 min, raz)
 
-| Kto | Co |
-|---|---|
-| Agent | ✅ projekt Androida, ikony, APK budowane w GitHubie, test APK na emulatorze w chmurze ze zrzutami, strona + `/app/`, numer wersji w aplikacji |
-| Ty | 1) strona testowa na Cloudflare Pages (START.md, sposób 3): na telefonie, także Samsungu z Automatyczną blokadą; 2) aplikacja Android na emulatorze: Appetize albo Android Studio (sposób 2b / 2c); 3) **załóż konto Google Play Console** (25 USD), żeby jak najszybciej był test wewnętrzny ze Sklepu Play (sposób 2e); 4) przeklikaj i zgłoś uwagi |
+Po co: osobne miejsce na nowe, niesprawdzone rzeczy. Na telefonie masz wtedy **dwie aplikacje obok siebie**:
+„Miliorbit” (stabilna, do pokazywania) i „Miliorbit DEV” (najnowsza, do sprawdzania).
 
-**Gotowe, gdy:** klikasz Miliorbit pod adresem `…pages.dev/app/` na telefonie i komputerze oraz aplikację Android na
-emulatorze, a uwagi z testów są wysłane agentowi.
+| Gałąź | Do czego | Gdzie APK |
+|---|---|---|
+| `claude/p2p-rental-marketplace-bimvf6` (domyślna) | wersja testowa, którą pokazujesz innym | Releases → **Miliorbit Android (test)** → `miliorbit-test.apk` |
+| `dev` | nowe funkcje, zanim trafią do testowej | Releases → **Miliorbit Android (DEV)** → `miliorbit-dev.apk` |
+
+**Ty:**
+1. GitHub → repozytorium → przycisk z nazwą gałęzi (nad listą plików) → wpisz `dev` → **Create branch dev from
+   claude/p2p-rental-marketplace-bimvf6**.
+2. Napisz agentowi: „Pracuj na gałęzi dev”. Agent pracuje tylko na gałęzi, którą mu wskażesz.
+3. Gdy wersja DEV jest dobra: GitHub → **Pull requests → New** → *base*: gałąź domyślna, *compare*: `dev` → **Create** →
+   **Merge**. Testowa aplikacja dostaje zmiany.
+
+**Gotowe, gdy:** w Releases są dwa wydania (test i DEV), a na telefonie dwie ikony.
+Instalacja na telefonie i sposoby bez instalacji (emulator): [START.md](START.md), część 2.
 
 ---
 
-## Faza 1. Baza danych i konta testowe (Ty: ok. 30 min, Agent: 1–2 dni)
+## Krok 1. Baza danych (Ty: ok. 30 min, raz)
 
-**Ty, Supabase (supabase.com):**
+**1.1. Projekt Supabase** (supabase.com):
 1. **Start your project** → zaloguj się przez GitHub → **New project**: nazwa `miliorbit-test`, *Database Password*:
-   **Generate a password** i zapisz w menedżerze haseł, *Region*: **Central EU (Frankfurt)**, plan **Free** → **Create**.
-2. Lewe menu **Database → Extensions**: wyszukaj i włącz **postgis** oraz **pg_cron**.
-3. Lewe menu **SQL Editor** → **New query** → wklej i **Run** (tworzy tajny klucz do anonimowych kluczy, sam go nie znasz):
+   **Generate a password** (zapisz w menedżerze haseł), *Region*: **Central EU (Frankfurt)**, plan **Free** → **Create**.
+2. **Database → Extensions**: włącz **postgis** i **pg_cron**.
+3. **SQL Editor → New query** → wklej i **Run** (tajny klucz do anonimowych kluczy; nikt go nie zna):
    ```sql
    select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'anon_key_secret');
    ```
-4. Dalej w **SQL Editor**, po kolei, każdy plik jako osobne zapytanie: otwórz plik na GitHubie
-   (`supabase/migrations/0001_init.sql`), przycisk **Copy raw file** (ikona kopiowania nad treścią), wklej, **Run**.
-   Potem `0002_safety.sql`, `0003_local.sql`, `0004_identity_sos.sql`. Ma być „Success. No rows returned”.
-   Błąd? Skopiuj jego treść agentowi.
-5. **Authentication → Sign In / Providers** (albo *Providers*) → **Allow anonymous sign-ins**: włącz. Na czas testów
-   konto zakłada się bez SMS (numer wpisuje się bez kodu). Prawdziwy SMS włączamy w fazie 7.
-6. **Project Settings → API Keys** (albo *API*): skopiuj **Project URL** i klucz publiczny: **Publishable key**
-   (`sb_publishable_…`) albo w zakładce *Legacy API keys* **anon public**. Klucza **secret** / **service_role** nie kopiuj nigdzie.
+4. Migracje, każda jako osobne zapytanie, po kolei: `0001_init.sql`, `0002_safety.sql`, `0003_local.sql`,
+   `0004_identity_sos.sql`, `0005_institutions.sql`. Jak: otwórz plik w GitHubie (folder `supabase/migrations`) →
+   ikona **Copy raw file** → wklej w **SQL Editor** → **Run** → ma być „Success”. Błąd? Skopiuj treść błędu agentowi.
+5. **Authentication → Sign In / Providers** → **Allow anonymous sign-ins**: włącz (na testach bez SMS).
+6. **Project Settings → API Keys**: skopiuj **Project URL** i **Publishable key** (`sb_publishable_…`; w starszym panelu
+   *anon public*). Klucza **secret** / **service_role** nie kopiuj nigdzie.
 
-**Ty, Cloudflare Pages:** projekt → **Settings → Variables and Secrets** (*Environment variables*) → **Add** dla
-*Production* i *Preview*: `VITE_SUPABASE_URL` = Project URL, `VITE_SUPABASE_ANON_KEY` = klucz publiczny →
-**Save** → **Deployments → Retry deployment**.
+**1.2. GitHub (APK łączy się z bazą):** repozytorium → **Settings → Secrets and variables → Actions → Variables** →
+**New repository variable**: `VITE_SUPABASE_URL` = Project URL, potem `VITE_SUPABASE_ANON_KEY` = Publishable key.
+To są *Variables*, nie *Secrets* (klucz publiczny jest jawny z założenia, chroni nas RLS w bazie).
 
-**Ty, GitHub (żeby APK też łączyło się z bazą):** repozytorium → **Settings → Secrets and variables → Actions** →
-zakładka **Variables** → **New repository variable**: te same dwie nazwy i wartości.
+**1.3. Nowe APK:** **Actions → Android APK → Run workflow** (albo dowolna zmiana na gałęzi), po ok. 3 min pobierz APK.
 
-**Sprawdź:** strona testowa → **Ja → Panel operatora → Baza danych** → tryb **na żywo** → **Sprawdź połączenie z bazą**
-→ „Połączono z …”. Jeśli pisze o braku tabel, wróć do kroku 4.
-
-**Agent (polecenie do skopiowania):**
-> „Zrób fazę 1 z docs/PLAN.md: warstwa danych z trybem demo/live, logowanie anonimowe Supabase, rejestracja zapisuje
-> profil (imię, płeć, kraj, okolica, zainteresowania), anonimowy klucz z bazy, skrypt `supabase/seed_test.sql` z przykładowymi
-> ogłoszeniami w mojej okolicy. Tryb demo ma działać jak dziś.”
-
-**Gotowe, gdy:** rejestrujesz się na telefonie, a w Supabase → **Table Editor → profiles** jest Twój wiersz z kluczem
-`anonym…`, płcią i okolicą; na dole zakładki **Ja** jest napis `live`.
+**Gotowe, gdy:**
+- na dole **Ja** jest `live`, a **Ja → Panel operatora → Baza danych → Sprawdź połączenie** pisze „Połączono z …”;
+- w Supabase **Table Editor → profiles** jest Twój wiersz (imię, płeć, region, klucz `anonym…`);
+- dodajesz ogłoszenie na telefonie A, a po minucie widzi je telefon B (druga osoba w promieniu 50 km);
+  w **Table Editor → listings** jest wiersz. Limit planu darmowego (2 ogłoszenia w miesiącu) pilnuje baza: trzecie
+  pokaże komunikat „Nie udało się zapisać w bazie…”.
 
 ---
 
-## Faza 2. Ogłoszenia i zdjęcia (Agent: 2–3 dni)
+## Krok 2. AI i głos (Ty: 15 min)
 
-**Agent:** dodawanie, edycja, wstrzymanie i usuwanie ogłoszeń w bazie; zdjęcia w Supabase Storage (zmniejszane
-w telefonie, bucket z regułami dostępu); lista w okolicy (`listings_nearby`), wyszukiwanie, kręgi widoczności,
-incognito, limit 2 ogłoszeń w planie darmowym (pilnuje baza), „Kupione”.
-**Ty:** w Supabase **Storage** nic nie klikasz (agent da SQL); testujesz na dwóch telefonach.
-**Gotowe, gdy:** Ty i druga osoba na dwóch telefonach widzicie nawzajem swoje ogłoszenia ze zdjęciami, a ukryte przed kimś
-ogłoszenie tej osobie się nie pokazuje.
+**2.1. Klucz Anthropic:** console.anthropic.com → **API Keys → Create Key** → skopiuj (pokazuje się raz).
+Ustaw limit wydatków: **Settings → Limits** (np. 20 USD miesięcznie).
+**2.2. Sekret w Supabase:** **Edge Functions → Secrets → Add new secret**: nazwa `ANTHROPIC_API_KEY`, wartość: klucz.
+**2.3. Funkcja `plan`:** **Edge Functions → Deploy a new function → Via Editor** → nazwa `plan` → wklej treść
+`supabase/functions/plan/index.ts` z GitHuba → **Deploy**. Zostaw włączone *Verify JWT* (tylko zalogowani).
 
-## Faza 3. Znajomi i kontakty (Agent: 2 dni)
+**Jak działa w aplikacji:**
+- **Okolica → pole „Co dziś załatwiamy?”** albo **Szukaj**: wpisz cel, np. „remont łazienki”. Znane cele (podjazd,
+  przeprowadzka, ogród, opał) aplikacja rozpisuje sama, bez internetu; inne idą do AI (po 0,7 s od wpisania).
+- **Mikrofon** (niebieskie kółko obok pola): mówisz, aplikacja wpisuje. Na Androidzie otwiera się systemowe okno
+  rozpoznawania mowy Google (aplikacja nie nagrywa dźwięku sama).
+- **Głośnik**: w planie AI przycisk **Przeczytaj** czyta kroki i najlepsze oferty na głos (głos systemu telefonu).
 
-**Agent:** zaproszenia linkiem `miliorbit.com/z/…` i kodem QR (zaproszony od razu jest znajomym), dopasowanie kontaktów
-w APK (wtyczka Contacts + `match_contacts`, tylko skróty numerów), krąg znajomi / znajomi znajomych, orbita na mapie
-(`orbit_people`), pseudonim i anonimowy klucz dla obcych, zaufane osoby i zastrzeżenie konta.
-**Gotowe, gdy:** zaproszony znajomy pojawia się w **Znajomi**, jego nowe ogłoszenie w **Nowe u znajomych**, a znajomy
-znajomego widzi Cię jako `Osoba #…` / klucz, nie z imienia.
+**Gotowe, gdy:** na telefonie w trybie `live` mówisz „chcę wymienić płot” i widzisz plan z krokami, a **Przeczytaj**
+czyta go na głos. Koszt: ok. 1–3 grosze za zapytanie (podgląd w console.anthropic.com → **Usage**).
 
-## Faza 4. Czaty i powiadomienia (Agent: 2–3 dni, Ty: 20 min)
+---
 
-**Ty:** konto **Firebase** (console.firebase.google.com) → projekt → dodaj aplikację Android `com.miliorbit.app` →
-pobierz `google-services.json` i wyślij agentowi przez GitHub (plik nie jest tajny) albo wgraj do `android/app/`.
-**Agent:** czaty w czasie rzeczywistym (Realtime), licznik nieprzeczytanych, powiadomienia w aplikacji, push na Androida
-(Firebase) z funkcji serwerowej, cisza nocna.
-**Gotowe, gdy:** wiadomość dochodzi na drugi telefon w 2 sekundy, a przy zamkniętej aplikacji przychodzi powiadomienie.
+## Krok 3. Google Play: test wewnętrzny (Ty: ok. 1 h, raz; potem 1 kliknięcie)
 
-## Faza 5. Tablica okolicy i SOS na żywo (Agent: 2 dni)
+Po co: testerzy instalują ze Sklepu Play, także na Samsungach z „Automatyczną blokadą”, a aplikacja sama się aktualizuje.
 
-**Agent:** pytania z odpowiedziami, „Będę”, prośby o pomoc w bazie; SOS przez `send_sos`, statusy na żywo (Realtime),
-push o wysokim priorytecie dla alarmu, „Odprowadź mnie” z położeniem na żywo, sprzątanie położenia po 24 h (pg_cron).
-**Gotowe, gdy:** alarm z telefonu A pojawia się na telefonie B jako pełny ekran, B stuka „Jadę”, a A widzi „Jedzie · 6 min”.
+1. play.google.com/console → **Utwórz aplikację**: nazwa „Miliorbit”, język polski, aplikacja, bezpłatna → zaakceptuj.
+2. **Klucz do wysyłki (upload key)**, na komputerze z Javą (Android Studio ją ma), w terminalu:
+   ```
+   keytool -genkeypair -v -keystore miliorbit-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
+   ```
+   Hasła zapisz w menedżerze haseł, plik `.jks` trzymaj poza repozytorium (i kopię w bezpiecznym miejscu).
+3. **Sekrety w GitHubie** (Settings → Secrets and variables → Actions → **Secrets**):
+   `ANDROID_UPLOAD_KEYSTORE_BASE64` (plik `.jks` zakodowany: `base64 -w0 miliorbit-upload.jks` na Linuksie,
+   `base64 -i miliorbit-upload.jks` na Macu), `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS` (`upload`),
+   `ANDROID_UPLOAD_KEY_PASSWORD`.
+4. **Pierwsza paczka ręcznie** (wymóg Google): GitHub → **Actions → Google Play → Run workflow** → zaznacz
+   **Tylko zbuduj plik .aab** → **Run** → po ok. 5 min w przebiegu **Artifacts → miliorbit-play-…** (rozpakuj zip).
+   Play Console: **Testowanie → Test wewnętrzny → Utwórz wersję** → wgraj `app-release.aab` → zapisz.
+   Zostaw włączone **Podpisywanie aplikacji przez Google Play**.
+5. **Konto usługi:** console.cloud.google.com → projekt → **IAM i administracja → Konta usługi → Utwórz** → **Klucze →
+   Dodaj klucz → JSON**. W Play Console: **Użytkownicy i uprawnienia → Zaproś** adres konta usługi z prawem do wydań.
+   Treść pliku JSON wklej jako sekret `PLAY_SERVICE_ACCOUNT_JSON`.
+6. **Kolejne wydania:** GitHub → **Actions → Google Play → Run workflow** → *track*: `internal` → **Run**.
+7. **Testerzy:** Play Console → **Test wewnętrzny → Testerzy** → lista e-maili → link „Dołącz do testu” wyślij znajomym.
+8. **Linki do aplikacji:** Play Console → **Integralność aplikacji → Podpisywanie** → odcisk SHA-256 klucza podpisywania
+   podaj agentowi (dopisze go do `site/.well-known/assetlinks.json`).
 
-## Faza 6. Zamówienia i płatności testowe (Ty: 1 h, Agent: 3–5 dni)
+**Gotowe, gdy:** tester z linku instaluje „Miliorbit” ze Sklepu Play, a nowa wersja przychodzi po **Run workflow**.
 
-**Ty:** konto **Stripe** w **trybie testowym** (bez firmy da się testować): **Developers → API keys** → klucz
-`sk_test_…` zapisz jako sekret w Supabase (**Edge Functions → Secrets**), **nie** w czacie.
-**Agent:** funkcje `create-payment`, `stripe-webhook`, `payouts`, `refunds`; BLIK i karta testowa, kod odbioru zwalnia
-wypłatę, 48 h automatycznie, spory, kaucja jako blokada na karcie.
-**Gotowe, gdy:** zakup kartą testową `4242 4242 4242 4242` zmienia zamówienie na „Opłacone”, kod odbioru oznacza „Odebrane”,
-a w Stripe widać wypłatę testową.
+---
 
-## Faza 7. Prawdziwe logowanie, iPhone, sklepy, domena (Ty: kilka wieczorów)
+## Krok 4. Przegląd wyglądu i języków (Ty: 1 wieczór)
 
-- **SMS:** konto SMSAPI (polskie, ok. 0,11–0,17 zł/SMS) albo Twilio; agent podłącza je w Supabase (*Send SMS hook*),
-  wyłączasz logowanie anonimowe. Od teraz konto = numer telefonu.
-- **iPhone:** konto Apple Developer (firma, D-U-N-S) → agent dodaje projekt iOS i budowanie w GitHub Actions na macOS
-  → **TestFlight** (instalacja na iPhone'ach testerów z linku).
-- **Google Play:** test wewnętrzny może ruszyć wcześniej, zaraz po weryfikacji konta (START.md, 2e); tu przechodzimy na
-  test zamknięty i przygotowanie do publikacji.
-  Agent przygotowuje paczkę AAB podpisaną tajnym kluczem z sekretów GitHuba.
-- **Domena:** miliorbit.com w Cloudflare (WDROZENIE.md, etap 2), linki do aplikacji (etap 9).
-**Gotowe, gdy:** znajomi instalują z Google Play (test) i TestFlight, logują się numerem z SMS.
+Przejdź aplikację w 2–3 językach (zmiana: **Ja → Język**) i zgłoś agentowi według wzoru z START.md:
+zakładka, ekran, co jest źle, zrzut. Sprawdź jedną ręką: czy wszystko ważne jest w zasięgu kciuka.
+Agent poprawia na gałęzi `dev`, Ty sprawdzasz w „Miliorbit DEV”.
 
-## Faza 8. Bezpieczeństwo i start publiczny
+**Gotowe, gdy:** nie masz uwag do rejestracji, Okolicy, Dodaj i Czatów w żadnym z używanych języków.
 
-Po kolei według [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md) i [WDROZENIE.md](WDROZENIE.md) etapy 4–5: WAF i boty, Turnstile przy
-SMS, 2FA na wszystkich kontach, Security Advisor w Supabase bez ostrzeżeń, kopie bazy (plan Pro), `/security-review`,
-polityka prywatności i regulamin od prawnika, piksele po zgodzie, firma i DAC7.
-**Gotowe, gdy:** wszystkie pola ☐ w BEZPIECZENSTWO.md są ✅, a aplikacja jest opublikowana w obu sklepach.
+---
+
+## Krok 5. Gmina i instytucje (Agent: 2–3 dni, Ty: weryfikacja każdego wniosku)
+
+**Zasada:** nikt nie może podszyć się pod gminę. Komunikat „urzędowy” publikuje tylko członek instytucji, którą Ty
+(operator) sprawdziłeś ręcznie. Pilnuje tego baza (migracja `0005_institutions.sql`), nie tylko aplikacja.
+
+**Jak sprawdzasz wniosek** (Ja → „Jesteś z urzędu…?” → wniosek trafia do tabeli `org_applications`):
+1. E-mail jest w domenie urzędu ze strony BIP (np. `@tarczyn.pl`), a nie np. z Gmaila.
+2. Dzwonisz na numer sekretariatu ze strony BIP (nie na numer z wniosku) i pytasz, czy ta osoba składała wniosek.
+3. Osoba przysyła upoważnienie podpisane przez wójta, burmistrza albo prezesa spółdzielni.
+4. Zatwierdzenie: Supabase → **SQL Editor** (podmień wartości w nawiasach ostrych):
+   ```sql
+   with o as (
+     insert into organizations (kind, name, region, official_code, center, radius_km, status, verified_at)
+     values ('municipality', '<Gmina Tarczyn>', '<mazowieckie>', '<kod TERYT>', 'SRID=4326;POINT(<dł.> <szer.>)', 12, 'verified', now())
+     returning id)
+   insert into org_members (org_id, user_id, role)
+   select o.id, a.user_id, 'owner' from o, org_applications a where a.id = '<id wniosku>';
+   update org_applications set status = 'approved', decided_at = now() where id = '<id wniosku>';
+   ```
+
+**Agent:** panel instytucji w aplikacji (komunikat, awaria, wydarzenie; harmonogram śmieci z pliku CSV gminy),
+wybór rejonu wywozu przez mieszkańca, przypomnienie dzień wcześniej o 19:00, znaczek „Zweryfikowana instytucja”.
+**Gotowe, gdy:** pracownik testowej gminy publikuje komunikat, a mieszkaniec w zasięgu widzi go na ekranie Okolica
+z zielonym znaczkiem; zwykłe konto nie ma jak opublikować komunikatu (baza odrzuca).
+
+---
+
+## Krok 6. Czaty i powiadomienia (Ty: 20 min, Agent: 2–3 dni)
+
+**Ty:** console.firebase.google.com → projekt → dodaj aplikację Android `com.miliorbit.app` (i drugą:
+`com.miliorbit.app.dev`) → pobierz `google-services.json` → wyślij agentowi (plik nie jest tajny).
+**Agent:** czaty na żywo (Realtime), licznik nieprzeczytanych, push z serwera, cisza nocna.
+**Gotowe, gdy:** wiadomość dochodzi na drugi telefon w 2 s, a przy zamkniętej aplikacji przychodzi powiadomienie.
+
+## Krok 7. SOS i tablica okolicy na żywo (Agent: 2 dni)
+
+**Agent:** `send_sos`, statusy na żywo, push wysokiego priorytetu, „Odprowadź mnie”, pytania i „Będę” w bazie.
+**Gotowe, gdy:** alarm z telefonu A pojawia się na B jako pełny ekran, B stuka „Jadę”, A widzi „Jedzie · 6 min”.
+
+## Krok 8. Płatności testowe (Ty: 1 h, Agent: 3–5 dni)
+
+**Ty:** konto Stripe w trybie testowym → klucz `sk_test_…` jako sekret w Supabase (**Edge Functions → Secrets**).
+**Agent:** płatność, kod odbioru, wypłata po 48 h, spory, kaucja jako blokada na karcie.
+**Gotowe, gdy:** zakup kartą testową `4242 4242 4242 4242` zmienia zamówienie na „Opłacone”, a kod odbioru na „Odebrane”.
+
+## Krok 9. Firma, SMS, iPhone, domena, start (Ty: kilka wieczorów)
+
+- **Firma:** po założeniu zmień w Play Console dane konta na firmowe; uzupełnij dane w regulaminie (WDROZENIE.md).
+- **SMS:** konto SMSAPI albo Twilio → agent podłącza je w Supabase → w GitHubie zmienna `VITE_AUTH` = `sms` →
+  wyłączasz logowanie anonimowe. Od teraz konto = numer telefonu z kodem.
+- **iPhone:** gdy Apple zatwierdzi konto (Apple Developer, firma z numerem D-U-N-S): agent dodaje projekt iOS
+  i budowanie na macOS w GitHub Actions → TestFlight.
+- **Domena:** miliorbit.com (WDROZENIE.md, etap 2) i linki do aplikacji (etap 9).
+- **Bezpieczeństwo:** wszystkie pola w BEZPIECZENSTWO.md na ✅, polityka prywatności i regulamin od prawnika.
+
+**Gotowe, gdy:** aplikacja jest w Google Play i App Store, a logowanie numerem z SMS działa.
 
 ---
 
 ## Kalendarz orientacyjny
 
-| Tydzień | Fazy | Co masz na koniec |
+| Tydzień | Kroki | Co masz na koniec |
 |---|---|---|
-| 1 | 0, 1 | aplikacja na telefonie, konta w bazie |
-| 2 | 2, 3 | ogłoszenia ze zdjęciami między znajomymi |
-| 3 | 4, 5 | czaty, powiadomienia, tablica okolicy, SOS na żywo |
-| 4–5 | 6 | zamówienia i płatności testowe |
-| 5–7 | 7, 8 | SMS, iPhone (TestFlight), Google Play (test), domena, bezpieczeństwo |
+| 1 | 0, 1, 2 | dwie aplikacje na telefonie, konta i ogłoszenia w bazie, AI z głosem |
+| 2 | 3, 4 | test w Google Play dla znajomych, poprawiony wygląd |
+| 3 | 5, 6 | gmina z komunikatami, czaty i powiadomienia |
+| 4 | 7, 8 | SOS na żywo, płatności testowe |
+| 5–7 | 9 | SMS, iPhone (gdy Apple zatwierdzi), domena, start |
 
-Czas zależy głównie od tego, jak szybko załatwisz konta (Apple i D-U-N-S trwają najdłużej) i jak szybko testujesz.
+Najdłużej trwają rzeczy poza kodem: weryfikacja kont (Google, Apple, D-U-N-S) i testy z ludźmi.

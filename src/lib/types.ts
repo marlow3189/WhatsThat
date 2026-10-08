@@ -109,6 +109,8 @@ export interface Listing {
   paused?: boolean
   /** pytanie do sąsiadów: odpowiedzi widoczne dla wszystkich, którzy widzą pytanie */
   answers?: Answer[]
+  /** id ogłoszenia w bazie (tryb na żywo), żeby nie pokazać go dwa razy */
+  remoteId?: string
   /** wydarzenie lub zbiórka: kto będzie */
   going?: string[]
   createdAt: number

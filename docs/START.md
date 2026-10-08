@@ -9,7 +9,7 @@ Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 | | Odpowiedź | Co masz |
 |---|---|---|
 | **Android (.apk)** | **Tak, już jest.** GitHub sam buduje plik APK po każdej zmianie w kodzie i od razu uruchamia go na emulatorze (zrzuty ekranu). Na telefonie bez blokady instalujesz go bez Google Play; na Samsungu z „Automatyczną blokadą” użyj emulatora albo testu w Google Play. | sposób 2 poniżej |
-| **iPhone** | Na iPhonie nie ma plików .apk, a instalacja poza App Store wymaga konta **Apple Developer (99 USD/rok)** i **TestFlight**. Mac nie jest potrzebny: aplikację na iPhone'a zbuduje automat GitHuba na macOS. | teraz: wersja z przeglądarki dodana do ekranu początkowego (sposób 3); TestFlight w fazie 7 [planu](PLAN.md) |
+| **iPhone** | Na iPhonie nie ma plików .apk, a instalacja poza App Store wymaga konta **Apple Developer (99 USD/rok)** i **TestFlight**. Mac nie jest potrzebny: aplikację na iPhone'a zbuduje automat GitHuba na macOS. | teraz: wersja z przeglądarki dodana do ekranu początkowego (sposób 3); TestFlight w kroku 9 [planu](PLAN.md) |
 
 **Zrób już teraz (czeka się długo):** załóż konto Apple Developer jako **firma**. Potrzebny jest numer D-U-N-S spółki
 (darmowy, czeka się do 2 tygodni), a samo konto Apple sprawdza kilka dni. Wtedy iPhone nie będzie czekał na resztę.
@@ -24,7 +24,7 @@ Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 | 2c. Emulator na komputerze (Android Studio) | 30 min, raz | bez limitów czasu, najpewniejszy | jak wyżej |
 | 2d. Plik APK na telefonie | 5 min | telefony bez „Automatycznej blokady” | jak wyżej |
 | 2e. Test wewnętrzny w Google Play | po założeniu konta Google Play | **Samsung z blokadą**, znajomi testerzy | jak wyżej |
-| 3. Strona testowa (Cloudflare Pages) | 15 min, raz | każdy telefon i komputer, także Samsung z blokadą | przykładowe, a po fazie 1 z bazy |
+| 3. Strona testowa (Cloudflare Pages) | 15 min, raz | każdy telefon i komputer, także Samsung z blokadą | przykładowe, a po kroku 1 planu z bazy |
 | 4. Na własnym komputerze | 20 min, raz | gdy chcesz zobaczyć zmianę przed wysłaniem | jak wyżej |
 
 > **Samsung: „Unbekannte App gesperrt” / „Nieznana aplikacja zablokowana”.** To **Automatyczna blokada**
@@ -32,7 +32,8 @@ Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 > nawet gdy dasz zgodę „Instaluj nieznane aplikacje”. **Nie musisz jej wyłączać.** Na telefonie testuj stronę (sposób 3),
 > a aplikację Android na emulatorze (2a–2c), aż będzie test w Google Play (2e), który blokada przepuszcza.
 
-W każdej wersji w zakładce **Ja** na samym dole jest napis typu `Miliorbit 0.7 · bb8137b · demo`. To numer wersji
+W każdej wersji w zakładce **Ja** na samym dole jest napis typu `Miliorbit 0.8 · bb8137b · demo` (w wersji
+deweloperskiej z dopiskiem `· DEV`). To numer wersji
 (skrót zmiany w GitHubie) i tryb: **demo** = dane przykładowe tylko na tym urządzeniu, **live** = baza danych.
 Podawaj go przy zgłaszaniu błędów.
 
@@ -48,16 +49,24 @@ Podawaj go przy zgłaszaniu błędów.
 
 ## 2. Aplikacja na Androida
 
-Plik APK jest zawsze pod jednym adresem (najnowsza wersja z gałęzi domyślnej):
-`https://github.com/marlow3189/WhatsThat/releases/download/android-test/miliorbit-test.apk`
-Strona z plikiem i zrzutami: `https://github.com/marlow3189/WhatsThat/releases/tag/android-test`
+Dwie aplikacje, każda zawsze pod tym samym adresem:
+
+| Aplikacja na telefonie | Z gałęzi | Plik APK | Strona z plikiem i zrzutami |
+|---|---|---|---|
+| **Miliorbit** (testowa, do pokazywania) | domyślnej | `https://github.com/marlow3189/WhatsThat/releases/download/android-test/miliorbit-test.apk` | `…/releases/tag/android-test` |
+| **Miliorbit DEV** (najnowsze zmiany) | `dev` ([PLAN.md](PLAN.md), krok 0) | `https://github.com/marlow3189/WhatsThat/releases/download/android-dev/miliorbit-dev.apk` | `…/releases/tag/android-dev` |
+
+Obie instalują się obok siebie i mają osobne dane. Wersja DEV pojawi się, gdy założysz gałąź `dev`.
 
 ### 2a. Zrzuty z emulatora w chmurze (nic nie robisz)
 
 **Gdzie jesteś:** dowolna przeglądarka, strona wydania `…/releases/tag/android-test`.
-**Co się dzieje:** po każdej zmianie GitHub buduje APK, instaluje je na emulatorze telefonu Pixel 6 (Android 14),
-przechodzi rejestrację, główną, tablicę okolicy, SOS, Dodaj i Ja, i robi zrzuty ekranu.
-**Sprawdź:** w sekcji **Assets** są pliki `01-start.png` … `10-ja.png` i `wynik.txt` („OK: wszystkie kroki przeszły”).
+**Co się dzieje:** po każdej zmianie GitHub buduje APK i uruchamia je na **dwóch** emulatorach telefonu Pixel 6:
+**Android 14** i **Android 16** (od Androida 15 aplikacja rysuje się pod paskiem stanu, jak na nowych Samsungach).
+Na każdym przechodzi rejestrację, Okolicę, SOS, **całe dodanie ogłoszenia** (Sprzedaż → kategoria → opis → Opublikuj),
+Szukaj i Ja, a potem **stuka palcem** (prawdziwe dotknięcia ekranu) w zakładki i górne przyciski.
+**Sprawdź:** w sekcji **Assets** są pliki `api34-…` i `api36-…`: zrzuty `01-start.png` … , `wynik.txt`
+(„OK: wszystkie kroki przeszły”) i `dotyk.txt` (lista stuknięć: ✓ działa, ✗ nie działa, z położeniem przycisku).
 Stuknij obrazek, żeby go zobaczyć. Jeśli któryś krok się nie udał, jego zrzut ma w nazwie `-blad`.
 
 ### 2b. Emulator w przeglądarce: Appetize (klikasz sam)
@@ -110,20 +119,14 @@ systemu Windows* → zaznacz **Windows Hypervisor Platform** → uruchom ponowni
 Nowa wersja instaluje się na starej (dane zostają). Na Samsungu z włączoną Automatyczną blokadą instalacja się nie
 uda: użyj 2b, 2c albo 2e.
 
-### 2e. Test wewnętrzny w Google Play (docelowo, także Samsung z blokadą)
+### 2e. Test wewnętrzny w Google Play (także Samsung z blokadą)
 
-**Gdzie jesteś:** **play.google.com/console**.
 **Po co:** aplikacja instaluje się ze Sklepu Play, więc przepuszcza ją każda blokada. Do 100 testerów, nowe wersje
-dostępne w kilka minut po wgraniu.
+dostępne kilka minut po wysłaniu.
 
-**Zrób:**
-1. Załóż konto dewelopera Google Play (25 USD jednorazowo). Najlepiej jako **organizacja** (spółka, numer D-U-N-S);
-   konto prywatne też działa do testów. Google weryfikuje tożsamość, to trwa kilka dni.
-2. Napisz agentowi: „Przygotuj wersję do testu wewnętrznego w Google Play”. Agent doda budowanie paczki **AAB**
-   podpisanej Twoim kluczem przesyłania (instrukcja utworzenia klucza i zapisania go w sekretach GitHuba przyjdzie z tym zadaniem).
-3. Play Console → **Utwórz aplikację** (Miliorbit, aplikacja, bezpłatna) → **Testowanie → Testowanie wewnętrzne** →
-   **Utwórz wersję** → wgraj plik `.aab` → **Testerzy**: lista e-maili (Twój i znajomych) → skopiuj **link do testów**.
-4. Na telefonie otwórz link → **Zostań testerem** → **Pobierz z Google Play** → instalacja jak każdej aplikacji.
+**Zrób raz:** [PLAN.md](PLAN.md), **krok 3** (konto Google Play masz; klucz do wysyłki, sekrety w GitHubie, pierwsza
+paczka ręcznie). Potem każda nowa wersja to jedno kliknięcie: GitHub → **Actions → Google Play → Run workflow**.
+**Na telefonie:** otwórz link do testów z Play Console → **Zostań testerem** → **Pobierz z Google Play**.
 
 ---
 
@@ -160,7 +163,7 @@ nie jest do tego potrzebna (podłączysz ją później, etap 2 w [WDROZENIE.md](
 - `https://miliorbit.pages.dev/app/` otwiera aplikację.
 - Na iPhonie: `…/app/` w **Safari** → **Udostępnij** → **Do ekranu początkowego**. Ikona Miliorbit działa jak aplikacja.
 - Na Androidzie w Chrome: menu **⋮** → **Dodaj do ekranu głównego** (albo zainstaluj APK, sposób 2).
-- **Ja → Panel operatora (demo) → Baza danych**: tryb **demo** (do fazy 1 tak ma być).
+- **Ja → Panel operatora (demo) → Baza danych**: tryb **demo** (do kroku 1 planu tak ma być).
 
 **Gdy build jest czerwony:** projekt → **Deployments** → kliknij nieudany → **View details** → skopiuj ostatnie
 30 linijek logu i wklej agentowi z poleceniem „napraw build w Cloudflare”.
@@ -218,5 +221,5 @@ Otwórz go w telefonie. Testy automatyczne: `npm test`. Zatrzymanie serwera: `Ct
 - Do testów używaj danych przykładowych albo swoich. Nie zapraszaj jeszcze obcych osób z prawdziwymi danymi.
 - Klucz **anon** Supabase może być w Cloudflare i GitHub Variables (jest publiczny z założenia). Klucza
   **service_role**, kluczy Stripe i Anthropic nigdy nie wklejaj do czatu, kodu ani zmiennych strony.
-- Plik `android/app/miliorbit-test.keystore` jest jawny celowo i służy tylko do APK testowych. Do Google Play agent
-  przygotuje osobny, tajny klucz (faza 7).
+- Plik `android/app/miliorbit-test.keystore` jest jawny celowo i służy tylko do APK testowych. Do Google Play
+  używamy osobnego, tajnego klucza do wysyłki (PLAN.md, krok 3).
