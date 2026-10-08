@@ -199,13 +199,16 @@ Otwórz go w telefonie. Testy automatyczne: `npm test`. Zatrzymanie serwera: `Ct
 
 1. Testujesz (sposób 2 albo 3) i zapisujesz uwagi. Najlepiej w tym formacie:
    ```
-   Wersja: Miliorbit 0.7 · bb8137b · demo, telefon: Samsung A54 / iPhone 13, sposób: APK / strona
+   Wersja: Miliorbit 0.8 · bb8137b · demo, telefon: Samsung A54 / iPhone 13, sposób: APK / strona
    Ekran: Dodaj → Zapytaj sąsiadów
    Zrobiłem: wpisałem pytanie, stuknąłem Dalej
    Stało się: przycisk nic nie robi
    Oczekiwałem: przejście do „Kto widzi”
    (zrzut ekranu)
    ```
+   **Gdy aplikacja pokaże „Coś poszło nie tak”** (albo coś przestanie działać): stuknij **Kopiuj opis błędu**,
+   a jeśli aplikacja działa: **Ja → Diagnostyka → Kopiuj**, i wklej ten tekst do zgłoszenia. Jest tam wersja,
+   Android, wersja WebView i treść błędu, bez Twoich danych.
 2. Wklejasz to agentowi w Claude Code. Kilka uwag naraz to dobry pomysł: agent poprawi je w jednej paczce.
 3. Agent poprawia, uruchamia testy i wysyła zmiany na GitHuba.
 4. Po 1–2 minutach nowa wersja jest na stronie testowej, a po ok. 5 minutach nowe APK. Na dole zakładki **Ja**

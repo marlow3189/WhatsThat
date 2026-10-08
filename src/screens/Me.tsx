@@ -10,6 +10,7 @@ import { LANGS } from '../i18n'
 import { PRICES, isAvailable } from '../lib/pricing'
 import { regionsOf } from '../lib/regions'
 import { applyForOrg } from '../lib/council'
+import { clearErrors, deviceSummary, readErrors } from '../lib/diag'
 import { CATEGORIES, FARM_TEMPLATES } from '../lib/categories'
 import { KeyTerms, TermsSheet } from '../components/terms'
 import { providersFor } from '../lib/warnings'
@@ -24,6 +25,8 @@ export function Me() {
   const date = (ms?: number) => new Date(ms ?? 0).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })
   const fmt = (v: number) => money(v, account.currency, locale)
   const [orgOpen, setOrgOpen] = useState(false)
+  const [diagOpen, setDiagOpen] = useState(false)
+  const [diagCopied, setDiagCopied] = useState(false)
   const [orgName, setOrgName] = useState('')
   const [orgEmail, setOrgEmail] = useState('')
   const [orgState, setOrgState] = useState<'' | 'sent' | string>('')
@@ -94,6 +97,7 @@ export function Me() {
         <Row to="/moje" icon="list" title={t('me.mine')} value={mine.length} />
         <Row to="/znajomi" icon="users" title={t('me.invite')} detail={t('home.inviteText')} />
         <Row to="/qr" icon="qr" title={t('qr.title')} />
+        <Row to="/kalendarz" icon="calendar" title={t('cal.title')} value={(account.calendar ?? []).length || undefined} />
         <Row to="/paliwa" icon="fuel" title={t('fuel.title')} />
         <Row icon="bank" title={t('org.apply')} onClick={() => setOrgOpen(true)} />
       </Group>
@@ -146,6 +150,7 @@ export function Me() {
 
       <Group>
         <Row to="/operator" icon="chart" title="Panel operatora (demo)" detail="DAC7, zgłoszenia DSA, plany, koszty" />
+        <Row icon="info" title={t('diag.title')} onClick={() => setDiagOpen(true)} />
         <Row onClick={reset} title={<span className="text-danger">{t('me.logout')}</span>} chevron={false} />
       </Group>
       <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.8 · {__BUILD__} · {LIVE ? 'live' : 'demo'}{import.meta.env.VITE_CHANNEL === 'dev' ? ' · DEV' : ''}</p>
@@ -169,6 +174,20 @@ export function Me() {
           </div>
         </Sheet>
       )}
+      {diagOpen && (() => {
+        const errs = readErrors()
+        const text = [deviceSummary(`0.8 · ${__BUILD__}`), ...errs.map((e) => `${new Date(e.at).toISOString()} [${e.where}] ${e.message}\n${e.stack ?? ''}`)].join('\n\n')
+        return (
+          <Sheet title={t('diag.title')} onClose={() => setDiagOpen(false)}>
+            <div className="flex flex-col gap-3">
+              <p className="px-1 text-[14px] leading-snug text-muted">{t('diag.text')}</p>
+              <pre className="max-h-64 overflow-auto rounded-[12px] bg-surface p-3 text-[11px] leading-snug whitespace-pre-wrap select-all">{errs.length ? text : `${text}\n\n${t('diag.none')}`}</pre>
+              <Button onClick={() => navigator.clipboard?.writeText(text).then(() => setDiagCopied(true)).catch(() => {})}>{diagCopied ? '✓' : t('diag.copy')}</Button>
+              {errs.length > 0 && <Button variant="secondary" onClick={() => { clearErrors(); setDiagOpen(false) }}>{t('diag.clear')}</Button>}
+            </div>
+          </Sheet>
+        )
+      })()}
     </div>
   )
 }

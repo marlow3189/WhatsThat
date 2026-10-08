@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useNavigate } from 'react-router'
 import { GENDERS, anonKey, formatKey, type Gender } from '../lib/identity'
 import { contactSource, hashContacts, readContacts } from '../lib/contacts'
 import { useStore } from '../data/store'
@@ -26,6 +27,7 @@ type Step = (typeof STEPS)[number]
  */
 export function Onboarding() {
   const { finishOnboarding, users } = useStore()
+  const navigate = useNavigate()
   const [step, setStep] = useState<Step>('phone')
   const [lang, setLang] = useState<Lang>(phoneLang)
   const [pickLang, setPickLang] = useState(false)
@@ -128,13 +130,16 @@ export function Onboarding() {
     )
   }
 
-  const finish = () =>
+  // Po rejestracji zawsze ekran Okolica (a nie ostatni ekran sprzed wylogowania).
+  const finish = () => {
+    navigate('/', { replace: true })
     finishOnboarding({
       lang, country, currency: countryByCode(country).currency, place: place(), phone: `${dial} ${phone}`.trim(),
       name: name.trim(), contactsAllowed, gender,
       // wszystkie zainteresowania włączone na start (wyłączysz w zakładce Ja → Zainteresowania)
       interests: CATEGORIES.filter((c) => c.id !== 'other').map((c) => c.id),
     })
+  }
   const key = gender ? anonKey(country, gender, `${dial} ${phone}`) : ''
 
   /** Zgoda na kontakty: w aplikacji okno systemu, w Chrome na Androidzie wybór kontaktów, w podglądzie wygląd okna. */

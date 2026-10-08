@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import type { Account, AppNotification, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, Sos, SosKind, User } from '../lib/types'
+import type { Account, AppNotification, CalendarEntry, Chat, DisputeReason, Lang, Listing, Message, NotificationPrefs, Order, OrderStatus, PayMethod, Delivery, Place, Plan, Report, ReportReason, Sos, SosKind, User } from '../lib/types'
 import { anonKey, type Gender } from '../lib/identity'
 import { bestMode, minutes } from '../lib/travel'
 import { relationTo, type Relation } from '../lib/circles'
@@ -13,7 +13,8 @@ import { zl } from '../lib/money'
 import { localeOf, translator, useTranslator } from '../i18n'
 import { ME, seedListings, seedOrders, seedUsers } from './seed'
 import { LIVE } from '../lib/backend'
-import { fetchNearby, publishListing, saveProfile, signOut } from '../lib/live'
+import { deleteCalendarEntry, fetchCalendar, fetchNearby, publishListing, saveCalendarEntry, saveProfile, signOut } from '../lib/live'
+import { dayKey } from '../lib/calendar'
 
 interface State {
   account: Account
@@ -244,6 +245,44 @@ function useStoreValue() {
     setState((s) => ({ ...s, notifications: [item, ...s.notifications] }))
     if (latest.current.account.notif[pref]) setToast({ id: item.id, text: item.text, link: item.link })
   }
+
+  /* --- prywatny kalendarz ------------------------------------------------- */
+
+  const addCalendarEntry = (e: Omit<CalendarEntry, 'id' | 'createdAt'>) => {
+    const entry: CalendarEntry = { ...e, title: e.title.trim().slice(0, 120), note: e.note?.trim().slice(0, 500) || undefined, id: uid(), createdAt: Date.now() }
+    setState((s) => ({ ...s, account: { ...s.account, calendar: [...(s.account.calendar ?? []), entry] } }))
+    void saveCalendarEntry(entry)
+    return entry.id
+  }
+  const removeCalendarEntry = (id: string) => {
+    setState((s) => ({ ...s, account: { ...s.account, calendar: (s.account.calendar ?? []).filter((e) => e.id !== id) } }))
+    void deleteCalendarEntry(id)
+  }
+  // Na żywo: terminy z bazy (np. z drugiego telefonu) dołączamy do tych z tego telefonu.
+  useEffect(() => {
+    if (!LIVE || !state.account.onboarded) return
+    fetchCalendar().then((remote) => {
+      if (!remote?.length) return
+      setState((s) => {
+        const mine = s.account.calendar ?? []
+        const known = new Set(mine.map((e) => e.id))
+        return { ...s, account: { ...s.account, calendar: [...mine, ...remote.filter((e) => !known.has(e.id))] } }
+      })
+    })
+  }, [state.account.onboarded]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Przypomnienie raz dziennie przy otwarciu aplikacji: Twoje dzisiejsze terminy z „Przypomnij mi”.
+  useEffect(() => {
+    if (!state.account.onboarded) return
+    const today = dayKey(Date.now())
+    if (state.account.remindedOn === today) return
+    const due = (state.account.calendar ?? []).filter((e) => e.remind && e.date === today)
+    setState((s) => ({ ...s, account: { ...s.account, remindedOn: today } }))
+    if (due.length) {
+      const text = translator(state.account.lang)('cal.n.today', { title: due.map((e) => (e.time ? `${e.time} ${e.title}` : e.title)).join(', ') })
+      later(1500, () => notify({ text, link: '/kalendarz' }, 'messages'))
+    }
+  }, [state.account.onboarded]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* --- plan i przypomnienia ---------------------------------------------- */
 
@@ -720,6 +759,8 @@ function useStoreValue() {
     stopShare,
     answer,
     toggleGoing,
+    addCalendarEntry,
+    removeCalendarEntry,
     stations,
     reportFuel,
     nameOf,

@@ -1,5 +1,5 @@
 import { LIVE, db } from './backend'
-import type { Account, Circle, Currency, Delivery, Kind, Listing, Place, Unit, User } from './types'
+import type { Account, CalendarEntry, Circle, Currency, Delivery, Kind, Listing, Place, Unit, User } from './types'
 
 /**
  * Tryb na żywo (Supabase): logowanie, profil, ogłoszenia z bazy. W trybie demo nic tu się nie wykonuje.
@@ -198,4 +198,43 @@ function hueFrom(id: string) {
   let h = 0
   for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 360
   return h
+}
+
+/* --- prywatny kalendarz (tabela calendar_entries, migracja 0006) --------------------------------------- */
+
+export async function saveCalendarEntry(e: CalendarEntry): Promise<void> {
+  if (!LIVE) return
+  try {
+    await (await db()).from('calendar_entries').upsert(
+      { client_id: e.id, title: e.title, day: e.date, at_time: e.time ?? null, note: e.note ?? null, remind: !!e.remind },
+      { onConflict: 'user_id,client_id' },
+    )
+  } catch {
+    /* bez sieci: wpis zostaje na telefonie, wyślemy przy następnej zmianie */
+  }
+}
+
+export async function deleteCalendarEntry(id: string): Promise<void> {
+  if (!LIVE) return
+  try {
+    await (await db()).from('calendar_entries').delete().eq('client_id', id)
+  } catch {
+    /* nic */
+  }
+}
+
+/** Terminy z bazy (np. dodane na drugim telefonie). */
+export async function fetchCalendar(): Promise<CalendarEntry[] | null> {
+  if (!LIVE || !(await liveUserId())) return null
+  const { data, error } = await (await db()).from('calendar_entries').select('client_id, title, day, at_time, note, remind, created_at').order('day')
+  if (error || !Array.isArray(data)) return null
+  return (data as Row[]).map((r) => ({
+    id: r.client_id as string,
+    title: r.title as string,
+    date: r.day as string,
+    time: r.at_time ? (r.at_time as string).slice(0, 5) : undefined,
+    note: (r.note as string | null) ?? undefined,
+    remind: !!r.remind,
+    createdAt: Date.parse(r.created_at as string) || Date.now(),
+  }))
 }

@@ -2,7 +2,7 @@
 
 Plan krok po kroku, od aplikacji testowej do startu w sklepach. Każdy krok ma: **kto** (Ty albo agent), **co dokładnie
 kliknąć**, **ile to trwa** i **„Gotowe, gdy”**, czyli test, po którym wiadomo, że można iść dalej.
-Testowanie na telefonie i emulatorze: [START.md](START.md). Formalności i bezpieczeństwo przed startem:
+Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA.md](MAPA.md). Formalności i bezpieczeństwo przed startem:
 [WDROZENIE.md](WDROZENIE.md), [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md).
 
 ## Gdzie jesteśmy
@@ -17,6 +17,8 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Formalności i bezpi
 | Baza danych | 🟡 kod gotowy (logowanie, profil, ogłoszenia z okolicy), czeka na Twój projekt Supabase | **krok 1** |
 | AI (planer) i głos | 🟡 kod gotowy: mikrofon, czytanie na głos, planer AI przez Supabase | **krok 2** |
 | Gmina i instytucje | 🟡 baza i zasady gotowe (tylko zweryfikowane konta publikują), karta na ekranie Okolica | **krok 5** |
+| Kalendarz prywatny | ✅ własne terminy, „Będę”, odbiory i zwroty, wywóz śmieci, przypomnienie; w bazie po kroku 1 | |
+| Zgłaszanie błędów | ✅ zamiast białego ekranu komunikat z opisem; **Ja → Diagnostyka → Kopiuj** | wklej opis agentowi |
 | Google Play | 🟡 przepływ „Google Play” w GitHubie gotowy, czeka na konto i klucze | **krok 3** |
 | Czaty, push, SOS na żywo, płatności, iPhone | ⬜ kolejne kroki | kroki 6–9 |
 
@@ -24,7 +26,7 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Formalności i bezpi
  Telefon (APK, później iPhone) ──┐
                                  ├──► Supabase (UE, Frankfurt)
  Przeglądarka: miliorbit…/app/ ──┘      ├─ Auth: konta (na testach anonimowe, potem numer + SMS)
-                                        ├─ Postgres + RLS: profile, ogłoszenia, czaty, SOS, instytucje (migracje 0001–0005)
+                                        ├─ Postgres + RLS: profile, ogłoszenia, czaty, SOS, instytucje, kalendarz (0001–0006)
                                         ├─ Storage: zdjęcia │ Realtime: czaty, SOS │ Edge Functions: AI, push, płatności
                                         └─► Anthropic (planer AI), Firebase (push), Stripe (płatności), SMS
  GitHub: kod → testy → APK (gałąź domyślna = „test”, gałąź dev = „DEV”) → Google Play (test wewnętrzny)
@@ -79,7 +81,7 @@ Instalacja na telefonie i sposoby bez instalacji (emulator): [START.md](START.md
    select vault.create_secret(encode(extensions.gen_random_bytes(32), 'hex'), 'anon_key_secret');
    ```
 4. Migracje, każda jako osobne zapytanie, po kolei: `0001_init.sql`, `0002_safety.sql`, `0003_local.sql`,
-   `0004_identity_sos.sql`, `0005_institutions.sql`. Jak: otwórz plik w GitHubie (folder `supabase/migrations`) →
+   `0004_identity_sos.sql`, `0005_institutions.sql`, `0006_calendar.sql`. Jak: otwórz plik w GitHubie (folder `supabase/migrations`) →
    ikona **Copy raw file** → wklej w **SQL Editor** → **Run** → ma być „Success”. Błąd? Skopiuj treść błędu agentowi.
 5. **Authentication → Sign In / Providers** → **Allow anonymous sign-ins**: włącz (na testach bez SMS).
 6. **Project Settings → API Keys**: skopiuj **Project URL** i **Publishable key** (`sb_publishable_…`; w starszym panelu

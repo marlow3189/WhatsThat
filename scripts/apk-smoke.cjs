@@ -288,6 +288,19 @@ fs.mkdirSync(out, { recursive: true })
     await page.waitForTimeout(12_000)
     await page.waitForSelector('text=Was erledigen wir heute?')
   })
+  // Kalendarz: termin na dziś, potem karta „Heute” na głównej.
+  await step('de-kalender', async () => {
+    await tap('a[aria-label="Kalender"]')
+    await tap('button[aria-label="Termin hinzufügen"]')
+    await page.fill('#cal-title', 'Zahnarzt')
+    await page.fill('#cal-time', '09:30')
+    await tap('button:has-text("Speichern")')
+    await page.waitForSelector('text=Zahnarzt')
+  })
+  await step('de-glowna-kalender', async () => {
+    await tap('header button[aria-label="Zurück"]')
+    await page.waitForSelector('a[href="#/kalendarz"] >> text=Zahnarzt')
+  })
   // Prawdziwy ekran telefonu (nie tylko strona): czy zmienia się po stuknięciu w zakładkę?
   try {
     const crypto = require('crypto')

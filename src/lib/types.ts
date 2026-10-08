@@ -252,8 +252,26 @@ export interface Report {
   decidedAt?: number
 }
 
+/** Prywatny termin w kalendarzu (widzi go tylko właściciel konta). */
+export interface CalendarEntry {
+  id: string
+  title: string
+  /** dzień w formacie RRRR-MM-DD */
+  date: string
+  /** godzina GG:MM, gdy nie na cały dzień */
+  time?: string
+  note?: string
+  /** przypomnienie tego dnia (powiadomienie w aplikacji) */
+  remind?: boolean
+  createdAt: number
+}
+
 export interface Account {
   onboarded: boolean
+  /** prywatny kalendarz (własne terminy); reszta pozycji kalendarza wynika z ogłoszeń, zamówień i gminy */
+  calendar?: CalendarEntry[]
+  /** dni, dla których przypomnienie już się pokazało (RRRR-MM-DD) */
+  remindedOn?: string
   lang: Lang
   country: string
   currency: Currency

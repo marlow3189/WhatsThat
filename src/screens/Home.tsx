@@ -15,6 +15,8 @@ import { distanceKm, formatDistance } from '../lib/geo'
 import { RECIPES } from '../lib/planner'
 import { useWeather } from '../lib/weather'
 import { useCouncil } from '../lib/council'
+import { useAgenda } from '../components/agenda'
+import { addDays, dayKey } from '../lib/calendar'
 import { DAY } from '../lib/pricing'
 import type { Listing } from '../lib/types'
 
@@ -55,6 +57,7 @@ export function Home() {
   const [tab, setTab] = useState<BoardTab>('all')
   const warnings = useWarnings(account.place, account.country, account.warnings !== false)
   const weather = useWeather(account.place)
+  const agendaItems = useAgenda()
   const council = useCouncil(account.place, { org: t('org.demoName', { town: account.place.town }), notice: t('org.demoNotice') })
   const [story, setStory] = useState<number | null>(null)
   const [why, setWhy] = useState(false)
@@ -111,7 +114,10 @@ export function Home() {
           <p className="flex min-w-0 items-center gap-2 text-[20px] leading-none font-bold text-primary"><Mark size={26} /> <span className="truncate">{BRAND.name}</span></p>
           <div className="flex shrink-0 items-center gap-1">
             <Link to="/sos" className="press grid h-8 place-items-center rounded-full bg-danger px-3 text-[12.5px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
-            <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
+            <Link to="/kalendarz" className="press grid size-10 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('cal.title')}>
+              <Icon name="calendar" size={22} />
+            </Link>
+            <Link to="/powiadomienia" className="press relative grid size-10 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
               <Icon name="bell" size={23} />
               {unread > 0 && <span className="tnum absolute top-1 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-bg">{unread}</span>}
             </Link>
@@ -192,6 +198,25 @@ export function Home() {
           ))}
         </section>
       )}
+
+      {(() => {
+        // Kalendarz na dziś i jutro (bez wywozu śmieci, który ma własną kartę gminy niżej).
+        const today = dayKey(now)
+        const soon = agendaItems.filter((i) => i.source !== 'waste' && (i.date === today || i.date === addDays(today, 1))).slice(0, 3)
+        if (!soon.length) return null
+        return (
+          <Link to="/kalendarz" className="press mx-4 flex flex-col gap-1.5 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
+            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-muted"><Icon name="calendar" size={14} className="text-primary" /> {t('cal.title')}</span>
+            {soon.map((i) => (
+              <span key={i.id} className="flex items-center gap-2 text-[14px]">
+                <span className="w-14 shrink-0 text-[12px] font-bold text-primary">{i.date === today ? t('cal.today') : t('cal.tomorrow')}</span>
+                <span className="tnum shrink-0 text-[12px] text-muted">{i.time ?? ''}</span>
+                <span className="min-w-0 flex-1 truncate font-medium">{i.title}</span>
+              </span>
+            ))}
+          </Link>
+        )
+      })()}
 
       {(council.notices.length > 0 || council.pickups.length > 0) && (
         <section className="mx-4 overflow-hidden rounded-[20px] bg-surface shadow-[var(--shadow)]" aria-label={t('org.title')}>

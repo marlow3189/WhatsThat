@@ -21,6 +21,7 @@ import { ErrorBoundary } from './components/boundary'
 const Operator = lazy(() => import('./screens/Operator').then((m) => ({ default: m.Operator })))
 const Fuel = lazy(() => import('./screens/Fuel').then((m) => ({ default: m.Fuel })))
 const Qr = lazy(() => import('./screens/Qr').then((m) => ({ default: m.Qr })))
+const Calendar = lazy(() => import('./screens/Calendar').then((m) => ({ default: m.Calendar })))
 import { getConsent, hasTrackers, setConsent } from './lib/analytics'
 
 // Podgląd jednoplikowy działa w ramce bez dostępu do adresu, więc trasy trzyma w pamięci.
@@ -66,6 +67,7 @@ function Shell() {
           <Route path="/" element={<Home />} />
           <Route path="/u/:id" element={<Profile />} />
           <Route path="/sos" element={<Sos />} />
+          <Route path="/kalendarz" element={<Calendar />} />
           <Route path="/paliwa" element={<Fuel />} />
           <Route path="/qr" element={<Qr />} />
           <Route path="/szukaj" element={<Search />} />
