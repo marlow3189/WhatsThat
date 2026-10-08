@@ -43,10 +43,14 @@ export function contactSource(): 'native' | 'picker' | 'none' {
   const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean; isPluginAvailable?: (name: string) => boolean }; navigator: Navigator & { contacts?: Picker } }
   // Capacitor.Plugins zwraca obiekt także dla niezainstalowanej wtyczki (wywołanie wtedy wisi),
   // dlatego pytamy wprost, czy wtyczka Contacts jest w aplikacji.
-  if (w.Capacitor?.isNativePlatform?.() && w.Capacitor.isPluginAvailable?.('Contacts')) return 'native'
+  if (w.Capacitor?.isNativePlatform?.()) return w.Capacitor.isPluginAvailable?.('Contacts') ? 'native' : 'none'
+  // Contact Picker działa w Chrome na Androidzie; w WebView aplikacji bywa widoczny, ale nigdy nie odpowiada.
   if (w.navigator.contacts && 'ContactsManager' in window) return 'picker'
   return 'none'
 }
+
+/** Limit czasu: gdyby system nie odpowiedział, rejestracja nie może utknąć na tym ekranie. */
+const limit = (ms: number) => new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
 
 /** Prośba o kontakty. W aplikacji natywnej pokaże się systemowe okno zgody; w przeglądarce wybierasz kontakty sam. */
 export async function readContacts(): Promise<PhoneContact[] | null> {
@@ -54,13 +58,11 @@ export async function readContacts(): Promise<PhoneContact[] | null> {
   try {
     const source = contactSource()
     if (source === 'native') {
-      // limit czasu: gdyby system nie odpowiedział, aplikacja nie może utknąć na tym ekranie
-      const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 20_000))
-      const { contacts } = await Promise.race([w.Capacitor!.Plugins!.Contacts!.getContacts({ projection: { name: true, phones: true } }), timeout])
+      const { contacts } = await Promise.race([w.Capacitor!.Plugins!.Contacts!.getContacts({ projection: { name: true, phones: true } }), limit(60_000)])
       return contacts.map((c) => ({ name: c.name?.display ?? '', tel: (c.phones ?? []).map((p) => p.number ?? '').filter(Boolean) }))
     }
     if (source === 'picker') {
-      const picked = await w.navigator.contacts!.select(['name', 'tel'], { multiple: true })
+      const picked = await Promise.race([w.navigator.contacts!.select(['name', 'tel'], { multiple: true }), limit(120_000)])
       return picked.map((c) => ({ name: c.name?.[0] ?? '', tel: c.tel ?? [] }))
     }
   } catch {

@@ -34,6 +34,12 @@ fs.mkdirSync(out, { recursive: true })
     console.log(`[${label}]`, power, '|', top, '|', JSON.stringify(js))
   }
   await diag('po starcie').catch((e) => console.log('diag', e.message))
+  console.log('[platforma]', JSON.stringify(await page.evaluate(() => ({
+    native: window.Capacitor?.isNativePlatform?.(),
+    contactsPlugin: window.Capacitor?.isPluginAvailable?.('Contacts'),
+    picker: !!navigator.contacts && 'ContactsManager' in window,
+    ua: navigator.userAgent,
+  }))))
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
   // W WebView na Androidzie kliknięcia „myszą” po współrzędnych bywają zawodne, więc klikamy jak skrypt strony
