@@ -37,10 +37,11 @@ Tryb widać w **Ja** na dole i w **Panel operatora → Baza danych** (przycisk �
 
 | Kto | Co |
 |---|---|
-| Agent | ✅ projekt Androida, ikony, APK budowane w GitHubie, strona + `/app/`, numer wersji w aplikacji |
-| Ty | zainstaluj APK (START.md, sposób 2), załóż stronę testową na Cloudflare Pages (sposób 3), przeklikaj i zgłoś uwagi |
+| Agent | ✅ projekt Androida, ikony, APK budowane w GitHubie, test APK na emulatorze w chmurze ze zrzutami, strona + `/app/`, numer wersji w aplikacji |
+| Ty | 1) strona testowa na Cloudflare Pages (START.md, sposób 3): na telefonie, także Samsungu z Automatyczną blokadą; 2) aplikacja Android na emulatorze: Appetize albo Android Studio (sposób 2b / 2c); 3) **załóż konto Google Play Console** (25 USD), żeby jak najszybciej był test wewnętrzny ze Sklepu Play (sposób 2e); 4) przeklikaj i zgłoś uwagi |
 
-**Gotowe, gdy:** masz Miliorbit na telefonie z Androidem i pod adresem `…pages.dev/app/` na iPhonie i komputerze.
+**Gotowe, gdy:** klikasz Miliorbit pod adresem `…pages.dev/app/` na telefonie i komputerze oraz aplikację Android na
+emulatorze, a uwagi z testów są wysłane agentowi.
 
 ---
 
@@ -129,7 +130,8 @@ a w Stripe widać wypłatę testową.
   wyłączasz logowanie anonimowe. Od teraz konto = numer telefonu.
 - **iPhone:** konto Apple Developer (firma, D-U-N-S) → agent dodaje projekt iOS i budowanie w GitHub Actions na macOS
   → **TestFlight** (instalacja na iPhone'ach testerów z linku).
-- **Google Play:** konto (25 USD, najlepiej firmowe) → test wewnętrzny (do 100 osób, od razu), potem zamknięty.
+- **Google Play:** test wewnętrzny może ruszyć wcześniej, zaraz po weryfikacji konta (START.md, 2e); tu przechodzimy na
+  test zamknięty i przygotowanie do publikacji.
   Agent przygotowuje paczkę AAB podpisaną tajnym kluczem z sekretów GitHuba.
 - **Domena:** miliorbit.com w Cloudflare (WDROZENIE.md, etap 2), linki do aplikacji (etap 9).
 **Gotowe, gdy:** znajomi instalują z Google Play (test) i TestFlight, logują się numerem z SMS.

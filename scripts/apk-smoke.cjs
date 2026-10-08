@@ -20,6 +20,14 @@ fs.mkdirSync(out, { recursive: true })
   page.setDefaultTimeout(20_000)
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
+  // W WebView na Androidzie kliknięcia „myszą” po współrzędnych bywają zawodne, więc klikamy jak skrypt strony
+  // (element.click()), po upewnieniu się, że element jest widoczny.
+  const tap = async (selector) => {
+    const el = page.locator(selector).first()
+    await el.waitFor({ state: 'visible' })
+    await el.evaluate((node) => node.click())
+    await page.waitForTimeout(250)
+  }
   let n = 0
   const shot = async (name) => {
     await page.waitForTimeout(600)
@@ -41,35 +49,35 @@ fs.mkdirSync(out, { recursive: true })
     await page.waitForSelector('text=Polski')
   })
   await step('okolica', async () => {
-    await page.click('text=Polski')
-    await page.click('button:has-text("Dalej")')
+    await tap('text=Polski')
+    await tap('button:has-text("Dalej")')
     await page.fill('#town', 'Warszawa')
   })
   await step('kod-sms', async () => {
-    await page.click('button:has-text("Dalej")')
-    await page.click('text=600 100 200')
-    await page.click('text=Wyślij kod SMS')
-    await page.click('text=Wersja demo: wpisz dowolne 6 cyfr.')
+    await tap('button:has-text("Dalej")')
+    await tap('text=600 100 200')
+    await tap('text=Wyślij kod SMS')
+    await tap('text=Wersja demo: wpisz dowolne 6 cyfr.')
   })
   await step('plec-zablokowana', async () => {
-    await page.click('text=Potwierdź')
+    await tap('text=Potwierdź')
     await page.fill('#name', 'Test Emulator')
-    await page.click('button:has-text("Dalej")')
-    await page.click('button[role=radio]:has-text("Kobieta")')
-    await page.click('text=Zatwierdź na stałe')
+    await tap('button:has-text("Dalej")')
+    await tap('button[role=radio]:has-text("Kobieta")')
+    await tap('text=Zatwierdź na stałe')
   })
   await step('kontakty-zgoda', async () => {
-    await page.click('button:has-text("Dalej")')
-    await page.click('button:has-text("Dalej")')
-    await page.click('text=Zezwól na dostęp do kontaktów')
+    await tap('button:has-text("Dalej")')
+    await tap('button:has-text("Dalej")')
+    await tap('text=Zezwól na dostęp do kontaktów')
   })
   await step('glowna', async () => {
-    await page.click('button:has-text("Pozwól")')
+    await tap('button:has-text("Pozwól")')
     await page.waitForSelector('text=Skróty numerów usunięte z serwera')
-    await page.click('button:has-text("Dalej")')
-    await page.click('button:has-text("Dalej")')
-    await page.click('#accept')
-    await page.click('text=Zaczynamy')
+    await tap('button:has-text("Dalej")')
+    await tap('button:has-text("Dalej")')
+    await tap('#accept')
+    await tap('text=Zaczynamy')
     await page.waitForSelector('text=Co dziś załatwiamy?')
   })
   await step('tablica-okolicy', async () => {
@@ -77,15 +85,15 @@ fs.mkdirSync(out, { recursive: true })
   })
   await step('sos', async () => {
     await page.evaluate(() => window.scrollTo(0, 0))
-    await page.click('a[aria-label="SOS"]')
+    await tap('a[aria-label="SOS"]')
     await page.waitForSelector('text=Zadzwoń 112')
   })
   await step('dodaj', async () => {
-    await page.click('nav a[aria-label="Dodaj"]')
+    await tap('nav a[aria-label="Dodaj"]')
     await page.waitForSelector('text=Zapytaj sąsiadów')
   })
   await step('ja', async () => {
-    await page.click('nav a:has-text("Ja")')
+    await tap('nav a:has-text("Ja")')
     await page.waitForSelector('text=/Miliorbit 0\\.7/')
   })
 

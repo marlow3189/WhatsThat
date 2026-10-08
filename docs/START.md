@@ -8,20 +8,29 @@ Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 
 | | Odpowiedź | Co masz |
 |---|---|---|
-| **Android (.apk)** | **Tak, już jest.** GitHub sam buduje plik APK po każdej zmianie w kodzie. Instalujesz go na telefonie bez Google Play. | sposób 2 poniżej |
+| **Android (.apk)** | **Tak, już jest.** GitHub sam buduje plik APK po każdej zmianie w kodzie i od razu uruchamia go na emulatorze (zrzuty ekranu). Na telefonie bez blokady instalujesz go bez Google Play; na Samsungu z „Automatyczną blokadą” użyj emulatora albo testu w Google Play. | sposób 2 poniżej |
 | **iPhone** | Na iPhonie nie ma plików .apk, a instalacja poza App Store wymaga konta **Apple Developer (99 USD/rok)** i **TestFlight**. Mac nie jest potrzebny: aplikację na iPhone'a zbuduje automat GitHuba na macOS. | teraz: wersja z przeglądarki dodana do ekranu początkowego (sposób 3); TestFlight w fazie 7 [planu](PLAN.md) |
 
 **Zrób już teraz (czeka się długo):** załóż konto Apple Developer jako **firma**. Potrzebny jest numer D-U-N-S spółki
 (darmowy, czeka się do 2 tygodni), a samo konto Apple sprawdza kilka dni. Wtedy iPhone nie będzie czekał na resztę.
 
-## Cztery sposoby testowania (od najprostszego)
+## Sposoby testowania (od najprostszego)
 
 | Sposób | Czas | Dla kogo | Dane |
 |---|---|---|---|
 | 1. Prototyp w Claude | 0 min | Ty, na każdym urządzeniu | przykładowe, na urządzeniu |
-| 2. APK na Androida z GitHuba | 5 min | telefony z Androidem | przykładowe, a po fazie 1 z bazy |
-| 3. Strona testowa (Cloudflare Pages) | 15 min, raz | każdy telefon i komputer, także znajomi testerzy | jak wyżej |
+| 2a. Zrzuty z emulatora w chmurze | 0 min, samo się robi | podgląd, czy nowa wersja działa | przykładowe |
+| 2b. Emulator w przeglądarce (Appetize) | 10 min, raz | klikanie prawdziwej aplikacji Android w przeglądarce, także na telefonie | jak wyżej |
+| 2c. Emulator na komputerze (Android Studio) | 30 min, raz | bez limitów czasu, najpewniejszy | jak wyżej |
+| 2d. Plik APK na telefonie | 5 min | telefony bez „Automatycznej blokady” | jak wyżej |
+| 2e. Test wewnętrzny w Google Play | po założeniu konta Google Play | **Samsung z blokadą**, znajomi testerzy | jak wyżej |
+| 3. Strona testowa (Cloudflare Pages) | 15 min, raz | każdy telefon i komputer, także Samsung z blokadą | przykładowe, a po fazie 1 z bazy |
 | 4. Na własnym komputerze | 20 min, raz | gdy chcesz zobaczyć zmianę przed wysłaniem | jak wyżej |
+
+> **Samsung: „Unbekannte App gesperrt” / „Nieznana aplikacja zablokowana”.** To **Automatyczna blokada**
+> (Ustawienia → Bezpieczeństwo i prywatność → Automatyczna blokada). Przepuszcza tylko Google Play i Galaxy Store,
+> nawet gdy dasz zgodę „Instaluj nieznane aplikacje”. **Nie musisz jej wyłączać.** Na telefonie testuj stronę (sposób 3),
+> a aplikację Android na emulatorze (2a–2c), aż będzie test w Google Play (2e), który blokada przepuszcza.
 
 W każdej wersji w zakładce **Ja** na samym dole jest napis typu `Miliorbit 0.7 · bb8137b · demo`. To numer wersji
 (skrót zmiany w GitHubie) i tryb: **demo** = dane przykładowe tylko na tym urządzeniu, **live** = baza danych.
@@ -37,29 +46,84 @@ Podawaj go przy zgłaszaniu błędów.
 
 ---
 
-## 2. Android: plik APK z GitHuba
+## 2. Aplikacja na Androida
 
-**Gdzie jesteś:** telefon z Androidem, przeglądarka Chrome.
-**Po co:** prawdziwa aplikacja z ikoną Miliorbit, z GPS, aparatem i wibracją, bez Google Play.
+Plik APK jest zawsze pod jednym adresem (najnowsza wersja z gałęzi domyślnej):
+`https://github.com/marlow3189/WhatsThat/releases/download/android-test/miliorbit-test.apk`
+Strona z plikiem i zrzutami: `https://github.com/marlow3189/WhatsThat/releases/tag/android-test`
+
+### 2a. Zrzuty z emulatora w chmurze (nic nie robisz)
+
+**Gdzie jesteś:** dowolna przeglądarka, strona wydania `…/releases/tag/android-test`.
+**Co się dzieje:** po każdej zmianie GitHub buduje APK, instaluje je na emulatorze telefonu Pixel 6 (Android 14),
+przechodzi rejestrację, główną, tablicę okolicy, SOS, Dodaj i Ja, i robi zrzuty ekranu.
+**Sprawdź:** w sekcji **Assets** są pliki `01-start.png` … `10-ja.png` i `wynik.txt` („OK: wszystkie kroki przeszły”).
+Stuknij obrazek, żeby go zobaczyć. Jeśli któryś krok się nie udał, jego zrzut ma w nazwie `-blad`.
+
+### 2b. Emulator w przeglądarce: Appetize (klikasz sam)
+
+**Gdzie jesteś:** komputer, przeglądarka, **appetize.io**.
+**Po co:** prawdziwy Android w karcie przeglądarki. Link działa też na telefonie (także na Samsungu z blokadą,
+bo nic się nie instaluje).
 
 **Zrób:**
-1. Otwórz na telefonie stronę wydań:
-   `https://github.com/marlow3189/WhatsThat/releases/tag/android-test`
-2. W sekcji **Assets** stuknij **miliorbit-test.apk**. Chrome zapyta, czy pobrać plik: **Pobierz**.
-3. Stuknij pobrany plik (pasek pobierania albo **Pliki → Pobrane**).
-4. Android pokaże „Ze względów bezpieczeństwa telefon nie może instalować nieznanych aplikacji z tego źródła”:
-   **Ustawienia** → włącz **Zezwalaj z tego źródła** → wróć → **Zainstaluj**.
-5. Jeśli Google Play Protect ostrzeże o nieznanej aplikacji: **Więcej szczegółów** → **Zainstaluj mimo to**.
-   To normalne dla wersji testowych spoza sklepu.
+1. Na komputerze pobierz plik APK (link na górze sekcji 2).
+2. **appetize.io** → **Sign Up** (darmowe konto, bez karty) → potwierdź e-mail.
+3. W panelu **Upload** (albo *New app*) → wybierz `miliorbit-test.apk` → platforma **Android** → **Upload**.
+4. Na stronie aplikacji kliknij ekran telefonu (**Tap to play**). Możesz wybrać model (np. Pixel 7), wersję Androida
+   i język (*Language: Polish*). Skopiuj link do aplikacji (`https://appetize.io/app/…`): otworzysz go też na telefonie.
+5. Nowa wersja: na stronie aplikacji w Appetize **Upload new version** (albo *Update*) z nowym plikiem APK. Link zostaje.
 
-**Sprawdź:** na ekranie jest ikona Miliorbit, aplikacja startuje od wyboru języka, przy „Użyj mojej lokalizacji”
-telefon pyta o zgodę na położenie.
+**Uwaga:** darmowy plan ma ograniczoną liczbę minut w miesiącu (zwykle kilkadziesiąt). Zamykaj kartę po teście.
+Automatyczne wgrywanie każdej nowej wersji: napisz agentowi „podłącz Appetize do GitHub Actions” (będzie potrzebny
+token API z Appetize zapisany przez Ciebie jako sekret w GitHubie).
 
-**Nowa wersja:** po każdej zmianie w kodzie GitHub buduje nowe APK (ok. 5 minut). Pobierz je tak samo i zainstaluj
-na starym; dane zostają. Gdyby telefon napisał „Aplikacja nie została zainstalowana”, odinstaluj starą i zainstaluj nową.
+### 2c. Emulator na komputerze: Android Studio (bez limitów)
 
-**Wersja z innej gałęzi** (np. gdy agent robi coś osobno): github.com → repozytorium → **Actions** → **Android APK** →
-najnowszy przebieg z zielonym ✓ → na dole **Artifacts** → plik `.zip` z APK w środku (trzeba być zalogowanym).
+**Gdzie jesteś:** komputer z Windows albo Mac, min. 8 GB RAM (lepiej 16 GB), ok. 15 GB miejsca na dysku.
+**Po co:** pełny telefon z Androidem na ekranie komputera, bez limitu czasu, z udawanym GPS.
+
+**Zrób raz:**
+1. **developer.android.com/studio** → **Download Android Studio** → zainstaluj z domyślnymi ustawieniami
+   (zaznaczone *Android Virtual Device*). Pierwsze uruchomienie: **Next** do końca (pobierze składniki, ok. 10 minut).
+2. Ekran powitalny → **More Actions** (albo ⋮) → **Virtual Device Manager** → **+** (*Create Virtual Device*) →
+   **Phone → Pixel 8** → **Next** → obraz systemu z góry listy (ikonka pobierania obok nazwy) → **Next** → **Finish**.
+3. Przy nowym urządzeniu **▶** (Start). Po minucie pojawi się okno z telefonem.
+
+**Za każdym razem:**
+1. Pobierz na komputer najnowszy `miliorbit-test.apk` (link na górze sekcji 2).
+2. **Przeciągnij plik myszką na okno emulatora.** Instaluje się sam, na starszej wersji też (dane zostają).
+3. Na emulatorze przesuń palcem (myszą) w górę → ikona **Miliorbit**.
+
+**Przydatne:** położenie ustawisz w oknie emulatora: **⋯** (*Extended controls*) → **Location** → wpisz miasto →
+**Set location**. Język telefonu: w emulatorze *Settings → System → Languages*.
+**Błąd o wirtualizacji (HAXM, hypervisor, VT-x):** Windows: *Panel sterowania → Programy → Włącz lub wyłącz funkcje
+systemu Windows* → zaznacz **Windows Hypervisor Platform** → uruchom ponownie. Jeśli nadal błąd: włącz *Intel VT-x* /
+*AMD-V (SVM)* w BIOS-ie komputera.
+
+### 2d. Plik APK na telefonie (telefony bez „Automatycznej blokady”)
+
+**Gdzie jesteś:** telefon z Androidem, Chrome.
+1. Otwórz link do pliku APK (na górze sekcji 2) → **Pobierz** → stuknij pobrany plik.
+2. Android zapyta o zgodę na instalację z tego źródła: **Ustawienia** → **Zezwalaj z tego źródła** → wróć → **Zainstaluj**.
+3. Google Play Protect może ostrzec o nieznanej aplikacji: **Więcej szczegółów** → **Zainstaluj mimo to**.
+Nowa wersja instaluje się na starej (dane zostają). Na Samsungu z włączoną Automatyczną blokadą instalacja się nie
+uda: użyj 2b, 2c albo 2e.
+
+### 2e. Test wewnętrzny w Google Play (docelowo, także Samsung z blokadą)
+
+**Gdzie jesteś:** **play.google.com/console**.
+**Po co:** aplikacja instaluje się ze Sklepu Play, więc przepuszcza ją każda blokada. Do 100 testerów, nowe wersje
+dostępne w kilka minut po wgraniu.
+
+**Zrób:**
+1. Załóż konto dewelopera Google Play (25 USD jednorazowo). Najlepiej jako **organizacja** (spółka, numer D-U-N-S);
+   konto prywatne też działa do testów. Google weryfikuje tożsamość, to trwa kilka dni.
+2. Napisz agentowi: „Przygotuj wersję do testu wewnętrznego w Google Play”. Agent doda budowanie paczki **AAB**
+   podpisanej Twoim kluczem przesyłania (instrukcja utworzenia klucza i zapisania go w sekretach GitHuba przyjdzie z tym zadaniem).
+3. Play Console → **Utwórz aplikację** (Miliorbit, aplikacja, bezpłatna) → **Testowanie → Testowanie wewnętrzne** →
+   **Utwórz wersję** → wgraj plik `.aab` → **Testerzy**: lista e-maili (Twój i znajomych) → skopiuj **link do testów**.
+4. Na telefonie otwórz link → **Zostań testerem** → **Pobierz z Google Play** → instalacja jak każdej aplikacji.
 
 ---
 
