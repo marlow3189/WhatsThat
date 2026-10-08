@@ -1,50 +1,52 @@
 @import 'tailwindcss';
 
 :root {
-  /* Motyw „Kolorowy” (domyślny): neutralna szarość, białe karty, czarne przyciski i aktywne zakładki,
-     nasycone kwadraty ikon (niebieski, zielony, czerwony, pomarańczowy) i pomarańczowa karta-bohater. */
-  --bg: #f1f2f4;
+  /* Motyw „Miliorbit” (domyślny, od wersji 8): jasne tło jak w WhatsAppie, białe powierzchnie, jeden mocny
+     indygo (marka, aktywna zakładka, główne przyciski), pomarańcz jako akcent i kolorowe kwadraty ikon. */
+  --bg: #f4f5f7;
   --surface: #ffffff;
-  --fill: #f2f3f5;
-  --fill-strong: #e2e4e8;
-  --ink: #121316;
-  --muted: #646a75;
-  --line: #eceef1;
-  --primary: #121316;
+  --fill: #eff1f4;
+  --fill-strong: #dfe3e8;
+  --ink: #111b21;
+  --muted: #5f6b76;
+  --line: #e8ebef;
+  --primary: #3a43e0;
   --primary-ink: #ffffff;
+  --primary-soft: #e4e6ff;
   --accent: #ff6b2c;
-  --accent-ink: #121316;
-  --link: #3a43e0;
-  --ok: #138040;
-  --ok-soft: #e2f6e8;
-  --warn: #9a4a00;
+  --accent-ink: #111b21;
+  --link: #2f37c9;
+  --ok: #128040;
+  --ok-soft: #dff5e6;
+  --warn: #93470a;
   --warn-soft: #fff0dc;
   --danger: #d0311b;
   --danger-soft: #ffe7e2;
-  --switch: #1aa34a;
-  --sky: #e9ebff;
-  --mint: #e2f6e8;
-  --lilac: #efebff;
+  --switch: #3a43e0;
+  --sky: #e8eaff;
+  --mint: #dff5e6;
+  --lilac: #eeeaff;
   --peach: #ffeadf;
   --sun: #fff2d9;
-  --shadow: 0 1px 2px rgb(18 19 22 / 0.04), 0 8px 24px rgb(18 19 22 / 0.06);
+  --shadow: 0 1px 2px rgb(17 27 33 / 0.05), 0 4px 14px rgb(17 27 33 / 0.05);
   --hero: linear-gradient(135deg, #e4400c 0%, #f4561a 55%, #ff7a32 100%);
   --hero-ink: #ffffff;
-  --glow: 0 14px 34px rgb(255 98 38 / 0.32);
+  --glow: 0 10px 26px rgb(255 98 38 / 0.28);
   --ring: conic-gradient(#3a43e0, #1aa34a, #ff6b2c, #ff9f1c, #3a43e0);
   --tile-1: #3a43e0;
-  --tile-2: #1aa34a;
+  --tile-2: #16a34a;
   --tile-3: #ef4423;
   --tile-4: #ff8a1f;
-  --tile-5: #121316;
+  --tile-5: #8b3fd9;
   --tile-ink: #ffffff;
-  --mark-bg: #121316;
+  --mark-bg: #3a43e0;
   --mark-ink: #ffffff;
-  --mark-dot: #ff6b2c;
+  --mark-dot: #ff8a1f;
   --tint-l: 93%;
   --tint-s: 70%;
   --tint-icon-l: 36%;
-  --font: 'Manrope Variable', 'Manrope', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Czcionka systemu jak w WhatsAppie: Roboto na Androidzie, SF Pro na iPhonie; Noto dla hindi (dewanagari). */
+  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', 'Helvetica Neue', Arial, sans-serif;
   color-scheme: light;
 }
 
@@ -57,6 +59,7 @@
   --muted: #64708a;
   --line: #e8edf5;
   --primary: #2e5bff;
+  --primary-soft: #e3ecff;
   --accent: #ffd66b;
   --accent-ink: #141b2d;
   --link: #2449d8;
@@ -99,6 +102,7 @@
   --color-line: var(--line);
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
+  --color-primary-soft: var(--primary-soft);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-link: var(--link);
@@ -117,10 +121,26 @@
   --font-sans: var(--font);
 }
 
+/*
+ * Bezpieczne marginesy ekranu (pasek stanu u góry, pasek gestów u dołu). Android 15+ rysuje aplikację pod
+ * paskami systemu, więc wszystko, co klikalne, musi zaczynać się poniżej nich. Starsze WebView nie znają
+ * env(safe-area-inset-*), dlatego bierzemy też wartości wstrzykiwane przez Capacitora (--safe-area-inset-*).
+ */
+:root {
+  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
+  --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+}
+
 html,
 body,
 #root {
   height: 100%;
+}
+body {
+  padding-left: var(--sal);
+  padding-right: var(--sar);
 }
 body {
   margin: 0;
@@ -129,8 +149,6 @@ body {
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.4;
-  letter-spacing: -0.005em;
-  font-feature-settings: 'ss01';
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
 }
@@ -144,7 +162,7 @@ h3 {
 }
 .card {
   background: var(--surface);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: var(--shadow);
 }
 .tint {
@@ -242,14 +260,6 @@ textarea:focus-visible {
 .tile-4 { background: var(--tile-4); color: var(--tile-ink); }
 .tile-5 { background: var(--tile-5); color: var(--tile-ink); }
 
-/* Przejście między zakładkami (View Transitions API): krótkie przenikanie, pasek zakładek stoi w miejscu. */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.18s;
-}
-nav[aria-label='Menu'] {
-  view-transition-name: tabbar;
-}
 
 /* Krótki wskaźnik pracy (np. porównywanie kontaktów). */
 .spin {

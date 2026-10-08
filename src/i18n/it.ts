@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const it: Dict = {
-  'nav.home': 'Home',
+  'nav.home': 'Vicini',
   'nav.search': 'Cerca',
   'nav.add': 'Pubblica',
   'nav.messages': 'Chat',
@@ -764,4 +764,21 @@ export const it: Dict = {
   'i.computer': 'Computer',
   'i.browser': 'Nel browser',
   'i.qr': 'Inquadra con il telefono per scaricare l’app',
+  'voice.ask': 'Di’ cosa ti serve',
+  'voice.prompt': 'Di’ cosa vuoi fare',
+  'voice.read': 'Leggi',
+  'voice.stop': 'Ferma',
+  'ob.agree': 'Accetta e continua',
+  'ob.terms.inline': 'Toccando “Accetta e continua” accetti i termini e l’informativa privacy.',
+  'ob.code.change': 'Cambia numero',
+  'ob.profile.title': 'Il tuo profilo',
+  'ob.profile.text': 'Gli amici vedono il tuo nome. La zona decide cosa vedi per primo. Lo cambi in Io.',
+  'ob.gender.once': 'Scegli una volta: la lettera entra nella tua chiave anonima. Poi solo l’assistenza può cambiarla.',
+  'ob.region.state': 'Stato',
+  'ob.region.land': 'Land',
+  'ob.region.county': 'Contea',
+  'ob.region.province': 'Provincia',
+  'ob.region.oblast': 'Oblast',
+  'ob.region.community': 'Comunità autonoma',
+  'ob.region.nation': 'Regione',
 }

@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const es: Dict = {
-  'nav.home': 'Inicio',
+  'nav.home': 'Cerca',
   'nav.search': 'Buscar',
   'nav.add': 'Publicar',
   'nav.messages': 'Chats',
@@ -764,4 +764,21 @@ export const es: Dict = {
   'i.computer': 'Ordenador',
   'i.browser': 'En el navegador',
   'i.qr': 'Escanéalo con el móvil para descargar la app',
+  'voice.ask': 'Di lo que necesitas',
+  'voice.prompt': 'Di lo que quieres resolver',
+  'voice.read': 'Leer',
+  'voice.stop': 'Detener',
+  'ob.agree': 'Aceptar y continuar',
+  'ob.terms.inline': 'Al tocar «Aceptar y continuar» aceptas las condiciones y la política de privacidad.',
+  'ob.code.change': 'Cambiar número',
+  'ob.profile.title': 'Tu perfil',
+  'ob.profile.text': 'Tus amigos ven tu nombre. Tu zona decide lo que ves primero. Cámbialo en Yo.',
+  'ob.gender.once': 'Eliges una vez: la letra va a tu clave anónima. Después solo soporte puede cambiarla.',
+  'ob.region.state': 'Estado',
+  'ob.region.land': 'Estado federado',
+  'ob.region.county': 'Condado',
+  'ob.region.province': 'Provincia',
+  'ob.region.oblast': 'Óblast',
+  'ob.region.community': 'Comunidad autónoma',
+  'ob.region.nation': 'Región',
 }

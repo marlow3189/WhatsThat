@@ -116,7 +116,7 @@ export function ChatScreen() {
       {account.restricted ? (
         <div className="px-3 pb-3"><Notice tone="danger">{t('r.banner')}</Notice></div>
       ) : (
-        <form onSubmit={submit} className="glass sticky bottom-[calc(84px+env(safe-area-inset-bottom,0px))] mx-3 mb-2 flex items-center gap-1.5 rounded-full p-1.5 shadow-[var(--shadow)]">
+        <form onSubmit={submit} className="glass sticky bottom-[calc(72px+var(--sab))] mx-3 mb-2 flex items-center gap-1.5 rounded-full p-1.5 shadow-[var(--shadow)]">
           <label htmlFor="chat-photo" className="press grid size-10 shrink-0 cursor-pointer place-items-center rounded-full text-muted" aria-label={t('m.photo')}>
             <Icon name="camera" />
             <input id="chat-photo" type="file" accept="image/*" className="sr-only" onChange={async (e) => {

@@ -130,7 +130,7 @@ export function Me() {
         <Row to="/operator" icon="chart" title="Panel operatora (demo)" detail="DAC7, zgłoszenia DSA, plany, koszty" />
         <Row onClick={reset} title={<span className="text-danger">{t('me.logout')}</span>} chevron={false} />
       </Group>
-      <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.7 · {__BUILD__} · {LIVE ? 'live' : 'demo'}</p>
+      <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.8 · {__BUILD__} · {LIVE ? 'live' : 'demo'}</p>
     </div>
   )
 }

@@ -138,7 +138,7 @@ export function Button({
       {...props}
       className={cx(
         'press inline-flex items-center justify-center gap-2 rounded-full font-bold disabled:pointer-events-none disabled:opacity-35',
-        size === 'lg' ? 'min-h-[52px] px-6 text-[17px]' : 'min-h-9 px-4 text-[15px]',
+        size === 'lg' ? 'min-h-12 px-6 text-[16px]' : 'min-h-9 px-4 text-[14px]',
         variant === 'primary' && 'bg-primary text-primary-ink',
         variant === 'secondary' && 'bg-surface text-ink shadow-[var(--shadow)]',
         variant === 'plain' && 'min-h-10 px-2 text-link',
@@ -150,28 +150,37 @@ export function Button({
   )
 }
 
-/** Nawigacja: duży tytuł na ekranach głównych, pasek ze strzałką na podstronach. */
+/**
+ * Górny pasek jak w WhatsAppie: na zakładkach tytuł po lewej (22 px) i ikony po prawej,
+ * na podstronach strzałka wstecz i tytuł obok niej. Pasek zostaje na górze przy przewijaniu.
+ */
 export function Header({ title, back, right, large, onBack }: { title: ReactNode; back?: boolean; right?: ReactNode; large?: boolean; onBack?: () => void }) {
   const nav = useNavigate()
   if (large) {
     return (
-      <header className="flex items-end justify-between gap-3 px-5 pt-6 pb-3">
-        <h1 className="min-w-0 truncate text-[32px] leading-[1.1] font-extrabold tracking-[-0.03em]">{title}</h1>
+      <header className="flex min-h-14 items-center justify-between gap-3 px-4 pt-3 pb-1">
+        <h1 className="min-w-0 truncate text-[22px] leading-tight font-bold">{title}</h1>
         {right}
       </header>
     )
   }
   return (
-    <header className="glass sticky z-20 flex min-h-[52px] items-center gap-1 px-2" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+    <header className="sticky z-20 flex min-h-14 items-center gap-1 border-b border-line bg-surface px-1" style={{ top: 'var(--sat)' }}>
       {back && (
-        <button type="button" onClick={() => (onBack ? onBack() : nav(-1))} className="press grid size-11 place-items-center rounded-full text-ink" aria-label="←">
-          <span className="grid size-9 place-items-center rounded-full bg-surface shadow-[var(--shadow)]"><Icon name="back" size={20} strokeWidth={2.4} /></span>
+        <button type="button" onClick={() => (onBack ? onBack() : nav(-1))} className="press grid size-12 shrink-0 place-items-center rounded-full text-ink active:bg-fill" aria-label={backLabel()}>
+          <Icon name="back" size={22} strokeWidth={2.2} />
         </button>
       )}
-      <div className="min-w-0 flex-1 truncate text-center text-[17px] font-bold">{title}</div>
-      <div className="flex min-w-11 justify-end">{right}</div>
+      <div className={cx('min-w-0 flex-1 truncate text-[18px] font-bold', !back && 'pl-3')}>{title}</div>
+      <div className="flex min-w-12 shrink-0 items-center justify-end pr-1">{right}</div>
     </header>
   )
+}
+
+/** Podpis przycisku wstecz w języku strony (czytniki ekranu i testy szukają „Wstecz”). */
+function backLabel() {
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang : 'pl'
+  return ({ pl: 'Wstecz', en: 'Back', de: 'Zurück', uk: 'Назад', cs: 'Zpět', sk: 'Späť', hu: 'Vissza', it: 'Indietro', es: 'Atrás', hi: 'वापस' } as Record<string, string>)[lang] ?? 'Wstecz'
 }
 
 export function CircleButton({ icon, label, onClick, className }: { icon: string; label: string; onClick?: () => void; className?: string }) {
@@ -274,7 +283,7 @@ export function Chip({ active, children, onClick, icon }: { active?: boolean; ch
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[15px] whitespace-nowrap', active ? 'bg-ink text-white' : 'bg-surface text-ink shadow-[var(--shadow)]')}
+      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] whitespace-nowrap', active ? 'bg-primary-soft font-semibold text-primary' : 'bg-fill text-ink')}
     >
       {icon && <Icon name={icon} size={16} />}
       {children}
@@ -292,7 +301,7 @@ export function Field({ label, hint, id, children }: { label: ReactNode; hint?: 
   )
 }
 
-export const inputCls = 'block min-h-[50px] w-full min-w-0 rounded-[14px] bg-surface px-4 text-[17px] text-ink outline-none placeholder:text-muted/70 shadow-[var(--shadow)] focus:ring-2 focus:ring-link/40'
+export const inputCls = 'block min-h-12 w-full min-w-0 rounded-[12px] border border-line bg-surface px-4 text-[16px] text-ink outline-none placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/25'
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(inputCls, props.className)} />
@@ -365,7 +374,7 @@ export function Sheet({ title, onClose, children }: { title?: ReactNode; onClose
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35" onClick={onClose} role="dialog" aria-modal>
       <div
         className="sheet-in max-h-[88vh] w-full max-w-[34rem] overflow-y-auto rounded-t-[28px] bg-bg px-4 pt-2"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)' }}
+        style={{ paddingBottom: 'calc(var(--sab) + 20px)' }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-3 h-[5px] w-9 rounded-full bg-fill-strong" />
@@ -529,7 +538,7 @@ export function Scroller({ children, className, label }: { children: ReactNode; 
           }
         }}
         onDragStart={(e) => e.preventDefault()}
-        className={cx('no-scrollbar flex snap-x snap-proximity scroll-px-5 gap-3 overflow-x-auto overscroll-x-contain px-5 pb-1 select-none [&>*]:snap-start', className)}
+        className={cx('no-scrollbar flex snap-x snap-proximity scroll-px-4 gap-3 overflow-x-auto overscroll-x-contain px-4 pb-1 select-none [&>*]:snap-start', className)}
       >
         {children}
       </div>

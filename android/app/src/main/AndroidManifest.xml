@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Android 11+: aplikacja musi zadeklarować, że korzysta z systemowego rozpoznawania mowy i syntezy mowy. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -58,6 +71,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- wibracja przy uruchomieniu SOS -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- „Znajdź znajomych”: numery z kontaktów zamieniamy na telefonie na skróty (imion nie wysyłamy) -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>

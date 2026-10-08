@@ -19,6 +19,7 @@ const LOADERS: Record<Exclude<Lang, 'pl'>, () => Promise<Dict>> = {
   hu: () => import('./hu').then((m) => m.hu),
   it: () => import('./it').then((m) => m.it),
   es: () => import('./es').then((m) => m.es),
+  hi: () => import('./hi').then((m) => m.hi),
 }
 
 export const LANGS: { id: Lang; name: string; locale: string }[] = [
@@ -31,6 +32,7 @@ export const LANGS: { id: Lang; name: string; locale: string }[] = [
   { id: 'hu', name: 'Magyar', locale: 'hu-HU' },
   { id: 'it', name: 'Italiano', locale: 'it-IT' },
   { id: 'es', name: 'Español', locale: 'es-ES' },
+  { id: 'hi', name: 'हिन्दी', locale: 'hi-IN' },
 ]
 
 export type T = (key: Key, vars?: Record<string, string | number>) => string

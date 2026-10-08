@@ -36,14 +36,15 @@ export function normalize(tel: string, defaultDial = '+48'): string {
 }
 
 type Picker = { select: (props: string[], opts: { multiple: boolean }) => Promise<{ name?: string[]; tel?: string[] }[]> }
-type CapContacts = { getContacts: (o: { projection: { name: boolean; phones: boolean } }) => Promise<{ contacts: { name?: { display?: string }; phones?: { number?: string }[] }[] }> }
+type NativeNumbers = { getNumbers: () => Promise<{ numbers: string[] }> }
+type Cap = { isNativePlatform?: () => boolean; isPluginAvailable?: (name: string) => boolean; Plugins?: { PhoneNumbers?: NativeNumbers } }
 
-/** Skąd brać kontakty: wtyczka natywna (Capacitor), Contact Picker API (Chrome na Androidzie) albo nic. */
+/** Skąd brać kontakty: wtyczka aplikacji (same numery, Android), Contact Picker API (Chrome na Androidzie) albo nic. */
 export function contactSource(): 'native' | 'picker' | 'none' {
-  const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean; isPluginAvailable?: (name: string) => boolean }; navigator: Navigator & { contacts?: Picker } }
+  const w = window as unknown as { Capacitor?: Cap; navigator: Navigator & { contacts?: Picker } }
   // Capacitor.Plugins zwraca obiekt także dla niezainstalowanej wtyczki (wywołanie wtedy wisi),
-  // dlatego pytamy wprost, czy wtyczka Contacts jest w aplikacji.
-  if (w.Capacitor?.isNativePlatform?.()) return w.Capacitor.isPluginAvailable?.('Contacts') ? 'native' : 'none'
+  // dlatego pytamy wprost, czy wtyczka jest w aplikacji.
+  if (w.Capacitor?.isNativePlatform?.()) return w.Capacitor.isPluginAvailable?.('PhoneNumbers') ? 'native' : 'none'
   // Contact Picker działa w Chrome na Androidzie; w WebView aplikacji bywa widoczny, ale nigdy nie odpowiada.
   if (w.navigator.contacts && 'ContactsManager' in window) return 'picker'
   return 'none'
@@ -52,14 +53,17 @@ export function contactSource(): 'native' | 'picker' | 'none' {
 /** Limit czasu: gdyby system nie odpowiedział, rejestracja nie może utknąć na tym ekranie. */
 const limit = (ms: number) => new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
 
-/** Prośba o kontakty. W aplikacji natywnej pokaże się systemowe okno zgody; w przeglądarce wybierasz kontakty sam. */
+/**
+ * Prośba o kontakty. W aplikacji pokaże się systemowe okno zgody, a wtyczka odda same numery (bez imion);
+ * w przeglądarce wybierasz kontakty sam. Zwraca null, gdy ktoś odmówi albo zamknie okno.
+ */
 export async function readContacts(): Promise<PhoneContact[] | null> {
-  const w = window as unknown as { Capacitor?: { Plugins?: { Contacts?: CapContacts } }; navigator: Navigator & { contacts?: Picker } }
+  const w = window as unknown as { Capacitor?: Cap; navigator: Navigator & { contacts?: Picker } }
   try {
     const source = contactSource()
     if (source === 'native') {
-      const { contacts } = await Promise.race([w.Capacitor!.Plugins!.Contacts!.getContacts({ projection: { name: true, phones: true } }), limit(60_000)])
-      return contacts.map((c) => ({ name: c.name?.display ?? '', tel: (c.phones ?? []).map((p) => p.number ?? '').filter(Boolean) }))
+      const { numbers } = await Promise.race([w.Capacitor!.Plugins!.PhoneNumbers!.getNumbers(), limit(90_000)])
+      return numbers.map((n) => ({ name: '', tel: [n] }))
     }
     if (source === 'picker') {
       const picked = await Promise.race([w.navigator.contacts!.select(['name', 'tel'], { multiple: true }), limit(120_000)])

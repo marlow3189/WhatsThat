@@ -1,5 +1,5 @@
 export const pl = {
-  'nav.home': 'Główna',
+  'nav.home': 'Okolica',
   'nav.search': 'Szukaj',
   'nav.add': 'Dodaj',
   'nav.messages': 'Czaty',
@@ -762,6 +762,23 @@ export const pl = {
   'i.computer': 'Komputer',
   'i.browser': 'W przeglądarce',
   'i.qr': 'Zeskanuj telefonem, żeby pobrać aplikację',
+  'voice.ask': 'Powiedz, czego potrzebujesz',
+  'voice.prompt': 'Powiedz, co chcesz załatwić',
+  'voice.read': 'Przeczytaj',
+  'voice.stop': 'Zatrzymaj',
+  'ob.agree': 'Zgadzam się i dalej',
+  'ob.terms.inline': 'Stukając „Zgadzam się i dalej”, przyjmujesz regulamin i politykę prywatności.',
+  'ob.code.change': 'Zmień numer',
+  'ob.profile.title': 'Twój profil',
+  'ob.profile.text': 'Imię widzą znajomi. Okolica decyduje, co zobaczysz na głównej. Zmienisz to w zakładce Ja.',
+  'ob.gender.once': 'Wybierasz raz: litera trafia do Twojego anonimowego klucza. Później zmieni ją tylko pomoc.',
+  'ob.region.state': 'Stan',
+  'ob.region.land': 'Kraj związkowy',
+  'ob.region.county': 'Komitat',
+  'ob.region.province': 'Prowincja',
+  'ob.region.oblast': 'Obwód',
+  'ob.region.community': 'Wspólnota autonomiczna',
+  'ob.region.nation': 'Region',
 }
 
 export type Dict = typeof pl

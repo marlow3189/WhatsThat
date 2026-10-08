@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const sk: Dict = {
-  'nav.home': 'Domov',
+  'nav.home': 'Okolie',
   'nav.search': 'Hľadať',
   'nav.add': 'Pridať',
   'nav.messages': 'Chaty',
@@ -764,4 +764,21 @@ export const sk: Dict = {
   'i.computer': 'Počítač',
   'i.browser': 'V prehliadači',
   'i.qr': 'Naskenuj telefónom a stiahni aplikáciu',
+  'voice.ask': 'Povedz, čo potrebuješ',
+  'voice.prompt': 'Povedz, čo chceš vybaviť',
+  'voice.read': 'Prečítať',
+  'voice.stop': 'Zastaviť',
+  'ob.agree': 'Súhlasím a pokračovať',
+  'ob.terms.inline': 'Ťuknutím na „Súhlasím a pokračovať“ prijímaš podmienky a zásady ochrany súkromia.',
+  'ob.code.change': 'Zmeniť číslo',
+  'ob.profile.title': 'Tvoj profil',
+  'ob.profile.text': 'Meno vidia priatelia. Okolie určuje, čo uvidíš ako prvé. Zmeníš to v záložke Ja.',
+  'ob.gender.once': 'Vyberáš raz: písmeno je súčasťou anonymného kľúča. Neskôr ho zmení len podpora.',
+  'ob.region.state': 'Štát',
+  'ob.region.land': 'Spolková krajina',
+  'ob.region.county': 'Župa',
+  'ob.region.province': 'Provincia',
+  'ob.region.oblast': 'Oblasť',
+  'ob.region.community': 'Autonómne spoločenstvo',
+  'ob.region.nation': 'Región',
 }

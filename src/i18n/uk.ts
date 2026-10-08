@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const uk: Dict = {
-  'nav.home': 'Головна',
+  'nav.home': 'Поруч',
   'nav.search': 'Пошук',
   'nav.add': 'Додати',
   'nav.messages': 'Чати',
@@ -764,4 +764,21 @@ export const uk: Dict = {
   'i.computer': 'Комп’ютер',
   'i.browser': 'У браузері',
   'i.qr': 'Скануй телефоном, щоб завантажити застосунок',
+  'voice.ask': 'Скажіть, що вам потрібно',
+  'voice.prompt': 'Скажіть, що хочете зробити',
+  'voice.read': 'Прочитати',
+  'voice.stop': 'Зупинити',
+  'ob.agree': 'Погоджуюсь і далі',
+  'ob.terms.inline': 'Натискаючи «Погоджуюсь і далі», ви приймаєте правила та політику конфіденційності.',
+  'ob.code.change': 'Змінити номер',
+  'ob.profile.title': 'Ваш профіль',
+  'ob.profile.text': 'Ім’я бачать друзі. Від району залежить, що ви побачите першим. Змінити можна у вкладці Я.',
+  'ob.gender.once': 'Обираєте один раз: літера потрапляє в анонімний ключ. Потім змінити зможе лише підтримка.',
+  'ob.region.state': 'Штат',
+  'ob.region.land': 'Федеральна земля',
+  'ob.region.county': 'Медьє',
+  'ob.region.province': 'Провінція',
+  'ob.region.oblast': 'Область',
+  'ob.region.community': 'Автономна спільнота',
+  'ob.region.nation': 'Регіон',
 }

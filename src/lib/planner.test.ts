@@ -43,4 +43,12 @@ describe('planer', () => {
     expect(r.friends.map((h) => h.listing.id)).toEqual(['2'])
     expect(r.fof.map((h) => h.listing.id)).toEqual(['1'])
   })
+  it('hindi: słowa w dewanagari nie rozpadają się na kawałki', () => {
+    expect(stems('अंडे')).toEqual(['अंडे'])
+    expect(matches(l('h', 'देसी अंडे'), stems('अंडे'))).toBe(true)
+    expect(findRecipe('आँगन में पेवर ब्लॉक लगवाना')?.id).toBe('paving')
+    expect(findRecipe('घर शिफ्ट करना है')?.id).toBe('moving')
+    const r = searchByCircle('अंडे', [hit(l('1', 'देसी अंडे'), 1), hit(l('2', 'साइकिल'), 1)])
+    expect(r.friends.map((h) => h.listing.id)).toEqual(['1'])
+  })
 })

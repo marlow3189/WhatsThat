@@ -5,7 +5,6 @@ import { loadLang } from './i18n'
 import { savedLang } from './data/store'
 import { initAnalytics } from './lib/analytics'
 import { isNative } from './lib/platform'
-import '@fontsource-variable/manrope'
 import './index.css'
 
 initAnalytics()

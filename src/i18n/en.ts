@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const en: Dict = {
-  'nav.home': 'Home',
+  'nav.home': 'Nearby',
   'nav.search': 'Search',
   'nav.add': 'Add',
   'nav.messages': 'Chats',
@@ -764,4 +764,21 @@ export const en: Dict = {
   'i.computer': 'Computer',
   'i.browser': 'In the browser',
   'i.qr': 'Scan with your phone to get the app',
+  'voice.ask': 'Say what you need',
+  'voice.prompt': 'Say what you want to get done',
+  'voice.read': 'Read aloud',
+  'voice.stop': 'Stop',
+  'ob.agree': 'Agree and continue',
+  'ob.terms.inline': 'By tapping “Agree and continue” you accept the terms and privacy policy.',
+  'ob.code.change': 'Change number',
+  'ob.profile.title': 'Your profile',
+  'ob.profile.text': 'Friends see your name. Your area decides what you see first. Change it any time under Me.',
+  'ob.gender.once': 'You choose once: the letter goes into your anonymous key. Later only support can change it.',
+  'ob.region.state': 'State',
+  'ob.region.land': 'Federal state',
+  'ob.region.county': 'County',
+  'ob.region.province': 'Province',
+  'ob.region.oblast': 'Oblast',
+  'ob.region.community': 'Autonomous community',
+  'ob.region.nation': 'Region',
 }

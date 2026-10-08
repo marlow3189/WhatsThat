@@ -27,6 +27,8 @@ export const PRICES: Record<Currency, { annual: number; business: number; refres
   CZK: { annual: 59000, business: 249000, refresh: 5900 },
   HUF: { annual: 990000, business: 3990000, refresh: 99000 },
   UAH: { annual: 99000, business: 499000, refresh: 9900 },
+  // Indie: ceny dopasowane do siły nabywczej (jak w Google Play), nie przeliczane kursem.
+  INR: { annual: 49900, business: 199900, refresh: 4900 },
 }
 
 export const YEAR = 365 * 86_400_000

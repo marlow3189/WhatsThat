@@ -18,6 +18,10 @@ fs.mkdirSync(out, { recursive: true })
   for (const cmd of ['svc power stayon true', 'settings put system screen_off_timeout 1800000', 'input keyevent KEYCODE_WAKEUP', 'wm dismiss-keyguard', 'input keyevent 82'])
     await device.shell(cmd).catch(() => {})
   await device.installApk(fs.readFileSync(apk))
+  // Zgoda na kontakty z góry (na prawdziwym telefonie pyta okno systemu; w teście nie ma kto go kliknąć).
+  await device.shell(`pm grant ${PKG} android.permission.READ_CONTACTS`).catch(() => {})
+  const sdk = (await device.shell('getprop ro.build.version.sdk')).toString().trim()
+  console.log('Android API', sdk)
   await device.shell(`am start -W -n ${PKG}/.MainActivity`)
   const webview = await device.webView({ pkg: PKG }, { timeout: 120_000 })
   const page = await webview.page()
@@ -36,7 +40,9 @@ fs.mkdirSync(out, { recursive: true })
   await diag('po starcie').catch((e) => console.log('diag', e.message))
   console.log('[platforma]', JSON.stringify(await page.evaluate(() => ({
     native: window.Capacitor?.isNativePlatform?.(),
-    contactsPlugin: window.Capacitor?.isPluginAvailable?.('Contacts'),
+    contactsPlugin: window.Capacitor?.isPluginAvailable?.('PhoneNumbers'),
+    voice: window.Capacitor?.isPluginAvailable?.('Voice'),
+    tts: window.Capacitor?.isPluginAvailable?.('TextToSpeech'),
     picker: !!navigator.contacts && 'ContactsManager' in window,
     ua: navigator.userAgent,
   }))))
@@ -71,39 +77,34 @@ fs.mkdirSync(out, { recursive: true })
     }
   }
 
+  // Rejestracja w 4 krokach. Emulator ma język angielski, więc najpierw zmieniamy język na polski (przycisk u góry).
   await step('start', async () => {
-    await page.waitForSelector('text=Polski')
+    await tap('button:has(span[lang])')
+    await tap('button:has(span[lang="pl"])')
+    await page.waitForSelector('text=Twój numer telefonu')
   })
-  await step('okolica', async () => {
-    await tap('text=Polski')
-    await tap('button:has-text("Dalej")')
+  await step('numer', async () => {
+    await tap('text=600 100 200')
+    await tap('button:has-text("Zgadzam się i dalej")')
+    await page.waitForSelector('text=Kod z SMS-a')
+  })
+  await step('profil', async () => {
+    // kod sprawdza się sam po 6 cyfrach
+    await tap('text=Wersja demo: wpisz dowolne 6 cyfr.')
+    await page.waitForSelector('text=Twój profil')
+    await page.fill('#name', 'Test Emulator')
+    await tap('button[role=radio]:has-text("Kobieta")')
+    await page.selectOption('#region', 'mazowieckie')
     await page.fill('#town', 'Warszawa')
   })
-  await step('kod-sms', async () => {
+  await step('kontakty', async () => {
     await tap('button:has-text("Dalej")')
-    await tap('text=600 100 200')
-    await tap('text=Wyślij kod SMS')
-    await tap('text=Wersja demo: wpisz dowolne 6 cyfr.')
-  })
-  await step('plec-zablokowana', async () => {
-    await tap('text=Potwierdź')
-    await page.fill('#name', 'Test Emulator')
-    await tap('button:has-text("Dalej")')
-    await tap('button[role=radio]:has-text("Kobieta")')
-    await tap('text=Zatwierdź na stałe')
-  })
-  await step('kontakty-zgoda', async () => {
-    await tap('button:has-text("Dalej")')
-    await tap('button:has-text("Dalej")')
-    await tap('text=Zezwól na dostęp do kontaktów')
+    await page.waitForSelector('text=Znajdź znajomych')
   })
   await step('glowna', async () => {
-    await tap('button:has-text("Pozwól")')
-    await page.waitForSelector('text=Skróty numerów usunięte z serwera')
-    await tap('button:has-text("Dalej")')
-    await tap('button:has-text("Dalej")')
-    await tap('#accept')
-    await tap('text=Zaczynamy')
+    await tap('text=Zezwól na dostęp do kontaktów')
+    await page.waitForSelector('text=Skróty numerów usunięte z serwera', { timeout: 30_000 })
+    await tap('button:has-text("Zaczynamy")')
     await page.waitForSelector('text=Co dziś załatwiamy?')
   })
   await step('tablica-okolicy', async () => {
@@ -114,13 +115,34 @@ fs.mkdirSync(out, { recursive: true })
     await tap('a[aria-label="SOS"]')
     await page.waitForSelector('text=Zadzwoń 112')
   })
+  // Najważniejsza ścieżka: dodanie ogłoszenia od początku do końca.
   await step('dodaj', async () => {
     await tap('nav a[aria-label="Dodaj"]')
-    await page.waitForSelector('text=Zapytaj sąsiadów')
+    await page.waitForSelector('text=Co chcesz zrobić?')
+  })
+  await step('dodaj-kategoria', async () => {
+    await tap('button:has-text("Sprzedaż")')
+    await tap('button:has-text("Narzędzia i maszyny")')
+    await tap('button:has-text("Pomiń i przejdź dalej")')
+    await page.waitForSelector('#title')
+  })
+  await step('dodaj-opis', async () => {
+    await page.fill('#title', 'Wiertarka udarowa Bosch')
+    await page.fill('#price', '120')
+    await tap('button:has-text("Dalej")')
+    await page.waitForSelector('text=Kto zobaczy?')
+  })
+  await step('dodaj-opublikowane', async () => {
+    await tap('button:has-text("Opublikuj")')
+    await page.waitForSelector('text=Opublikowane')
+  })
+  await step('szukaj-glos', async () => {
+    await tap('nav a[aria-label="Szukaj"]')
+    await page.waitForSelector('#q')
   })
   await step('ja', async () => {
-    await tap('nav a:has-text("Ja")')
-    await page.waitForSelector('text=/Miliorbit 0\\.7/')
+    await tap('nav a[aria-label="Ja"]')
+    await page.waitForSelector('text=/Miliorbit 0\\.\\d/')
   })
 
   // ——— Dotyk jak palcem: prawdziwe stuknięcia przez Androida (adb input tap), nie przez JavaScript ———
@@ -133,6 +155,16 @@ fs.mkdirSync(out, { recursive: true })
     const [ox, oy] = m ? [+m[1], +m[2]] : [0, 0]
     const dpr = await page.evaluate(() => window.devicePixelRatio)
     console.log('[dotyk] WebView od', ox, oy, 'dpr', dpr)
+    // Ile miejsca zajmuje pasek stanu (Android 15+ rysuje aplikację pod nim) i gdzie zaczyna się górny pasek aplikacji.
+    const insets = await page.evaluate(() => {
+      const d = document.createElement('div')
+      d.style.cssText = 'position:fixed;top:0;height:var(--sat);width:1px'
+      document.body.appendChild(d)
+      const sat = d.getBoundingClientRect().height
+      d.remove()
+      return { sat, sosTop: document.querySelector('a[aria-label="SOS"]')?.getBoundingClientRect().top ?? -1 }
+    })
+    touch.push(`ekran: WebView od y=${oy}px, pasek stanu w aplikacji ${insets.sat}px, przycisk SOS od ${Math.round(insets.sosTop)}px`)
     const tapTouch = async (label, selector, expect) => {
       try {
         const el = page.locator(selector).first()
@@ -150,18 +182,25 @@ fs.mkdirSync(out, { recursive: true })
         touch.push(`✗ ${label}: ${e.message.split('\n')[0]}`)
       }
     }
-    await tapTouch('zakładka Główna', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
-    await tapTouch('SOS', 'a[aria-label="SOS"]', 'text=Zadzwoń 112')
-    await tapTouch('wstecz', 'header button', 'text=Co dziś załatwiamy?')
-    await tapTouch('pomysł AI: jajka', 'a[href*="szukaj?q="]', 'input')
-    await tapTouch('zakładka Główna', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await tapTouch('zakładka Okolica', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await tapTouch('SOS (u góry ekranu)', 'a[aria-label="SOS"]', 'text=Zadzwoń 112')
+    await tapTouch('wstecz (u góry ekranu)', 'header button[aria-label="Wstecz"]', 'text=Co dziś załatwiamy?')
+    await page.evaluate(() => window.scrollTo(0, 0))
+    await tapTouch('dzwonek (u góry ekranu)', 'a[href="#/powiadomienia"]', 'header')
+    await tapTouch('zakładka Okolica', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await tapTouch('pole „Co dziś załatwiamy?”', 'a[href="#/szukaj"]', '#q')
+    await tapTouch('zakładka Okolica', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
+    await tapTouch('pomysł AI', 'a[href*="szukaj?q="]', '#q')
+    await tapTouch('zakładka Okolica', 'nav a[href="#/"]', 'text=Co dziś załatwiamy?')
     await tapTouch('kafelek tablicy', 'a[href^="#/l/"]', 'h1')
     await tapTouch('zakładka Dodaj', 'nav a[aria-label="Dodaj"]', 'text=Co chcesz zrobić?')
-    await tapTouch('Sprzedaż', 'button:has-text("Sprzedaż")', 'text=Kategoria')
-    await tapTouch('kategoria', 'section button', '#title, text=Co dokładnie?')
-    await tapTouch('zakładka Czaty', 'nav a[href="#/wiadomosci"]', 'h1')
-    await tapTouch('zakładka Ja', 'nav a[href="#/ja"]', 'text=Twój plan')
-    await tapTouch('zakładka Szukaj', 'nav a[href="#/szukaj"]', 'input')
+    await tapTouch('Sprzedaż', 'button:has-text("Sprzedaż")', 'text=Narzędzia i maszyny')
+    await tapTouch('kategoria', 'button:has-text("Narzędzia i maszyny")', 'text=Pomiń i przejdź dalej')
+    await tapTouch('pomiń podkategorię', 'button:has-text("Pomiń i przejdź dalej")', '#title')
+    await tapTouch('zakładka Czaty', 'nav a[aria-label="Czaty"]', 'h1')
+    await tapTouch('zakładka Ja', 'nav a[aria-label="Ja"]', 'text=/Miliorbit 0\\.\\d/')
+    await tapTouch('zakładka Szukaj', 'nav a[aria-label="Szukaj"]', '#q')
   } catch (e) {
     touch.push(`✗ dotyk: ${e.message.split('\n')[0]}`)
   }

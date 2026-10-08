@@ -1,7 +1,7 @@
 import type { Dict } from './pl'
 
 export const hu: Dict = {
-  'nav.home': 'Kezdőlap',
+  'nav.home': 'Környék',
   'nav.search': 'Keresés',
   'nav.add': 'Feladás',
   'nav.messages': 'Csevegés',
@@ -764,4 +764,21 @@ export const hu: Dict = {
   'i.computer': 'Számítógép',
   'i.browser': 'Böngészőben',
   'i.qr': 'Szkenneld be a telefonnal az app letöltéséhez',
+  'voice.ask': 'Mondd, mire van szükséged',
+  'voice.prompt': 'Mondd, mit szeretnél elintézni',
+  'voice.read': 'Felolvasás',
+  'voice.stop': 'Leállítás',
+  'ob.agree': 'Elfogadom és tovább',
+  'ob.terms.inline': 'Az „Elfogadom és tovább” gombbal elfogadod a feltételeket és az adatvédelmi tájékoztatót.',
+  'ob.code.change': 'Szám módosítása',
+  'ob.profile.title': 'A profilod',
+  'ob.profile.text': 'A nevedet az ismerőseid látják. A környék dönti el, mit látsz először. Az Én fülön módosíthatod.',
+  'ob.gender.once': 'Egyszer választasz: a betű az anonim kulcsodba kerül. Később csak az ügyfélszolgálat módosíthatja.',
+  'ob.region.state': 'Állam',
+  'ob.region.land': 'Tartomány',
+  'ob.region.county': 'Vármegye',
+  'ob.region.province': 'Tartomány',
+  'ob.region.oblast': 'Terület',
+  'ob.region.community': 'Autonóm közösség',
+  'ob.region.nation': 'Régió',
 }

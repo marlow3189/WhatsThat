@@ -60,7 +60,7 @@ export function StoryViewer({ owners, start, onSeen, onClose }: { owners: { id: 
   return (
     <div className="fixed inset-0 z-[60] flex justify-center bg-[#0b1020]" role="dialog" aria-modal aria-label={user.name}>
       <div className="relative flex h-full w-full max-w-[34rem] flex-col">
-        <div className="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 bg-gradient-to-b from-black/50 to-transparent px-3 pb-6" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 10px)' }}>
+        <div className="absolute inset-x-0 top-0 z-10 flex flex-col gap-3 bg-gradient-to-b from-black/50 to-transparent px-3 pb-6" style={{ paddingTop: 'calc(var(--sat) + 10px)' }}>
           <div className="flex gap-1">
             {owner.items.map((x, k) => (
               <span key={x.id} className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/30">
@@ -98,7 +98,7 @@ export function StoryViewer({ owners, start, onSeen, onClose }: { owners: { id: 
           <Thumb listing={item} className="h-full w-full" iconSize={120} />
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pt-16 text-white" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 18px)' }}>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 bg-gradient-to-t from-black/70 via-black/40 to-transparent px-4 pt-16 text-white" style={{ paddingBottom: 'calc(var(--sab) + 18px)' }}>
           <div>
             <p className="text-[22px] leading-tight font-extrabold">{item.title}</p>
             <p className="tnum mt-1 text-[18px] font-bold">{priceText(item, t, locale)}</p>

@@ -102,7 +102,7 @@ export function ListingScreen() {
     <div className="pb-8">
       <div className="relative">
         <Thumb listing={listing} className={cx('aspect-[4/3] max-h-[52vh] w-full rounded-b-[32px]', listing.status === 'sold' && 'grayscale')} iconSize={84} />
-        <div className="absolute inset-x-0 top-0 flex justify-between p-3" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)' }}>
+        <div className="absolute inset-x-0 top-0 flex justify-between p-3">
           <CircleButton icon="back" label={t('back')} onClick={() => nav(-1)} />
           <div className="flex gap-2">
             <CircleButton icon="share" label={t('l.share')} onClick={() => setSheet('share')} />

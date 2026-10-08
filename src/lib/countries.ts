@@ -24,6 +24,7 @@ export const COUNTRIES: Country[] = [
   { code: 'ES', currency: 'EUR', lang: 'es', dial: '+34', lat: 40.46, lng: -3.75 },
   { code: 'GB', currency: 'GBP', lang: 'en', dial: '+44', lat: 54.0, lng: -2.0 },
   { code: 'US', currency: 'USD', lang: 'en', dial: '+1', lat: 39.8, lng: -98.6 },
+  { code: 'IN', currency: 'INR', lang: 'hi', dial: '+91', lat: 22.35, lng: 78.67 },
 ]
 
 export const countryByCode = (code: string) => COUNTRIES.find((c) => c.code === code) ?? COUNTRIES[0]

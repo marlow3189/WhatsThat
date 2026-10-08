@@ -715,12 +715,13 @@ function autoReply(text: string, lang: Lang): string {
     hu: ['Legjobb 17 óra után, a címet elküldöm.', 'Nagyobb mennyiségnél olcsóbban adom.', '👍', 'Rendben, visszaigazolom. Találkozunk!'],
     it: ['Meglio dopo le 17, ti mando l’indirizzo.', 'Per quantità maggiori faccio uno sconto.', '👍', 'Va bene, confermato. A presto!'],
     es: ['Mejor después de las 17, te paso la dirección.', 'Si llevas más, te lo dejo más barato.', '👍', 'Me va bien, confirmado. ¡Hasta luego!'],
+    hi: ['शाम 5 बजे के बाद ठीक रहेगा, पता मैसेज में भेज दूँगा।', 'ज़्यादा लेंगे तो सस्ता कर दूँगा।', '👍', 'ठीक है, पक्का। फिर मिलते हैं!'],
   }
   const [time, price, thanks, ok] = r[lang] ?? r.pl
   const s = text.toLowerCase()
-  if (/(kiedy|godz|odbi|when|wann|коли|kdy|kedy|mikor|quando|cuándo)/.test(s)) return time
-  if (/(cen|tani|price|preis|ціна|cena|ár|prezzo|precio)/.test(s)) return price
-  if (/(dzię|thank|danke|дяку|děkuj|ďakuj|köszön|grazie|gracias)/.test(s)) return thanks
+  if (/(kiedy|godz|odbi|when|wann|коли|kdy|kedy|mikor|quando|cuándo|कब|समय)/.test(s)) return time
+  if (/(cen|tani|price|preis|ціна|cena|ár|prezzo|precio|कीमत|दाम)/.test(s)) return price
+  if (/(dzię|thank|danke|дяку|děkuj|ďakuj|köszön|grazie|gracias|धन्यवाद|शुक्रिया)/.test(s)) return thanks
   return ok
 }
 

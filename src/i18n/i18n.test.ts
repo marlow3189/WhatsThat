@@ -16,7 +16,7 @@ describe('tłumaczenia', () => {
       }
     }
   })
-  it('kategorie i produkty rolnika mają 9 języków', () => {
+  it('kategorie i produkty rolnika mają wszystkie języki', () => {
     for (const c of CATEGORIES) {
       for (const { id } of LANGS) {
         expect(c.label[id], `${c.id}:${id}`).toBeTruthy()

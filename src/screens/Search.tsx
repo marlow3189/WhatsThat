@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { useStore } from '../data/store'
 import { Group, Header, ListingRow, Row, Segmented, Tile, cx, relationText } from '../components/ui'
@@ -10,18 +10,9 @@ import type { Circle, Kind } from '../lib/types'
 import { findRecipe, plan, searchByCircle, type Hit } from '../lib/planner'
 import { MapView, routeUrl, type MapPoint } from '../components/map'
 import { formatMoney } from '../lib/money'
-
-/** Rozpoznawanie mowy w przeglądarce (Chrome, Edge, Safari); bez wsparcia przycisk mikrofonu się nie pokazuje. */
-interface Recognizer {
-  lang: string
-  interimResults: boolean
-  onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void
-  onend: () => void
-  onerror: () => void
-  start: () => void
-}
-type RecognizerCtor = new () => Recognizer
-const Speech: RecognizerCtor | undefined = typeof window === 'undefined' ? undefined : ((window as unknown as Record<string, RecognizerCtor | undefined>).SpeechRecognition ?? (window as unknown as Record<string, RecognizerCtor | undefined>).webkitSpeechRecognition)
+import { canListen, canSpeak, listen as listenVoice, speak, stopSpeaking } from '../lib/voice'
+import { askPlanner } from '../lib/ai'
+import type { Recipe } from '../lib/planner'
 
 const KINDS: Kind[] = ['sell', 'rent', 'service', 'give', 'swap', 'garage', 'wanted']
 const RADII = [2, 5, 10, 25, 50, 100, 250]
@@ -32,17 +23,27 @@ export function Search() {
   const [params, setParams] = useSearchParams()
   const [q, setQ] = useState(() => params.get('q') ?? '')
   const [listening, setListening] = useState(false)
-  const listen = () => {
-    if (!Speech) return
-    const r = new Speech()
-    r.lang = locale
-    r.interimResults = false
-    r.onresult = (e) => setQ(e.results[0]?.[0]?.transcript ?? '')
-    r.onend = () => setListening(false)
-    r.onerror = () => setListening(false)
+  const [speaking, setSpeaking] = useState(false)
+  const voice = canListen()
+  /** Mikrofon: mówisz, co chcesz załatwić, tekst trafia do pola i od razu szuka. */
+  const ask = async () => {
     setListening(true)
-    r.start()
+    const text = await listenVoice(locale, t('voice.prompt'))
+    setListening(false)
+    if (text) setQ(text)
   }
+  // Wejście z mikrofonu na głównej (?mow=1): od razu słuchamy, potem usuwamy znacznik z adresu.
+  const started = useRef(false)
+  useEffect(() => {
+    if (started.current || !params.get('mow')) return
+    started.current = true
+    setParams((p) => {
+      p.delete('mow')
+      return p
+    }, { replace: true })
+    if (voice) void ask()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => void stopSpeaking(), [])
   const [circle, setCircle] = useState<Circle>(3)
   const [where, setWhere] = useState('25')
   const [kind, setKind] = useState<Kind | 'all'>('all')
@@ -68,7 +69,19 @@ export function Search() {
     [visibleListings, circle, account.place, scope, radiusKm, kind, cat, sub],
   )
   const query = q.trim()
-  const recipe = query ? findRecipe(query) : undefined
+  // Plan: najpierw gotowe przepisy (od razu, bez internetu), a na żywo model AI dla innych celów.
+  const [remote, setRemote] = useState<{ q: string; recipe: Recipe | null }>()
+  const local = query ? findRecipe(query) : undefined
+  useEffect(() => {
+    if (!query || local || query.split(/\s+/).length < 2) return
+    let live = true
+    const id = window.setTimeout(() => askPlanner(query, lang, account.country).then((recipe) => live && setRemote({ q: query, recipe })), 700)
+    return () => {
+      live = false
+      clearTimeout(id)
+    }
+  }, [query, local, lang, account.country])
+  const recipe = local ?? (remote?.q === query ? remote.recipe ?? undefined : undefined)
   // W planie tylko oferty (bez „Szukam” i ogłoszeń sąsiedzkich), żeby krok nie podsuwał cudzych próśb.
   const steps = recipe ? plan(recipe, pool.filter((h) => h.listing.kind !== 'wanted' && h.listing.category !== 'community'), 4) : []
   const groups = query ? searchByCircle(query, pool) : null
@@ -106,13 +119,13 @@ export function Search() {
     <div className="flex flex-col gap-4 pb-6">
       {category ? <Header back title={category.label[lang]} /> : <Header large title={t('nav.search')} />}
       <div className="flex flex-col gap-3 px-4">
-        <label className="flex min-h-[52px] items-center gap-2 rounded-full bg-surface px-4 text-muted shadow-[var(--shadow)] focus-within:ring-2 focus-within:ring-ink/15">
+        <label className="flex min-h-12 items-center gap-2 rounded-full bg-fill-strong/60 pr-1 pl-4 text-muted focus-within:ring-2 focus-within:ring-primary/25">
           <Icon name="search" size={19} />
           <input id="q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPh')} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-muted focus-visible:outline-none" />
-          {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-lilac px-2.5 py-1 text-[12px] font-bold text-ink"><Icon name="sparkle" size={13} /> AI</span>}
-          {Speech && (
-            <button type="button" onClick={listen} aria-label={t('search.voice')} aria-pressed={listening} className={cx('press grid size-9 shrink-0 place-items-center rounded-full', listening ? 'bg-danger text-white' : 'bg-fill text-ink')}>
-              <Icon name="mic" size={18} />
+          {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[12px] font-bold text-primary"><Icon name="sparkle" size={13} /> AI</span>}
+          {voice && (
+            <button type="button" onClick={ask} aria-label={t('search.voice')} aria-pressed={listening} className={cx('press grid size-10 shrink-0 place-items-center rounded-full', listening ? 'bg-danger text-white' : 'bg-primary text-primary-ink')}>
+              <Icon name="mic" size={19} />
             </button>
           )}
         </label>
@@ -193,9 +206,29 @@ export function Search() {
                   <p className="mt-0.5 text-[14px] leading-snug text-ink/70">{t('plan.lead')}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setView('map')} className="press flex min-h-11 items-center justify-center gap-2 rounded-full bg-surface text-[15px] font-bold text-link">
-                <Icon name="pin" size={18} /> {t('map.showPlan')}
-              </button>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setView('map')} className="press flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-surface text-[15px] font-bold text-link">
+                  <Icon name="pin" size={18} /> {t('map.showPlan')}
+                </button>
+                {canSpeak() && (
+                  <button
+                    type="button"
+                    aria-pressed={speaking}
+                    onClick={() => {
+                      if (speaking) {
+                        setSpeaking(false)
+                        return void stopSpeaking()
+                      }
+                      setSpeaking(true)
+                      const lines = steps.map(({ step, hits }, i) => `${t('plan.step', { n: i + 1 })}: ${step.title[lang]}. ${hits[0] ? `${hits[0].listing.title}, ${metaOf(hits[0])}.` : t('plan.none')}`)
+                      speak([recipe.goal[lang], ...lines].join(' '), locale).finally(() => setSpeaking(false))
+                    }}
+                    className={cx('press flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-[15px] font-bold', speaking ? 'bg-ink text-white' : 'bg-surface text-link')}
+                  >
+                    <Icon name="speaker" size={18} /> {t(speaking ? 'voice.stop' : 'voice.read')}
+                  </button>
+                )}
+              </div>
               <ol className="flex flex-col gap-2.5">
                 {steps.map(({ step, hits }, i) => (
                   <li key={step.id} className="overflow-hidden rounded-[20px] bg-surface">

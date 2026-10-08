@@ -15,7 +15,6 @@ import { distanceKm, formatDistance } from '../lib/geo'
 import { RECIPES } from '../lib/planner'
 import { useWeather } from '../lib/weather'
 import { DAY } from '../lib/pricing'
-import { ME } from '../data/seed'
 import type { Listing } from '../lib/types'
 
 const NEARBY_KM = 15
@@ -104,32 +103,35 @@ export function Home() {
   ]
 
   return (
-    <div className="flex flex-col gap-7 pb-6">
-      <header className="flex flex-col gap-5 px-5 pt-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link to="/ja" aria-label={t('nav.me')} className="press shrink-0 rounded-full ring-2 ring-surface"><Avatar user={users[ME]} size={44} /></Link>
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-semibold text-muted">{t('home.hello', { name: first })}</p>
-              <p className="flex min-w-0 items-center gap-1 text-[16px] font-extrabold">
-                <Icon name="pin" size={16} className="shrink-0 text-primary" /><span className="truncate">{here.town}</span>
-                {weather && (
-                  <span className="ml-1 flex shrink-0 items-center gap-1 text-[14px] font-semibold text-muted" title={t(`w.${weather.sky}`)}>
-                    · <Icon name={weather.sky} size={15} /> <span className="tnum">{weather.temp}°</span>
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link to="/sos" className="press grid h-11 place-items-center rounded-full bg-danger px-3.5 text-[14px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
-            <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full bg-surface shadow-[var(--shadow)]" aria-label={t('home.notifications')}>
-              <Icon name="bell" size={21} />
-              {unread > 0 && <span className="tnum absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-danger px-1 text-[12px] font-bold text-white ring-2 ring-bg">{unread}</span>}
+    <div className="flex flex-col gap-6 pb-6">
+      <header className="flex flex-col gap-3 px-4 pt-3">
+        <div className="flex min-h-12 items-center justify-between gap-2">
+          <p className="flex min-w-0 items-center gap-2 text-[22px] leading-none font-bold text-primary"><Mark size={28} /> <span className="truncate">{BRAND.name}</span></p>
+          <div className="flex shrink-0 items-center gap-1">
+            <Link to="/sos" className="press grid h-9 place-items-center rounded-full bg-danger px-3 text-[13px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
+            <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
+              <Icon name="bell" size={23} />
+              {unread > 0 && <span className="tnum absolute top-1 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-bg">{unread}</span>}
             </Link>
           </div>
         </div>
-        <h1 className="text-[30px] leading-[1.08] font-extrabold tracking-[-0.03em]">{t('home.title')}</h1>
+        <p className="-mt-2 flex min-w-0 items-center gap-1 text-[13px] text-muted">
+          <Icon name="pin" size={14} className="shrink-0" /><span className="truncate">{here.town}</span>
+          {weather && <span className="flex shrink-0 items-center gap-1" title={t(`w.${weather.sky}`)}>· <Icon name={weather.sky} size={14} /> <span className="tnum">{weather.temp}°</span></span>}
+          <span className="truncate">· {t('home.hello', { name: first })}</span>
+        </p>
+        <div className="flex items-center gap-2">
+          <Link to="/szukaj" className="press flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-full bg-fill-strong/60 pr-2 pl-4">
+            <Icon name="sparkle" size={20} className="shrink-0 text-primary" />
+            <span className="min-w-0 flex-1">
+              <h1 className="truncate text-[16px] leading-tight font-semibold">{t('home.title')}</h1>
+              <span className="block truncate text-[12px] text-muted">{t('home.searchPh')}</span>
+            </span>
+          </Link>
+          <Link to="/szukaj?mow=1" className="press grid size-12 shrink-0 place-items-center rounded-full bg-primary text-primary-ink" aria-label={t('voice.ask')}>
+            <Icon name="mic" size={22} />
+          </Link>
+        </div>
       </header>
 
       {appBanner && (
@@ -146,17 +148,12 @@ export function Home() {
         </div>
       )}
 
-      <section className="-mt-2 flex flex-col gap-3">
-        <Link to="/szukaj" className="press mx-4 flex min-h-[56px] items-center gap-3 rounded-[20px] bg-surface pr-2 pl-4 shadow-[var(--shadow)]">
-          <Icon name="search" size={20} className="shrink-0 text-muted" />
-          <span className="min-w-0 flex-1 truncate text-muted">{t('home.searchPh')}</span>
-          <span className="flex shrink-0 items-center gap-1 rounded-[14px] bg-primary px-3 py-2.5 text-[13px] font-bold text-white"><Icon name="sparkle" size={15} /> AI</span>
-        </Link>
+      <section className="-mt-3">
         <Scroller label={t('home.plan')}>
           {ideas.map((x) => (
-            <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[92px] shrink-0 flex-col items-center gap-1.5 text-center">
-              <span className={cx('grid size-14 place-items-center rounded-[18px]', x.bg)}><Icon name={x.icon} size={24} /></span>
-              <span className="line-clamp-2 text-[12px] leading-tight font-semibold">{x.label}</span>
+            <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[76px] shrink-0 flex-col items-center gap-1 text-center">
+              <span className={cx('grid size-12 place-items-center rounded-[16px]', x.bg)}><Icon name={x.icon} size={22} /></span>
+              <span className="line-clamp-2 text-[11.5px] leading-tight font-medium">{x.label}</span>
             </Link>
           ))}
         </Scroller>
@@ -217,7 +214,7 @@ export function Home() {
           <SectionTitle title={t('board.title')} sub={t('board.sub')} to="/dodaj" more={t('board.post')} />
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-4" role="tablist" aria-label={t('board.title')}>
             {BOARD.map((b) => (
-              <button key={b.id} type="button" role="tab" aria-selected={tab === b.id} onClick={() => setTab(b.id)} className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] font-semibold', tab === b.id ? 'bg-primary text-primary-ink' : 'bg-surface shadow-[var(--shadow)]')}>
+              <button key={b.id} type="button" role="tab" aria-selected={tab === b.id} onClick={() => setTab(b.id)} className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px]', tab === b.id ? 'bg-primary-soft font-semibold text-primary' : 'bg-fill-strong/60 font-medium')}>
                 <Icon name={b.icon} size={15} /> {t(`board.tab.${b.id}`)}
               </button>
             ))}
@@ -422,12 +419,12 @@ function viewsOf(l: Listing, all: Listing[]) {
 
 function SectionTitle({ title, sub, to, more }: { title: string; sub?: string; to?: string; more?: string }) {
   return (
-    <div className="flex items-end justify-between gap-3 px-5">
+    <div className="flex items-end justify-between gap-3 px-4">
       <div className="min-w-0">
-        <h2 className="text-[20px] leading-tight font-extrabold tracking-[-0.02em]">{title}</h2>
-        {sub && <p className="text-[13px] text-muted">{sub}</p>}
+        <h2 className="text-[17px] leading-tight font-bold">{title}</h2>
+        {sub && <p className="text-[12.5px] text-muted">{sub}</p>}
       </div>
-      {to && more && <Link to={to} className="shrink-0 text-[14px] font-bold text-primary">{more}</Link>}
+      {to && more && <Link to={to} className="flex min-h-9 shrink-0 items-center text-[14px] font-semibold text-primary">{more}</Link>}
     </div>
   )
 }
