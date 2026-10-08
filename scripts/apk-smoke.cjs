@@ -13,11 +13,27 @@ fs.mkdirSync(out, { recursive: true })
   const [device] = await android.devices({ omitDriverInstall: true })
   if (!device) throw new Error('Brak emulatora (adb devices jest puste)')
   console.log('Urządzenie:', device.model(), device.serial())
+  // Ekran emulatora ma być włączony i odblokowany przez cały test (inaczej Android wstrzymuje aplikację:
+  // nie rysuje nowych klatek i nie odpala timerów JavaScriptu).
+  for (const cmd of ['svc power stayon true', 'settings put system screen_off_timeout 1800000', 'input keyevent KEYCODE_WAKEUP', 'wm dismiss-keyguard', 'input keyevent 82'])
+    await device.shell(cmd).catch(() => {})
   await device.installApk(fs.readFileSync(apk))
-  await device.shell(`am start -n ${PKG}/.MainActivity`)
+  await device.shell(`am start -W -n ${PKG}/.MainActivity`)
   const webview = await device.webView({ pkg: PKG }, { timeout: 120_000 })
   const page = await webview.page()
   page.setDefaultTimeout(20_000)
+  // Diagnostyka: czy aplikacja jest na pierwszym planie, czy strona jest widoczna i czy działają timery.
+  const diag = async (label) => {
+    const power = (await device.shell('dumpsys power | grep -m1 mWakefulness=')).toString().trim()
+    const top = (await device.shell('dumpsys activity activities | grep -m1 -E "topResumedActivity|mResumedActivity"')).toString().trim()
+    const js = await page.evaluate(() => new Promise((ok) => {
+      const t0 = Date.now()
+      setTimeout(() => ok({ visibility: document.visibilityState, focus: document.hasFocus(), timerMs: Date.now() - t0 }), 100)
+      setTimeout(() => ok({ visibility: document.visibilityState, focus: document.hasFocus(), timerMs: -1 }), 3000)
+    }))
+    console.log(`[${label}]`, power, '|', top, '|', JSON.stringify(js))
+  }
+  await diag('po starcie').catch((e) => console.log('diag', e.message))
   const errors = []
   page.on('pageerror', (e) => errors.push(e.message))
   // W WebView na Androidzie kliknięcia „myszą” po współrzędnych bywają zawodne, więc klikamy jak skrypt strony
@@ -31,7 +47,10 @@ fs.mkdirSync(out, { recursive: true })
   let n = 0
   const shot = async (name) => {
     await page.waitForTimeout(600)
-    await device.screenshot({ path: path.join(out, `${String(++n).padStart(2, '0')}-${name}.png`) })
+    const file = `${String(++n).padStart(2, '0')}-${name}`
+    await device.screenshot({ path: path.join(out, `${file}.png`) })
+    // zrzut samej strony (z WebView), gdyby ekran emulatora nie odświeżył klatki
+    await page.screenshot({ path: path.join(out, `strona-${file}.png`) }).catch(() => {})
   }
   const step = async (name, fn) => {
     try {
@@ -97,6 +116,7 @@ fs.mkdirSync(out, { recursive: true })
     await page.waitForSelector('text=/Miliorbit 0\\.7/')
   })
 
+  await diag('na końcu').catch(() => {})
   fs.writeFileSync(path.join(out, 'wynik.txt'), errors.length ? `BŁĘDY:\n${errors.join('\n')}\n` : 'OK: wszystkie kroki przeszły\n')
   console.log(errors.length ? `Błędy:\n${errors.join('\n')}` : 'Wszystkie kroki przeszły')
   await device.close()
