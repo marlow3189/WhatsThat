@@ -145,11 +145,21 @@ fs.mkdirSync(out, { recursive: true })
     await page.waitForSelector('text=/Miliorbit 0\\.\\d/')
   })
 
+  // Stuknięcie palcem w element (adb input tap) według położenia WebView ustalonego niżej.
+  let origin = [0, 0]
+  let dpr = 1
+  const tapTouchExternal = async (selector) => {
+    const el = page.locator(selector).first()
+    await el.waitFor({ state: 'visible', timeout: 8000 })
+    const r = await el.evaluate((node) => { const b = node.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 } })
+    await device.shell(`input tap ${Math.round(origin[0] + r.x * dpr)} ${Math.round(origin[1] + r.y * dpr)}`)
+  }
+
   // ——— Dotyk jak palcem: prawdziwe stuknięcia przez Androida (adb input tap), nie przez JavaScript ———
   // Położenie WebView na ekranie bierzemy z uiautomator, współrzędne elementów z przeglądarki.
   const touch = []
   try {
-    const dpr = await page.evaluate(() => window.devicePixelRatio)
+    dpr = await page.evaluate(() => window.devicePixelRatio)
     // Gdzie na ekranie zaczyna się WebView: stukamy raz w środek ekranu i patrzymy, gdzie strona dostała dotyk
     // (to stuknięcie niczego nie klika). Zapasowo: układ okien z uiautomator.
     const calibrate = async () => {
@@ -166,7 +176,7 @@ fs.mkdirSync(out, { recursive: true })
       const t = await page.evaluate(() => window.__touch)
       return t ? [Math.round(sx - t.x * dpr), Math.round(sy - t.y * dpr)] : null
     }
-    let origin = await calibrate().catch(() => null)
+    origin = await calibrate().catch(() => null)
     if (!origin) {
       await device.shell('uiautomator dump /sdcard/ui.xml').catch(() => {})
       const xml = (await device.shell('cat /sdcard/ui.xml').catch(() => '')).toString()
@@ -227,6 +237,77 @@ fs.mkdirSync(out, { recursive: true })
   console.log('[dotyk]\n' + touch.join('\n'))
   fs.writeFileSync(path.join(out, 'dotyk.txt'), touch.join('\n') + '\n')
   await page.screenshot({ path: path.join(out, '11-po-dotyku.png') }).catch(() => {})
+
+  // ——— Scenariusz 2: jak u testera (Samsung, język niemiecki, prawdziwe kontakty w telefonie, przycisk lokalizacji) ———
+  // Zgłoszenie: po rejestracji biały ekran. Odtwarzamy: wylogowanie, rejestracja po niemiecku, 40 kontaktów, GPS.
+  const consoleErrors = []
+  page.on('console', (m) => m.type() === 'error' && consoleErrors.push(m.text().slice(0, 300)))
+  const addContacts = async (n) => {
+    for (let i = 0; i < n; i++) await device.shell('content insert --uri content://com.android.contacts/raw_contacts --bind account_type:s:test --bind account_name:s:test').catch(() => {})
+    const ids = ((await device.shell('content query --uri content://com.android.contacts/raw_contacts --projection _id').catch(() => '')).toString().match(/_id=(\d+)/g) || []).map((x) => x.slice(4))
+    for (const [i, id] of ids.entries()) {
+      const tel = i % 5 === 0 ? `0171 23456${String(i).padStart(2, '0')}` : `+49 171 98765${String(i).padStart(2, '0')}`
+      await device.shell(`content insert --uri content://com.android.contacts/data --bind raw_contact_id:i:${id} --bind mimetype:s:vnd.android.cursor.item/phone_v2 --bind data1:s:'${tel}' --bind data2:i:2`).catch(() => {})
+    }
+    return ids.length
+  }
+  await step('de-kontakty-w-telefonie', async () => {
+    const n = await addContacts(40)
+    console.log('[de] kontakty w telefonie:', n)
+    for (const perm of ['ACCESS_FINE_LOCATION', 'ACCESS_COARSE_LOCATION']) await device.shell(`pm grant ${PKG} android.permission.${perm}`).catch(() => {})
+    await tap('nav a[aria-label="Ja"]')
+    await tap('button:has-text("Wyloguj i wyczyść dane demo")')
+    await page.waitForSelector('#phone')
+  })
+  await step('de-numer', async () => {
+    await tap('button:has(span[lang])')
+    await tap('button:has(span[lang="de"])')
+    await page.waitForSelector('text=Deine Telefonnummer')
+    await tap('text=600 100 200')
+    await tap('button:has-text("Zustimmen und weiter")')
+    await tap('text=Demo: beliebige 6 Ziffern eingeben.')
+    await page.waitForSelector('#name')
+  })
+  await step('de-profil', async () => {
+    await page.fill('#name', 'Mar')
+    await tap('button[role=radio]:has-text("Mann")')
+    await page.selectOption('#region', 'Baden-Württemberg')
+    await tap('button:has-text("Meinen Standort verwenden")')
+    await page.waitForTimeout(3000)
+  })
+  await step('de-kontakty', async () => {
+    await tap('button:has-text("Weiter")')
+    await tap('button:has-text("Zugriff auf Kontakte erlauben")')
+    await page.waitForSelector('text=Hashwerte vom Server gelöscht', { timeout: 30_000 })
+  })
+  await step('de-glowna', async () => {
+    await tap('button:has-text("Los geht")')
+    await page.waitForSelector('text=Was erledigen wir heute?')
+  })
+  await step('de-glowna-po-12s', async () => {
+    await page.waitForTimeout(12_000)
+    await page.waitForSelector('text=Was erledigen wir heute?')
+  })
+  // Prawdziwy ekran telefonu (nie tylko strona): czy zmienia się po stuknięciu w zakładkę?
+  try {
+    const crypto = require('crypto')
+    const md5 = (b) => crypto.createHash('md5').update(b).digest('hex').slice(0, 8)
+    const before = await device.screenshot({ path: path.join(out, 'de-ekran-1-glowna.png') })
+    await tapTouchExternal('nav a[aria-label="Anbieten"]')
+    await page.waitForTimeout(1500)
+    const after = await device.screenshot({ path: path.join(out, 'de-ekran-2-anbieten.png') })
+    const line = `ekran telefonu: główna ${md5(before)} → po stuknięciu „Anbieten” ${md5(after)} (${md5(before) === md5(after) ? '✗ EKRAN STOI' : '✓ zmienił się'}), adres ${await page.evaluate(() => location.hash)}`
+    console.log('[de]', line)
+    touch.push(line)
+  } catch (e) {
+    touch.push(`✗ ekran telefonu: ${e.message.split('\n')[0]}`)
+  }
+  const pageText = await page.evaluate(() => document.getElementById('root')?.innerText.slice(0, 80) ?? 'BRAK #root')
+  touch.push(`de: treść strony na końcu: ${JSON.stringify(pageText)}`)
+  touch.push(`de: błędy strony: ${errors.filter((e) => !e.startsWith('de-')).length}, błędy konsoli: ${consoleErrors.length ? consoleErrors.join(' | ') : 'brak'}`)
+  const diagErrors = await page.evaluate(() => localStorage.getItem('miliorbit:errors') || '[]')
+  touch.push(`de: zapisane błędy aplikacji: ${diagErrors}`)
+  fs.writeFileSync(path.join(out, 'dotyk.txt'), touch.join('\n') + '\n')
 
   await diag('na końcu').catch(() => {})
   fs.writeFileSync(path.join(out, 'wynik.txt'), errors.length ? `BŁĘDY:\n${errors.join('\n')}\n` : 'OK: wszystkie kroki przeszły\n')

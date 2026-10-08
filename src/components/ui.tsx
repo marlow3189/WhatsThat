@@ -138,7 +138,7 @@ export function Button({
       {...props}
       className={cx(
         'press inline-flex items-center justify-center gap-2 rounded-full font-bold disabled:pointer-events-none disabled:opacity-35',
-        size === 'lg' ? 'min-h-12 px-6 text-[16px]' : 'min-h-9 px-4 text-[14px]',
+        size === 'lg' ? 'min-h-11 px-5 text-[15px]' : 'min-h-9 px-4 text-[14px]',
         variant === 'primary' && 'bg-primary text-primary-ink',
         variant === 'secondary' && 'bg-surface text-ink shadow-[var(--shadow)]',
         variant === 'plain' && 'min-h-10 px-2 text-link',
@@ -226,8 +226,8 @@ export function Row({
   const body = (
     <>
       {icon && (
-        <span className={cx('grid size-9 shrink-0 place-items-center rounded-full', iconBg ?? (danger ? 'bg-danger-soft' : pastelOf(icon)), danger ? 'text-danger' : 'text-ink')}>
-          <Icon name={icon} size={18} />
+        <span className={cx('grid size-8 shrink-0 place-items-center rounded-full', iconBg ?? (danger ? 'bg-danger-soft' : pastelOf(icon)), danger ? 'text-danger' : 'text-ink')}>
+          <Icon name={icon} size={17} />
         </span>
       )}
       <span className="min-w-0 flex-1">
@@ -238,7 +238,7 @@ export function Row({
       {chevron && (to || onClick) && <Icon name="chevron" size={16} strokeWidth={2.4} className="shrink-0 text-fill-strong" />}
     </>
   )
-  const cls = 'flex min-h-[52px] w-full items-center gap-3 px-4 py-2.5 text-left active:bg-fill'
+  const cls = 'flex min-h-12 w-full items-center gap-3 px-4 py-2 text-left active:bg-fill'
   if (to) return <Link to={to} className={cls}>{body}</Link>
   if (onClick) return <button type="button" onClick={onClick} className={cls}>{body}</button>
   return <div className={cls}>{body}</div>
@@ -246,7 +246,7 @@ export function Row({
 
 export function Toggle({ checked, onChange, label, hint, id }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; hint?: ReactNode; id: string }) {
   return (
-    <label htmlFor={id} className="flex min-h-[52px] cursor-pointer items-center gap-3 px-4 py-2.5">
+    <label htmlFor={id} className="flex min-h-12 cursor-pointer items-center gap-3 px-4 py-2">
       <span className="min-w-0 flex-1">
         <span className="block">{label}</span>
         {hint && <span className="block text-[14px] text-muted">{hint}</span>}
@@ -301,7 +301,7 @@ export function Field({ label, hint, id, children }: { label: ReactNode; hint?: 
   )
 }
 
-export const inputCls = 'block min-h-12 w-full min-w-0 rounded-[12px] border border-line bg-surface px-4 text-[16px] text-ink outline-none placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/25'
+export const inputCls = 'block min-h-11 w-full min-w-0 rounded-[12px] border border-line bg-surface px-3.5 text-[16px] text-ink outline-none placeholder:text-muted/70 focus:border-primary focus:ring-2 focus:ring-primary/25'
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={cx(inputCls, props.className)} />
@@ -310,16 +310,16 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
 /** Kafelek ogłoszenia: kwadratowe zdjęcie, tytuł, cena, jedna linijka kontekstu. */
 export function Tile({ listing, t, meta, promoted, locale, width }: { listing: Listing; t: T; meta?: ReactNode; promoted?: string; locale: string; width?: number }) {
   return (
-    <Link to={`/l/${listing.id}`} className="press flex min-w-0 shrink-0 flex-col gap-2" style={width ? { width } : undefined}>
+    <Link to={`/l/${listing.id}`} className="press flex min-w-0 shrink-0 flex-col gap-1.5" style={width ? { width } : undefined}>
       <div className="relative">
-        <Thumb listing={listing} className={cx('aspect-square w-full rounded-[22px]', listing.status === 'sold' && 'opacity-45 grayscale')} />
+        <Thumb listing={listing} className={cx('aspect-square w-full rounded-[16px]', listing.status === 'sold' && 'opacity-45 grayscale')} iconSize={40} />
         {promoted && <span className="absolute top-2 left-2 rounded-full bg-accent px-2.5 py-0.5 text-[12px] font-bold text-accent-ink">{promoted}</span>}
         {listing.status !== 'active' && <StatusBadge status={listing.status} t={t} className="absolute right-2 bottom-2" />}
       </div>
       <div className="min-w-0 px-0.5">
-        <p className="line-clamp-2 text-[15px] leading-tight font-medium">{listing.title}</p>
-        <p className="tnum mt-0.5 text-[15px] font-semibold">{priceText(listing, t, locale)}</p>
-        {meta && <p className="truncate text-[13px] text-muted">{meta}</p>}
+        <p className="line-clamp-2 text-[14px] leading-tight font-medium">{listing.title}</p>
+        <p className="tnum mt-0.5 text-[14px] font-semibold">{priceText(listing, t, locale)}</p>
+        {meta && <p className="truncate text-[12px] text-muted">{meta}</p>}
       </div>
     </Link>
   )

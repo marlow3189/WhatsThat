@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useStore } from '../data/store'
 import { Avatar, Button, Field, Group, Header, Input, Notice, Row, ShareSheet, Tile, Toggle, cx, hueOf, inputCls, listingUrl, money, readPhoto } from '../components/ui'
@@ -297,7 +297,7 @@ export function Add() {
               <Field id="shippingPrice" label={t('a.shippingPrice')}><Input id="shippingPrice" inputMode="decimal" value={shippingPrice} onChange={(e) => setShippingPrice(e.target.value)} className="tnum" placeholder={`15,99 ${account.currency}`} /></Field>
             )}
             {error && <Notice tone="danger">{error}</Notice>}
-            <Button onClick={toWho}>{t('next')}</Button>
+            <ActionBar><Button className="w-full" onClick={toWho}>{t('next')}</Button></ActionBar>
           </div>
         )}
 
@@ -332,7 +332,7 @@ export function Add() {
                   })}
               </Group>
             )}
-            <div className="px-4"><Button className="w-full" onClick={publish}>{t('a.publish')}</Button></div>
+            <div className="px-4"><ActionBar><Button className="w-full" onClick={publish}>{t('a.publish')}</Button></ActionBar></div>
           </>
         )}
 
@@ -355,6 +355,15 @@ export function Add() {
         )}
       </div>
       {share && <ShareSheet text={title} url={listingUrl(publishedId)} t={t} onClose={() => setShare(false)} />}
+    </div>
+  )
+}
+
+/** Główny przycisk kroku: przyklejony nad dolnym menu, więc zawsze widać „Dalej” / „Opublikuj”. */
+function ActionBar({ children }: { children: ReactNode }) {
+  return (
+    <div className="sticky z-10 -mx-4 bg-bg px-4 pt-2 pb-2 shadow-[0_-12px_12px_-4px_var(--bg)]" style={{ bottom: 'calc(var(--sab) + 64px)' }}>
+      {children}
     </div>
   )
 }

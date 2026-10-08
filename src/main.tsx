@@ -5,8 +5,11 @@ import { loadLang } from './i18n'
 import { savedLang } from './data/store'
 import { initAnalytics } from './lib/analytics'
 import { isNative } from './lib/platform'
+import { installErrorLog } from './lib/diag'
+import { ErrorBoundary } from './components/boundary'
 import './index.css'
 
+installErrorLog()
 initAnalytics()
 
 // Tłumaczenia języka z urządzenia wczytujemy przed pierwszym ekranem (polski jest w paczce od razu).
@@ -15,7 +18,9 @@ loadLang(savedLang())
   .finally(() =>
     createRoot(document.getElementById('root')!).render(
       <StrictMode>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </StrictMode>,
     ),
   )

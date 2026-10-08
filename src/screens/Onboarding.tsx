@@ -124,7 +124,7 @@ export function Onboarding() {
         }
       },
       () => setGpsError(true),
-      { timeout: 8000 },
+      { timeout: 15_000, maximumAge: 600_000 },
     )
   }
 
@@ -161,8 +161,8 @@ export function Onboarding() {
   const profileOk = name.trim().length >= 2 && !!gender
 
   return (
-    <div className="mx-auto flex min-h-full max-w-[34rem] flex-col px-4 pt-3 pb-6" style={{ paddingTop: 'calc(var(--sat) + 12px)' }}>
-      <div className="mb-5 flex min-h-12 items-center justify-between gap-3">
+    <div className="mx-auto flex min-h-full max-w-[34rem] flex-col px-4" style={{ paddingTop: 'calc(var(--sat) + 6px)' }}>
+      <div className="mb-3 flex min-h-12 items-center justify-between gap-3">
         {index > 0 ? (
           <button type="button" onClick={() => go(STEPS[index - 1])} className="press -ml-2 grid size-12 place-items-center rounded-full active:bg-fill" aria-label={t('back')}>
             <Icon name="back" size={22} strokeWidth={2.2} />
@@ -226,23 +226,23 @@ export function Onboarding() {
             <p id="gender-label" className="px-1 text-[13px] font-medium text-muted">{t('ob.gender.title')}</p>
             <div role="radiogroup" aria-labelledby="gender-label" className="grid grid-cols-3 gap-2">
               {GENDERS.map((g) => (
-                <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => setGender(g)} className={cx('press flex min-h-12 items-center justify-center gap-1.5 rounded-[12px] border px-2 text-[14px] font-semibold', gender === g ? 'border-primary bg-primary-soft text-primary' : 'border-line bg-surface')}>
-                  {gender === g && <Icon name="check" size={16} strokeWidth={2.6} />} {t(`gender.${g}`)}
+                <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => setGender(g)} className={cx('press flex min-h-11 items-center justify-center gap-1 rounded-[12px] border px-1.5 text-center text-[13.5px] leading-tight font-semibold', gender === g ? 'border-primary bg-primary-soft text-primary' : 'border-line bg-surface')}>
+                  {gender === g && <Icon name="check" size={15} strokeWidth={2.6} className="shrink-0" />} {t(`gender.${g}`)}
                 </button>
               ))}
             </div>
             <p className="flex items-start gap-1.5 px-1 text-[12.5px] leading-snug text-muted"><Icon name="lock" size={14} className="mt-0.5 shrink-0" /> {t('ob.gender.once')}</p>
           </div>
           {key && (
-            <div className="flex items-center gap-3 rounded-[16px] bg-surface p-3">
-              <KeyAvatar anonKey={key} size={44} />
+            <div className="flex items-center gap-3 rounded-[14px] bg-surface px-3 py-2">
+              <KeyAvatar anonKey={key} size={36} />
               <div className="min-w-0">
                 <p className="text-[12px] font-semibold text-muted">{t('key.yours')}</p>
-                <p className="tnum truncate text-[15px] font-bold">{formatKey(key)}</p>
+                <p className="tnum truncate text-[14px] font-bold">{formatKey(key)}</p>
               </div>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-3">
             {regions.length > 0 ? (
               <Field id="region" label={t(`ob.region.${kind}`)}>
                 <select id="region" value={region} onChange={(e) => { setRegion(e.target.value); setGps(undefined) }} className={inputCls}>
@@ -361,10 +361,10 @@ function phoneLang(): Lang {
 
 function Screen({ title, text, children }: { title: string; text?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-1 flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-[24px] leading-tight font-bold">{title}</h1>
-        {text && <p className="text-[15px] leading-snug text-muted">{text}</p>}
+    <div className="flex flex-1 flex-col gap-3">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-[22px] leading-tight font-bold">{title}</h1>
+        {text && <p className="text-[14px] leading-snug text-muted">{text}</p>}
       </div>
       {children}
     </div>
@@ -390,6 +390,14 @@ function SystemAlert({ title, body, note, deny, allow, onDeny, onAllow }: { titl
   )
 }
 
+/**
+ * Przyciski na dole ekranu: zawsze widoczne (przyklejone do dołu przy przewijaniu) i zawsze nad systemowymi
+ * przyciskami telefonu (pasek nawigacji Androida, pasek gestów iPhone'a).
+ */
 function Footer({ children }: { children: ReactNode }) {
-  return <div className="mt-auto flex flex-col gap-2 pt-6">{children}</div>
+  return (
+    <div className="sticky bottom-0 z-10 -mx-4 mt-auto flex flex-col gap-1.5 bg-bg px-4 pt-3 shadow-[0_-12px_12px_-4px_var(--bg)]" style={{ paddingBottom: 'calc(var(--sab) + 10px)' }}>
+      {children}
+    </div>
+  )
 }

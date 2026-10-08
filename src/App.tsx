@@ -15,6 +15,7 @@ import { Friends, Install, Notifications, Restrict, Trusted } from './screens/Sa
 import { Profile } from './screens/Profile'
 import { Sos } from './screens/Sos'
 import { isNative, routeFromLink } from './lib/platform'
+import { ErrorBoundary } from './components/boundary'
 
 // Rzadziej otwierane ekrany ładują się dopiero, gdy są potrzebne (mniejszy start aplikacji).
 const Operator = lazy(() => import('./screens/Operator').then((m) => ({ default: m.Operator })))
@@ -58,6 +59,8 @@ function Shell() {
       <SafetyBanner />
       <Toast />
       <main className="flex flex-1 flex-col" style={{ paddingBottom: 'calc(var(--sab) + 80px)' }}>
+        {/* Błąd jednego ekranu nie zabiera menu: pokazujemy komunikat, a przejście na inny ekran zaczyna od nowa. */}
+        <ErrorBoundary key={pathname}>
         <Suspense fallback={<div className="grid flex-1 place-items-center p-10 text-muted" aria-busy="true">…</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -89,6 +92,7 @@ function Shell() {
           <Route path="/operator" element={<Operator />} />
         </Routes>
         </Suspense>
+        </ErrorBoundary>
       </main>
       <TabBar />
       <ConsentBanner />

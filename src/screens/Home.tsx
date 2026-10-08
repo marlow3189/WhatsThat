@@ -105,12 +105,12 @@ export function Home() {
   ]
 
   return (
-    <div className="flex flex-col gap-6 pb-6">
+    <div className="flex flex-col gap-5 pb-4">
       <header className="flex flex-col gap-3 px-4 pt-3">
         <div className="flex min-h-12 items-center justify-between gap-2">
-          <p className="flex min-w-0 items-center gap-2 text-[22px] leading-none font-bold text-primary"><Mark size={28} /> <span className="truncate">{BRAND.name}</span></p>
+          <p className="flex min-w-0 items-center gap-2 text-[20px] leading-none font-bold text-primary"><Mark size={26} /> <span className="truncate">{BRAND.name}</span></p>
           <div className="flex shrink-0 items-center gap-1">
-            <Link to="/sos" className="press grid h-9 place-items-center rounded-full bg-danger px-3 text-[13px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
+            <Link to="/sos" className="press grid h-8 place-items-center rounded-full bg-danger px-3 text-[12.5px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
             <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
               <Icon name="bell" size={23} />
               {unread > 0 && <span className="tnum absolute top-1 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-bg">{unread}</span>}
@@ -123,15 +123,15 @@ export function Home() {
           <span className="truncate">· {t('home.hello', { name: first })}</span>
         </p>
         <div className="flex items-center gap-2">
-          <Link to="/szukaj" className="press flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-full bg-fill-strong/60 pr-2 pl-4">
+          <Link to="/szukaj" className="press flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-fill-strong/60 pr-2 pl-3.5">
             <Icon name="sparkle" size={20} className="shrink-0 text-primary" />
             <span className="min-w-0 flex-1">
-              <h1 className="truncate text-[16px] leading-tight font-semibold">{t('home.title')}</h1>
-              <span className="block truncate text-[12px] text-muted">{t('home.searchPh')}</span>
+              <h1 className="truncate text-[15px] leading-tight font-semibold">{t('home.title')}</h1>
+              <span className="block truncate text-[11.5px] text-muted">{t('home.searchPh')}</span>
             </span>
           </Link>
-          <Link to="/szukaj?mow=1" className="press grid size-12 shrink-0 place-items-center rounded-full bg-primary text-primary-ink" aria-label={t('voice.ask')}>
-            <Icon name="mic" size={22} />
+          <Link to="/szukaj?mow=1" className="press grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-ink" aria-label={t('voice.ask')}>
+            <Icon name="mic" size={20} />
           </Link>
         </div>
       </header>
@@ -150,12 +150,13 @@ export function Home() {
         </div>
       )}
 
-      <section className="-mt-3">
+      <section className="-mt-3 flex flex-col gap-1.5" aria-label={t('home.plan')}>
+        <p className="flex items-center gap-1 px-4 text-[12px] font-semibold text-muted"><Icon name="sparkle" size={13} className="text-primary" /> {t('home.plan')}</p>
         <Scroller label={t('home.plan')}>
           {ideas.map((x) => (
-            <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[76px] shrink-0 flex-col items-center gap-1 text-center">
-              <span className={cx('grid size-12 place-items-center rounded-[16px]', x.bg)}><Icon name={x.icon} size={22} /></span>
-              <span className="line-clamp-2 text-[11.5px] leading-tight font-medium">{x.label}</span>
+            <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[66px] shrink-0 flex-col items-center gap-1 text-center">
+              <span className={cx('grid size-11 place-items-center rounded-[14px]', x.bg)}><Icon name={x.icon} size={20} /></span>
+              <span className="line-clamp-2 text-[11px] leading-tight font-medium">{x.label}</span>
             </Link>
           ))}
         </Scroller>
@@ -168,14 +169,14 @@ export function Home() {
       {warnings.length > 0 && (
         <section className="mx-4 flex flex-col gap-2" aria-label={t('wr.title')}>
           {warnings.slice(0, 2).map((w) => (
-            <div key={w.id} className={cx('flex items-start gap-3 rounded-[22px] p-4', w.level === 3 ? 'bg-danger text-white' : w.level === 2 ? 'bg-warn-soft' : 'bg-sun')}>
-              <span className={cx('grid size-10 shrink-0 place-items-center rounded-full', w.level === 3 ? 'bg-white/20' : 'bg-surface')}><Icon name="alert" size={20} /></span>
+            <div key={w.id} className={cx('flex items-start gap-2.5 rounded-[18px] p-3', w.level === 3 ? 'bg-danger text-white' : w.level === 2 ? 'bg-warn-soft' : 'bg-sun')}>
+              <span className={cx('grid size-8 shrink-0 place-items-center rounded-full', w.level === 3 ? 'bg-white/20' : 'bg-surface')}><Icon name="alert" size={17} /></span>
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-x-2 text-[12px] font-bold tracking-wide uppercase opacity-80">
                   {w.source} · {t('wr.level', { n: w.level })}
                   {w.demo && <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] text-white normal-case">{t('wr.demo')}</span>}
                 </p>
-                <p className="text-[16px] leading-tight font-extrabold">{w.title} · {w.area}</p>
+                <p className="text-[15px] leading-tight font-bold">{w.title} · {w.area}</p>
                 {w.until && <p className="text-[13px] opacity-80">{t('wr.until', { date: new Date(w.until.replace(' ', 'T')).toLocaleString(locale, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) })}</p>}
                 <p className="mt-1 flex flex-wrap gap-x-3 text-[13px] font-semibold">
                   <a href={w.url} target="_blank" rel="noreferrer" className="underline">{t('wr.source')}</a>
@@ -196,7 +197,7 @@ export function Home() {
         <section className="mx-4 overflow-hidden rounded-[20px] bg-surface shadow-[var(--shadow)]" aria-label={t('org.title')}>
           {council.notices.slice(0, 2).map((n) => (
             <div key={n.id} className="flex items-start gap-3 border-b border-line p-3.5 last:border-b-0">
-              <span className="tile-1 grid size-10 shrink-0 place-items-center rounded-[12px]"><Icon name="bank" size={20} /></span>
+              <span className="tile-1 grid size-9 shrink-0 place-items-center rounded-[11px]"><Icon name="bank" size={18} /></span>
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-x-1.5 text-[13px] font-semibold text-muted">
                   <span className="truncate">{n.org}</span>
@@ -212,7 +213,7 @@ export function Home() {
             const what = council.pickups.filter((p) => p.date === first).map((p) => (['paper', 'plastic', 'mixed'].includes(p.fraction) ? t(`waste.${p.fraction as 'paper' | 'plastic' | 'mixed'}`) : p.fraction)).join(', ')
             return (
               <div className="flex items-center gap-3 bg-mint/60 p-3.5">
-                <span className="tile-2 grid size-10 shrink-0 place-items-center rounded-[12px]"><Icon name="trash" size={20} /></span>
+                <span className="tile-2 grid size-9 shrink-0 place-items-center rounded-[11px]"><Icon name="trash" size={18} /></span>
                 <p className="min-w-0 text-[15px] leading-snug">
                   <span className="block text-[13px] font-semibold text-muted">{t('org.waste')}</span>
                   <span className="font-semibold">{first === tomorrow ? t('org.wasteTomorrow', { what }) : `${new Date(first).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' })}: ${what}`}</span>
@@ -228,12 +229,12 @@ export function Home() {
           <SectionTitle title={t('home.alerts')} sub={t('home.alertsD')} />
           <Scroller label={t('home.alerts')}>
             {alerts.map(({ listing, km }) => (
-              <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className={cx('press flex w-[280px] shrink-0 items-start gap-3 rounded-[22px] p-4', listing.sub === 'meet' ? 'bg-mint' : 'bg-danger-soft')}>
-                <span className={cx('grid size-10 shrink-0 place-items-center rounded-full bg-surface', listing.sub === 'meet' ? 'text-ok' : 'text-danger')}>
+              <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className={cx('press flex w-[248px] shrink-0 items-start gap-2.5 rounded-[18px] p-3', listing.sub === 'meet' ? 'bg-mint' : 'bg-danger-soft')}>
+                <span className={cx('grid size-8 shrink-0 place-items-center rounded-full bg-surface', listing.sub === 'meet' ? 'text-ok' : 'text-danger')}>
                   <Icon name={listing.sub === 'meet' ? 'users' : listing.sub === 'missing' ? 'paw' : 'flag'} size={20} />
                 </span>
                 <span className="min-w-0">
-                  <span className="line-clamp-2 text-[15px] leading-tight font-bold">{listing.title}</span>
+                  <span className="line-clamp-2 text-[14px] leading-tight font-bold">{listing.title}</span>
                   <span className="mt-1 block truncate text-[13px] text-ink/70">{nameOf(listing.ownerId, true)} · {formatDistance(km)}</span>
                 </span>
               </Link>
@@ -258,12 +259,12 @@ export function Home() {
               const icon = BOARD.find((b) => b.id === kind)!.icon
               const stat = kind === 'ask' ? t('board.answers', { n: listing.answers?.length ?? 0 }) : kind === 'events' ? t('board.going', { n: listing.going?.length ?? 0 }) : kind === 'jobs' ? priceText(listing, t, locale) : t('board.free')
               return (
-                <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className="press flex w-[264px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
+                <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className="press flex w-[236px] shrink-0 flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
                   <span className="flex items-center gap-2">
-                    <span className={cx('grid size-9 shrink-0 place-items-center rounded-[11px]', ({ all: 'tile-4', help: 'tile-2', ask: 'tile-1', events: 'tile-3', jobs: 'tile-5' } as Record<BoardTab, string>)[kind])}><Icon name={icon} size={18} /></span>
+                    <span className={cx('grid size-8 shrink-0 place-items-center rounded-[10px]', ({ all: 'tile-4', help: 'tile-2', ask: 'tile-1', events: 'tile-3', jobs: 'tile-5' } as Record<BoardTab, string>)[kind])}><Icon name={icon} size={18} /></span>
                     <span className="min-w-0 truncate text-[12px] font-bold tracking-wide text-muted uppercase">{t(`board.tab.${kind}`)}</span>
                   </span>
-                  <span className="line-clamp-2 min-h-[2.5em] text-[15px] leading-tight font-bold">{listing.title}</span>
+                  <span className="line-clamp-2 min-h-[2.5em] text-[14px] leading-tight font-bold">{listing.title}</span>
                   <span className="flex items-center justify-between gap-2 text-[13px]">
                     <span className="min-w-0 truncate text-muted">{nameOf(listing.ownerId, true)} · {formatDistance(km)} · {timeAgo(listing.createdAt, t)}</span>
                     <span className="tnum shrink-0 font-bold">{stat}</span>
@@ -289,21 +290,21 @@ export function Home() {
         <SectionTitle title={t('daily.title')} />
         <Scroller label={t('daily.title')}>
           {pb && (
-            <Link to="/paliwa" draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
-              <span className="tile-1 grid size-10 place-items-center rounded-[12px]"><Icon name="fuel" size={20} /></span>
+            <Link to="/paliwa" draggable={false} className="press flex w-[148px] shrink-0 flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
+              <span className="tile-1 grid size-9 place-items-center rounded-[11px]"><Icon name="fuel" size={18} /></span>
               <span>
                 <span className="block text-[13px] text-muted">{t('daily.fuel')}</span>
-                <span className="tnum block text-[22px] leading-tight font-extrabold">{formatFuel(pb.prices.pb95!)}</span>
+                <span className="tnum block text-[19px] leading-tight font-bold">{formatFuel(pb.prices.pb95!)}</span>
                 <span className="block truncate text-[12px] text-muted">{formatDistance(pb.km)} · {t(`fuel.src.${pb.source}`)}</span>
               </span>
             </Link>
           )}
           {heat.length > 0 && (
-            <Link to="/szukaj?k=heating" draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
-              <span className="tile-3 grid size-10 place-items-center rounded-[12px]"><Icon name="flame" size={20} /></span>
+            <Link to="/szukaj?k=heating" draggable={false} className="press flex w-[148px] shrink-0 flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
+              <span className="tile-3 grid size-9 place-items-center rounded-[11px]"><Icon name="flame" size={18} /></span>
               <span>
                 <span className="block text-[13px] text-muted">{t('daily.heating')}</span>
-                <span className="tnum block text-[22px] leading-tight font-extrabold">{pellet ? priceText(pellet.listing, t, locale) : heat.length}</span>
+                <span className="tnum block text-[19px] leading-tight font-bold">{pellet ? priceText(pellet.listing, t, locale) : heat.length}</span>
                 <span className="block truncate text-[12px] text-muted">{t('daily.heatingD', { n: heat.length })}</span>
               </span>
             </Link>
@@ -311,11 +312,11 @@ export function Home() {
           {favs.map((f) => {
             const open = isOpen(users[f.id].hours)
             return (
-              <Link key={f.id} to={`/u/${f.id}`} draggable={false} className="press flex w-[168px] shrink-0 flex-col gap-3 rounded-[22px] bg-surface p-4 shadow-[var(--shadow)]">
-                <span className="tile-4 grid size-10 place-items-center rounded-[12px]"><Icon name="star" size={20} /></span>
+              <Link key={f.id} to={`/u/${f.id}`} draggable={false} className="press flex w-[148px] shrink-0 flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
+                <span className="tile-4 grid size-9 place-items-center rounded-[11px]"><Icon name="star" size={18} /></span>
                 <span>
                   <span className="block truncate text-[13px] text-muted">{f.topic || t('fav.title')}</span>
-                  <span className="block truncate text-[16px] leading-tight font-extrabold">{nameOf(f.id)}</span>
+                  <span className="block truncate text-[15px] leading-tight font-bold">{nameOf(f.id)}</span>
                   {open !== undefined && <span className={cx('mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold', open ? 'bg-ok-soft text-ok' : 'bg-fill text-muted')}>{t(open ? 'fav.open' : 'fav.closed')} · {users[f.id].hours}</span>}
                 </span>
               </Link>
@@ -343,7 +344,7 @@ export function Home() {
             </Scroller>
             <Scroller label={t('home.friendsNew')}>
               {fromFriends.slice(0, 10).map(({ listing }) => (
-                <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={users[listing.ownerId].name.split(' ')[0]} />
+                <Tile key={listing.id} listing={listing} t={t} locale={locale} width={132} meta={users[listing.ownerId].name.split(' ')[0]} />
               ))}
             </Scroller>
           </>
@@ -373,7 +374,7 @@ export function Home() {
         <section className="flex flex-col gap-3">
           <SectionTitle title={t('home.neighbors')} sub={t('home.neighborsD')} />
           <Scroller label={t('home.neighbors')}>
-            {neighbors.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={`${nameOf(listing.ownerId, true)} · ${formatDistance(km)}`} />)}
+            {neighbors.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={132} meta={`${nameOf(listing.ownerId, true)} · ${formatDistance(km)}`} />)}
           </Scroller>
         </section>
       )}
@@ -381,11 +382,11 @@ export function Home() {
       <section className="flex flex-col gap-3">
         <SectionTitle title={t('home.mine')} to="/moje" more={t('home.seeAll')} />
         <Scroller label={t('home.mine')}>
-          <Link to="/dodaj" draggable={false} className="press flex w-[156px] shrink-0 flex-col items-center justify-center gap-2 rounded-[22px] border-2 border-dashed border-primary/30 bg-surface text-primary" style={{ minHeight: 156 }}>
-            <span className="grid size-12 place-items-center rounded-full bg-primary text-white"><Icon name="plus" size={24} strokeWidth={2.4} /></span>
+          <Link to="/dodaj" draggable={false} className="press flex w-[132px] shrink-0 flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-primary/30 bg-surface text-primary" style={{ minHeight: 132 }}>
+            <span className="grid size-10 place-items-center rounded-full bg-primary text-white"><Icon name="plus" size={22} strokeWidth={2.4} /></span>
             <span className="text-[14px] font-bold">{t('home.addNew')}</span>
           </Link>
-          {myListings.map((l) => <Tile key={l.id} listing={l} t={t} locale={locale} width={156} meta={t('home.mineMeta', { n: viewsOf(l, listings) })} />)}
+          {myListings.map((l) => <Tile key={l.id} listing={l} t={t} locale={locale} width={132} meta={t('home.mineMeta', { n: viewsOf(l, listings) })} />)}
         </Scroller>
       </section>
 
@@ -399,13 +400,13 @@ export function Home() {
                   listing={promoted.listing}
                   t={t}
                   locale={locale}
-                  width={156}
+                  width={132}
                   promoted={t('home.promoted')}
                   meta={users[promoted.listing.ownerId].business ? users[promoted.listing.ownerId].name : t('rel.fof', { names: promoted.rel.via.map((v) => users[v].name.split(' ')[0]).join(', ') })}
                 />
               )}
               {rest.map(({ listing, km, rel }) => (
-                <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={rel.circle === 1 ? users[listing.ownerId].name.split(' ')[0] : formatDistance(km)} />
+                <Tile key={listing.id} listing={listing} t={t} locale={locale} width={132} meta={rel.circle === 1 ? users[listing.ownerId].name.split(' ')[0] : formatDistance(km)} />
               ))}
             </Scroller>
           </section>
@@ -416,13 +417,13 @@ export function Home() {
         <section className="flex flex-col gap-3">
           <SectionTitle title={t('home.garage')} />
           <Scroller label={t('home.garage')}>
-            {garage.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={156} meta={`${listing.place.town} · ${formatDistance(km)}`} />)}
+            {garage.map(({ listing, km }) => <Tile key={listing.id} listing={listing} t={t} locale={locale} width={132} meta={`${listing.place.town} · ${formatDistance(km)}`} />)}
           </Scroller>
         </section>
       )}
 
       <div className="mx-4 flex flex-col gap-3 rounded-[28px] bg-accent p-5 text-accent-ink">
-        <p className="text-[22px] leading-tight font-extrabold tracking-[-0.02em]">{t('home.invite')}</p>
+        <p className="text-[19px] leading-tight font-bold">{t('home.invite')}</p>
         <p className="text-[15px] leading-snug opacity-80">{t('home.inviteText')}</p>
         <Link to="/znajomi" className="self-start"><Button size="sm" className="bg-ink! text-white!">{t('f.invite')}</Button></Link>
       </div>

@@ -127,10 +127,41 @@
  * env(safe-area-inset-*), dlatego bierzemy też wartości wstrzykiwane przez Capacitora (--safe-area-inset-*).
  */
 :root {
-  --sat: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
-  --sab: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
-  --sal: max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px));
-  --sar: max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px));
+  /* --zf: skala całego interfejsu (niżej). Marginesy dzielimy przez nią, żeby po pomniejszeniu nadal były równe paskom systemu. */
+  --zf: 1;
+  --sat: calc(max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px)) / var(--zf));
+  --sab: calc(max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)) / var(--zf));
+  --sal: calc(max(env(safe-area-inset-left, 0px), var(--safe-area-inset-left, 0px)) / var(--zf));
+  --sar: calc(max(env(safe-area-inset-right, 0px), var(--safe-area-inset-right, 0px)) / var(--zf));
+}
+
+/*
+ * Automatyczne dopasowanie do szerokości telefonu: projekt jest rysowany dla ok. 400 px szerokości
+ * (Pixel, Galaxy S), a na węższych ekranach cały interfejs proporcjonalnie się zmniejsza, zamiast ucinać przyciski.
+ */
+@media (max-width: 389.98px) {
+  :root {
+    --zf: 0.95;
+  }
+  body {
+    zoom: 0.95;
+  }
+}
+@media (max-width: 369.98px) {
+  :root {
+    --zf: 0.9;
+  }
+  body {
+    zoom: 0.9;
+  }
+}
+@media (max-width: 339.98px) {
+  :root {
+    --zf: 0.84;
+  }
+  body {
+    zoom: 0.84;
+  }
 }
 
 html,
@@ -147,7 +178,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
