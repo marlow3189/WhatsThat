@@ -40,8 +40,10 @@ type CapContacts = { getContacts: (o: { projection: { name: boolean; phones: boo
 
 /** Skąd brać kontakty: wtyczka natywna (Capacitor), Contact Picker API (Chrome na Androidzie) albo nic. */
 export function contactSource(): 'native' | 'picker' | 'none' {
-  const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean; Plugins?: { Contacts?: CapContacts } }; navigator: Navigator & { contacts?: Picker } }
-  if (w.Capacitor?.isNativePlatform?.() && w.Capacitor.Plugins?.Contacts) return 'native'
+  const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean; isPluginAvailable?: (name: string) => boolean }; navigator: Navigator & { contacts?: Picker } }
+  // Capacitor.Plugins zwraca obiekt także dla niezainstalowanej wtyczki (wywołanie wtedy wisi),
+  // dlatego pytamy wprost, czy wtyczka Contacts jest w aplikacji.
+  if (w.Capacitor?.isNativePlatform?.() && w.Capacitor.isPluginAvailable?.('Contacts')) return 'native'
   if (w.navigator.contacts && 'ContactsManager' in window) return 'picker'
   return 'none'
 }
@@ -52,7 +54,9 @@ export async function readContacts(): Promise<PhoneContact[] | null> {
   try {
     const source = contactSource()
     if (source === 'native') {
-      const { contacts } = await w.Capacitor!.Plugins!.Contacts!.getContacts({ projection: { name: true, phones: true } })
+      // limit czasu: gdyby system nie odpowiedział, aplikacja nie może utknąć na tym ekranie
+      const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 20_000))
+      const { contacts } = await Promise.race([w.Capacitor!.Plugins!.Contacts!.getContacts({ projection: { name: true, phones: true } }), timeout])
       return contacts.map((c) => ({ name: c.name?.display ?? '', tel: (c.phones ?? []).map((p) => p.number ?? '').filter(Boolean) }))
     }
     if (source === 'picker') {

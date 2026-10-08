@@ -48,9 +48,10 @@ fs.mkdirSync(out, { recursive: true })
   const shot = async (name) => {
     await page.waitForTimeout(600)
     const file = `${String(++n).padStart(2, '0')}-${name}`
-    await device.screenshot({ path: path.join(out, `${file}.png`) })
-    // zrzut samej strony (z WebView), gdyby ekran emulatora nie odświeżył klatki
-    await page.screenshot({ path: path.join(out, `strona-${file}.png`) }).catch(() => {})
+    // Zrzut aplikacji z WebView. Ekran emulatora bez okna (-no-window) w chmurze nie odświeża klatek,
+    // więc zrzut całego telefonu robimy tylko na starcie (pasek stanu Androida, ikona, prawdziwy ekran).
+    await page.screenshot({ path: path.join(out, `${file}.png`) })
+    if (n === 1) await device.screenshot({ path: path.join(out, `00-telefon.png`) })
   }
   const step = async (name, fn) => {
     try {
