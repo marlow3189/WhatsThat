@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+# Jeden przebieg naraz na gałąź: kolejny czeka w kolejce (nie przerywamy trwającego budowania).
 concurrency:
   group: android-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   apk:
     runs-on: ubuntu-latest
