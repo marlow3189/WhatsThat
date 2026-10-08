@@ -23,6 +23,16 @@ export async function liveUserId(): Promise<string | null> {
   return data.session?.user.id ?? null
 }
 
+/** Wylogowanie (Ja → Wyloguj): kolejna rejestracja zakłada nowe konto testowe. */
+export async function signOut(): Promise<void> {
+  if (!LIVE) return
+  try {
+    await (await db()).auth.signOut()
+  } catch {
+    /* brak sieci: sesja wygaśnie sama */
+  }
+}
+
 /** Krok 1 logowania SMS: wysyła kod. W trybie anonimowym nic nie wysyła (kod demo). */
 export async function sendCode(phone: string): Promise<{ ok: boolean; error?: string }> {
   if (!LIVE || AUTH_MODE !== 'sms') return { ok: true }

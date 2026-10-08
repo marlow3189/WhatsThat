@@ -13,7 +13,7 @@ import { zl } from '../lib/money'
 import { localeOf, translator, useTranslator } from '../i18n'
 import { ME, seedListings, seedOrders, seedUsers } from './seed'
 import { LIVE } from '../lib/backend'
-import { fetchNearby, publishListing, saveProfile } from '../lib/live'
+import { fetchNearby, publishListing, saveProfile, signOut } from '../lib/live'
 
 interface State {
   account: Account
@@ -655,6 +655,7 @@ function useStoreValue() {
     }))
 
   const reset = () => {
+    void signOut()
     try {
       localStorage.removeItem(KEY)
     } catch {
