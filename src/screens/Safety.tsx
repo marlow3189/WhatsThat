@@ -236,7 +236,7 @@ export function Friends() {
 
 /**
  * Pobieranie: najpierw aplikacja ze sklepu (Android, iPhone), przeglądarka jako opcja.
- * Na komputerze kod QR prowadzi na miliorbit.com/pobierz, która sama wybiera sklep.
+ * Na komputerze kod QR prowadzi na regioorbit.com/pobierz, która sama wybiera sklep.
  */
 export function Install() {
   const { t } = useStore()

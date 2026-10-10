@@ -97,10 +97,10 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
       )}
       {rings.map((km) => (
         <span key={km} className="pointer-events-none absolute rounded-full border border-dashed border-primary/35" style={{ width: km * 2 * pxPerKm, height: km * 2 * pxPerKm, left: width / 2 - km * pxPerKm, top: height / 2 - km * pxPerKm }}>
-          <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-1.5 text-[10px] font-bold text-primary">{km} km</span>
+          <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-surface/90 px-1.5 text-[10px] font-bold text-primary-strong">{km} km</span>
         </span>
       ))}
-      <span className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-white shadow-[0_0_0_6px_color-mix(in_srgb,var(--primary)_18%,transparent)]" style={{ left: width / 2, top: height / 2 }}>
+      <span className="absolute grid size-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-primary text-primary-ink shadow-[0_0_0_6px_color-mix(in_srgb,var(--primary)_18%,transparent)]" style={{ left: width / 2, top: height / 2 }}>
         <Icon name="user" size={18} />
       </span>
       {placed.map(({ p, x, y }) => {
@@ -124,7 +124,7 @@ export function MapView({ center, points, selected, onSelect, height = 300, labe
             <span
               className={cx(
                 'tnum rounded-full px-2.5 py-1 text-[12px] font-extrabold whitespace-nowrap shadow-[0_4px_12px_rgb(20_27_45/0.18)]',
-                on ? 'bg-ink text-white' : p.tone === 'friend' ? 'bg-primary text-white' : p.tone === 'fof' ? 'bg-lilac text-ink' : 'bg-surface text-ink',
+                on ? 'bg-ink text-white' : p.tone === 'friend' ? 'bg-primary text-primary-ink' : p.tone === 'fof' ? 'bg-lilac text-ink' : 'bg-surface text-ink',
               )}
             >
               {p.label}

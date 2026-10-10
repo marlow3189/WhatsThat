@@ -1,4 +1,4 @@
--- Miliorbit: schemat produkcyjny (Supabase / Postgres + PostGIS).
+-- Regioorbit: schemat produkcyjny (Supabase / Postgres + PostGIS).
 -- Model „łącznika”: nie trzymamy cudzych pieniędzy i nie pobieramy prowizji.
 -- Tożsamość = numer telefonu (Supabase Auth, logowanie SMS), opcjonalnie e-mail.
 

@@ -1,8 +1,8 @@
 apply plugin: 'com.android.application'
 
 def ciVersion = Integer.parseInt(System.getenv('VERSION_CODE') ?: '1')
-// Wersja deweloperska (gałąź dev): osobna aplikacja „Miliorbit DEV”, instaluje się obok wersji testowej.
-def devBuild = System.getenv('MILIORBIT_DEV') == '1'
+// Wersja deweloperska (gałąź dev): osobna aplikacja „Regioorbit DEV”, instaluje się obok wersji testowej.
+def devBuild = System.getenv('REGIOORBIT_DEV') == '1'
 // Klucz do Google Play (upload key) tylko z sekretów GitHub; w repozytorium go nie ma.
 def uploadKeystore = System.getenv('ANDROID_UPLOAD_KEYSTORE')
 
@@ -10,14 +10,14 @@ android {
     namespace = "com.miliorbit.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId devBuild ? "com.miliorbit.app.dev" : "com.miliorbit.app"
-        resValue "string", "app_name", devBuild ? "Miliorbit DEV" : "Miliorbit"
-        resValue "string", "title_activity_main", devBuild ? "Miliorbit DEV" : "Miliorbit"
+        applicationId devBuild ? "com.regioorbit.app.dev" : "com.regioorbit.app"
+        resValue "string", "app_name", devBuild ? "Regioorbit DEV" : "Regioorbit"
+        resValue "string", "title_activity_main", devBuild ? "Regioorbit DEV" : "Regioorbit"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         // Numer wersji z GitHub Actions (każde budowanie +1), żeby nowe APK instalowało się na starym.
         versionCode ciVersion
-        versionName devBuild ? "0.8.${ciVersion}-dev" : "0.8.${ciVersion}"
+        versionName devBuild ? "0.9.${ciVersion}-dev" : "0.9.${ciVersion}"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

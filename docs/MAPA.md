@@ -1,4 +1,4 @@
-# Mapa aplikacji Miliorbit (wersja 0.8)
+# Mapa aplikacji Regioorbit (wersja 0.9)
 
 Jedna zasada: **pięć zakładek na dole, każda odpowiada na jedno pytanie**. Wszystko inne jest o jedno stuknięcie
 dalej z tych pięciu miejsc. Kciuk sięga dolnego menu, a najczęstsze rzeczy (Dodaj, SOS, kalendarz) są zawsze na wierzchu.
@@ -6,14 +6,16 @@ dalej z tych pięciu miejsc. Kciuk sięga dolnego menu, a najczęstsze rzeczy (D
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │ OKOLICA (start)        „Co dzieje się obok mnie i co mam dziś do zrobienia?”  │
-│  ├─ nagłówek: Miliorbit · SOS · Kalendarz · Powiadomienia                     │
+│  ├─ nagłówek: ☰ menu · Regioorbit · SOS · Powiadomienia                       │
+│  ├─ okrągłe skróty: znajomi z nowościami, Mapa, Zaproś                        │
 │  ├─ pole „Co dziś załatwiamy?” + mikrofon  → Szukaj z planerem AI             │
-│  ├─ „Zaplanuj z AI”: 5 gotowych celów (podjazd, jajka, ogród, opał, przeprowadzka)│
+│  ├─ 4 kolorowe kafle: Poproś o pomoc · Pożycz narzędzie · Wydarzenie · Tablica│
 │  ├─ ostrzeżenia (IMGW, NINA…) z „Jestem bezpieczny/a”                         │
 │  ├─ Kalendarz: dziś i jutro                                                   │
 │  ├─ Gmina: komunikaty zweryfikowanych instytucji i wywóz śmieci               │
 │  ├─ Alerty z okolicy (zaginione zwierzęta, zbiórki)                           │
 │  ├─ Tablica okolicy: Pomoc · Pytania · Wydarzenia · Praca                     │
+│  ├─ „Zaplanuj z AI”: 5 gotowych celów (podjazd, jajka, ogród, opał, przeprowadzka)│
 │  ├─ Twoja orbita (mapa ludzi wokół), Na co dzień (paliwo, opał, ulubieni)     │
 │  └─ Nowe od znajomych, Sąsiedzi, Twoje ogłoszenia, Twoje zainteresowania      │
 ├──────────────────────────────────────────────────────────────────────────────┤
@@ -43,7 +45,7 @@ dalej z tych pięciu miejsc. Kciuk sięga dolnego menu, a najczęstsze rzeczy (D
 | Ekran | Skąd | Adres |
 |---|---|---|
 | SOS | czerwony przycisk na Okolicy, Ja | `#/sos` |
-| Kalendarz (prywatny) | ikona w nagłówku Okolicy, karta „Dziś”, Ja | `#/kalendarz` |
+| Kalendarz (prywatny) | menu ☰, karta „Dziś”, Ja | `#/kalendarz` |
 | Powiadomienia | dzwonek na Okolicy | `#/powiadomienia` |
 | Ogłoszenie | każdy kafelek | `#/l/:id` |
 | Profil osoby | z ogłoszenia, orbity | `#/u/:id` |
@@ -51,12 +53,22 @@ dalej z tych pięciu miejsc. Kciuk sięga dolnego menu, a najczęstsze rzeczy (D
 | Czat | z ogłoszenia, zamówienia | `#/czat/:id` |
 | Paliwa | Na co dzień, Ja | `#/paliwa` |
 
-## Cztery (pięć) kafelki u góry Okolicy
+## Menu ☰ (lewy górny róg Okolicy)
 
-To **skróty do planera AI**: każdy to gotowy cel („Wybrukować podjazd”, „Jajka od znajomych”, „Skosić trawnik”,
-„Opał na zimę”, „Przeprowadzka”). Stuknięcie otwiera Szukaj z planem krok po kroku i ofertami z okolicy, znajomi najpierw.
-Nad kafelkami jest podpis „Zaplanuj z AI”. Gdy aplikacja jest połączona z AI (PLAN.md, krok 2), kafelki będą
-dobierane do pory roku i do tego, czego ostatnio szukasz.
+Kalendarz, Moje ogłoszenia, Zamówienia, Znajomi, Mapa, Paliwa, Kod QR, Ustawienia i SOS. To te same miejsca co w **Ja**,
+tylko bliżej kciuka.
+
+## Cztery kolorowe kafle na Okolicy
+
+| Kafel | Kolor | Co robi |
+|---|---|---|
+| Poproś o pomoc | brzoskwinia | otwiera Dodaj → „Poproś o pomoc” (za darmo, widzą sąsiedzi) |
+| Pożycz narzędzie | żółty | otwiera Szukaj w kategorii Narzędzia (znajomi najpierw) |
+| Wydarzenie | zieleń | otwiera Dodaj → „Wydarzenie” |
+| Tablica okolicy | błękit | przewija do wpisów z okolicy niżej na ekranie |
+
+Niżej zostaje rząd **„Zaplanuj z AI”**: gotowe cele („Wybrukować podjazd”, „Jajka od znajomych”…), które otwierają
+Szukaj z planem krok po kroku.
 
 ## Zasady układu
 

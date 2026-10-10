@@ -132,7 +132,7 @@ function AddRoute() {
 }
 
 /**
- * Linki https://miliorbit.com/l/… otwierają się w aplikacji ze sklepu (App Links / Universal Links).
+ * Linki https://regioorbit.com/l/… otwierają się w aplikacji ze sklepu (App Links / Universal Links).
  * System przekazuje adres, a my zamieniamy go na ekran. W przeglądarce nic nie robi.
  */
 function useDeepLinks() {
@@ -203,7 +203,7 @@ function Toast() {
   if (!toast) return null
   const body = (
     <span className="flex items-start gap-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-white"><Icon name="bell" size={18} /></span>
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-primary-ink"><Icon name="bell" size={18} /></span>
       <span className="min-w-0 flex-1 text-[15px] leading-snug">{toast.text}</span>
     </span>
   )
@@ -227,14 +227,14 @@ function TabBar() {
     return last && last.from !== 'me' && last.at > (readAt[c.id] ?? 0)
   }).length
   const tabs = [
-    { to: '/', label: t('nav.home'), icon: 'community' },
-    { to: '/szukaj', label: t('nav.search'), icon: 'search' },
+    { to: '/', label: t('nav.home'), icon: 'home' },
+    { to: '/szukaj', label: t('nav.search'), icon: 'compass' },
     { to: '/dodaj', label: t('nav.add'), icon: 'plus', onClick: restartAdd },
     { to: '/wiadomosci', label: t('nav.messages'), icon: 'chat', badge: unread },
     { to: '/ja', label: t('nav.me'), icon: 'user' },
   ]
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-surface" style={{ paddingBottom: 'var(--sab)' }} aria-label="Menu">
+    <nav className="fixed inset-x-0 bottom-0 z-30 rounded-t-[22px] bg-surface shadow-[0_-4px_18px_rgb(68_48_28/0.08)]" style={{ paddingBottom: 'var(--sab)' }} aria-label="Menu">
       <div className="mx-auto grid h-16 max-w-[34rem] grid-cols-5">
         {tabs.map((tab) => {
           const plus = tab.icon === 'plus'
@@ -247,15 +247,22 @@ function TabBar() {
               aria-label={tab.label}
               className={({ isActive }) => cx('press flex min-w-0 flex-col items-center justify-center gap-1', isActive ? 'text-ink' : 'text-muted')}
             >
-              {({ isActive }) => (
-                <>
-                  <span className={cx('relative grid h-8 w-14 place-items-center rounded-full transition-colors', plus ? 'bg-primary text-primary-ink' : isActive && 'bg-primary-soft text-primary')}>
-                    <Icon name={tab.icon} size={22} strokeWidth={plus ? 2.4 : isActive ? 2.2 : 1.8} fill={isActive && !plus && tab.icon !== 'search' ? 'currentColor' : 'none'} fillOpacity={0.18} />
-                    {!!tab.badge && <span className="tnum absolute -top-1 left-[calc(50%+5px)] grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-surface">{tab.badge}</span>}
+              {({ isActive }) =>
+                plus ? (
+                  // Środkowy „+” jak w identyfikacji Regioorbit: duże pomarańczowe koło nad paskiem.
+                  <span className="-mt-7 grid size-[58px] place-items-center rounded-full bg-primary text-primary-ink shadow-[0_8px_20px_rgb(232_137_88/0.45)] ring-[5px] ring-surface">
+                    <Icon name="plus" size={28} strokeWidth={2.6} />
                   </span>
-                  <span className={cx('max-w-full truncate px-0.5 text-[12px] leading-none', isActive ? 'font-bold' : 'font-medium')}>{tab.label}</span>
-                </>
-              )}
+                ) : (
+                  <>
+                    <span className={cx('relative grid h-8 w-14 place-items-center rounded-full transition-colors', isActive && 'bg-primary-soft text-primary-strong')}>
+                      <Icon name={tab.icon} size={22} strokeWidth={isActive ? 2.2 : 1.8} fill={isActive && tab.icon !== 'search' ? 'currentColor' : 'none'} fillOpacity={0.18} />
+                      {!!tab.badge && <span className="tnum absolute -top-1 left-[calc(50%+5px)] grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-ink ring-2 ring-surface">{tab.badge}</span>}
+                    </span>
+                    <span className={cx('max-w-full truncate px-0.5 text-[11.5px] leading-none', isActive ? 'font-extrabold text-ink' : 'font-semibold')}>{tab.label}</span>
+                  </>
+                )
+              }
             </NavLink>
           )
         })}

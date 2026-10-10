@@ -231,7 +231,7 @@ export function Onboarding() {
             <p id="gender-label" className="px-1 text-[13px] font-medium text-muted">{t('ob.gender.title')}</p>
             <div role="radiogroup" aria-labelledby="gender-label" className="grid grid-cols-3 gap-2">
               {GENDERS.map((g) => (
-                <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => setGender(g)} className={cx('press flex min-h-11 items-center justify-center gap-1 rounded-[12px] border px-1.5 text-center text-[13.5px] leading-tight font-semibold', gender === g ? 'border-primary bg-primary-soft text-primary' : 'border-line bg-surface')}>
+                <button key={g} type="button" role="radio" aria-checked={gender === g} onClick={() => setGender(g)} className={cx('press flex min-h-11 items-center justify-center gap-1 rounded-[12px] border px-1.5 text-center text-[13.5px] leading-tight font-semibold', gender === g ? 'border-primary bg-primary-soft text-primary-strong' : 'border-line bg-surface')}>
                   {gender === g && <Icon name="check" size={15} strokeWidth={2.6} className="shrink-0" />} {t(`gender.${g}`)}
                 </button>
               ))}
@@ -342,7 +342,7 @@ export function Onboarding() {
             {LANGS.map((l) => (
               <button key={l.id} type="button" onClick={() => chooseLang(l.id)} aria-pressed={lang === l.id} className="flex min-h-12 w-full items-center justify-between px-4 text-left active:bg-fill">
                 <span lang={l.id}>{l.name}</span>
-                {lang === l.id && <Icon name="check" className="text-primary" strokeWidth={2.4} />}
+                {lang === l.id && <Icon name="check" className="text-primary-strong" strokeWidth={2.4} />}
               </button>
             ))}
           </div>

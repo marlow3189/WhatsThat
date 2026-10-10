@@ -7,6 +7,7 @@ import { initAnalytics } from './lib/analytics'
 import { isNative } from './lib/platform'
 import { installErrorLog } from './lib/diag'
 import { ErrorBoundary } from './components/boundary'
+import '@fontsource-variable/nunito'
 import './index.css'
 
 installErrorLog()

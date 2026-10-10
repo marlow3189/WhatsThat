@@ -1,4 +1,4 @@
--- Miliorbit: bezpieczna płatność, spory, kaucje, alerty sąsiedzkie, reklamy, zaproszenia i ochrona przed nadużyciami.
+-- Regioorbit: bezpieczna płatność, spory, kaucje, alerty sąsiedzkie, reklamy, zaproszenia i ochrona przed nadużyciami.
 -- Pieniądze trzyma operator płatności (np. Stripe Connect z ręczną wypłatą albo PayU Marketplace),
 -- baza zapisuje tylko stan i decyzje. Uruchamiać po 0001_init.sql.
 

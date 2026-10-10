@@ -598,7 +598,7 @@ export const pl = {
   'go.bike': 'rowerem',
   'go.car': 'autem',
   'me.skin': 'Wygląd',
-  'skin.color': 'Kolorowy',
+  'skin.color': 'Regioorbit',
   'skin.blue': 'Niebieski',
   'nick.label': 'Pseudonim',
   'nick.hint': 'Osoby spoza Twoich znajomych widzą go zamiast imienia. Bez pseudonimu widzą „Osoba #” i dwie pierwsze cyfry numeru.',
@@ -829,6 +829,14 @@ export const pl = {
   'diag.copy': 'Kopiuj',
   'diag.clear': 'Wyczyść błędy',
   'diag.none': 'Brak zapisanych błędów.',
+  'home.tool': 'Pożycz narzędzie',
+  'home.create': 'Utwórz',
+  'home.see': 'Zobacz',
+  'home.find': 'Znajdź',
+  'home.map': 'Mapa',
+  'home.inviteShort': 'Zaproś',
+  'menu.title': 'Menu',
+  'menu.settings': 'Ustawienia',
 }
 
 export type Dict = typeof pl

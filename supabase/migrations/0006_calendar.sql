@@ -1,4 +1,4 @@
--- Miliorbit 0.8: prywatny kalendarz użytkownika.
+-- Regioorbit 0.8: prywatny kalendarz użytkownika.
 -- Widzi go tylko właściciel (RLS). Pozostałe pozycje kalendarza (wydarzenia z „Będę”, odbiory i zwroty
 -- z zamówień, wywóz śmieci) aplikacja liczy z innych tabel, więc nie dublujemy ich tutaj.
 

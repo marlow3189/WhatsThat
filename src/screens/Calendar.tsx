@@ -97,7 +97,7 @@ export function Calendar() {
                 onClick={() => setDay(d)}
                 aria-pressed={d === day}
                 aria-label={dayLabel(d)}
-                className={cx('press mx-auto flex size-10 flex-col items-center justify-center rounded-full text-[14px] tnum', d === day ? 'bg-primary font-bold text-primary-ink' : d === today ? 'bg-primary-soft font-bold text-primary' : other ? 'text-muted/50' : '')}
+                className={cx('press mx-auto flex size-10 flex-col items-center justify-center rounded-full text-[14px] tnum', d === day ? 'bg-primary font-bold text-primary-ink' : d === today ? 'bg-primary-soft font-bold text-primary-strong' : other ? 'text-muted/50' : '')}
               >
                 {Number(d.slice(8))}
                 <span className={cx('mt-0.5 size-1 rounded-full', has ? (d === day ? 'bg-primary-ink' : 'bg-primary') : 'bg-transparent')} />

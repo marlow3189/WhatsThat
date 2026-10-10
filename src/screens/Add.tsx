@@ -72,6 +72,11 @@ export function Add() {
     setSub(c.sub)
     setStep('details')
   }
+  // Skrót z ekranu Okolica (np. „Poproś o pomoc”): od razu formularz wpisu sąsiedzkiego.
+  useEffect(() => {
+    const c = COMMUNITY.find((x) => x.sub === params.get('c'))
+    if (c && !account.restricted) startCommunity(c)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const isEvent = category === 'community' && (sub === 'localevents' || sub === 'meet')
   const communityQuick = (
     <section className="flex flex-col gap-2">

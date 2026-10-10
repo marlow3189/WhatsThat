@@ -163,7 +163,7 @@ function SafePay({ order, seller, amount, deposit, code, setCode, onRelease, t }
   return (
     <section className="mx-4 flex flex-col gap-3 rounded-[24px] bg-sky p-4">
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white"><Icon name="shield" size={20} /></span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-ink"><Icon name="shield" size={20} /></span>
         <div className="min-w-0">
           <p className="text-[16px] font-extrabold">{t('sp.title')}</p>
           <p className="text-[14px] leading-snug text-ink/75">{t(`sp.${state}`, { amount, h: AUTO_RELEASE_H })}</p>
@@ -215,7 +215,7 @@ function ProblemSheet({ kind, seller, t, onClose, onSend }: { kind: Kind; seller
           {list.map((r) => (
             <button key={r} type="button" onClick={() => setReason(r)} aria-pressed={reason === r} className="flex min-h-[52px] w-full items-center gap-3 px-4 text-left active:bg-fill">
               <span className="flex-1">{t(`d.r.${r}`)}</span>
-              <span className={cx('grid size-6 place-items-center rounded-full border-2', reason === r ? 'border-primary bg-primary text-white' : 'border-fill-strong')}>
+              <span className={cx('grid size-6 place-items-center rounded-full border-2', reason === r ? 'border-primary bg-primary text-primary-ink' : 'border-fill-strong')}>
                 {reason === r && <Icon name="check" size={14} strokeWidth={3} />}
               </span>
             </button>

@@ -52,5 +52,5 @@ export function deviceSummary(build: string): string {
   const chrome = ua.match(/Chrome\/([\d.]+)/)?.[1] ?? ua.match(/Version\/([\d.]+).*Safari/)?.[1] ?? '?'
   const screen = typeof window === 'undefined' ? '' : `${window.innerWidth}×${window.innerHeight} @${window.devicePixelRatio}`
   const sat = typeof document === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-top').trim()
-  return `Miliorbit ${build} · ${os} · WebView ${chrome} · ${screen}${sat ? ` · inset ${sat}` : ''}`
+  return `Regioorbit ${build} · ${os} · WebView ${chrome} · ${screen}${sat ? ` · inset ${sat}` : ''}`
 }

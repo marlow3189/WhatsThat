@@ -1,4 +1,4 @@
-// Składa stronę miliorbit.com: dist/ = strona z linkami do sklepów, dist/app/ = aplikacja w przeglądarce
+// Składa stronę regioorbit.com: dist/ = strona z linkami do sklepów, dist/app/ = aplikacja w przeglądarce
 // (zbudowana wcześniej przez `vite build`). Linki do sklepów biorą się z site/stores.json.
 import { cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import qrcode from 'qrcode-generator'
@@ -18,7 +18,7 @@ writeFileSync('dist/stores.js', `window.STORES = ${JSON.stringify({ android: sto
 
 // Kod QR na stronę główną i /pobierz (komputer): prowadzi na /pobierz, która na telefonie wybiera sklep.
 const qr = qrcode(0, 'M')
-qr.addData('https://miliorbit.com/pobierz?utm_source=site&utm_medium=qr')
+qr.addData('https://regioorbit.com/pobierz?utm_source=site&utm_medium=qr')
 qr.make()
 writeFileSync('dist/qr.svg', qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }))
 

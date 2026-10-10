@@ -1,4 +1,4 @@
-# Miliorbit: bezpieczeństwo
+# Regioorbit: bezpieczeństwo
 
 Cel: aplikacja z pieniędzmi i numerami telefonów musi wytrzymać typowe ataki. Poniżej warstwy ochrony,
 co już jest w kodzie (✅) i co trzeba włączyć przy wdrożeniu (☐). Szczegóły kroków: [WDROZENIE.md](WDROZENIE.md).

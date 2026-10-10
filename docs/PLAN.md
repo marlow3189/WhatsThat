@@ -1,4 +1,4 @@
-# Master plan Miliorbit (wersja 0.8, październik 2026)
+# Master plan Regioorbit (wersja 0.8, październik 2026)
 
 Plan krok po kroku, od aplikacji testowej do startu w sklepach. Każdy krok ma: **kto** (Ty albo agent), **co dokładnie
 kliknąć**, **ile to trwa** i **„Gotowe, gdy”**, czyli test, po którym wiadomo, że można iść dalej.
@@ -25,7 +25,7 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA
 ```
  Telefon (APK, później iPhone) ──┐
                                  ├──► Supabase (UE, Frankfurt)
- Przeglądarka: miliorbit…/app/ ──┘      ├─ Auth: konta (na testach anonimowe, potem numer + SMS)
+ Przeglądarka: regioorbit…/app/ ──┘      ├─ Auth: konta (na testach anonimowe, potem numer + SMS)
                                         ├─ Postgres + RLS: profile, ogłoszenia, czaty, SOS, instytucje, kalendarz (0001–0006)
                                         ├─ Storage: zdjęcia │ Realtime: czaty, SOS │ Edge Functions: AI, push, płatności
                                         └─► Anthropic (planer AI), Firebase (push), Stripe (płatności), SMS
@@ -34,7 +34,7 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA
 
 **Tryby aplikacji:** *demo* (dane przykładowe tylko na telefonie) i *na żywo* (baza). Na żywo włącza się samo, gdy
 w GitHubie są zmienne `VITE_SUPABASE_URL` i `VITE_SUPABASE_ANON_KEY` (krok 1). Tryb widać na dole zakładki **Ja**:
-`Miliorbit 0.8 · abc1234 · demo` albo `· live`. W trybie na żywo przykładowe ogłoszenia zostają (żeby ekrany nie były
+`Regioorbit 0.8 · abc1234 · demo` albo `· live`. W trybie na żywo przykładowe ogłoszenia zostają (żeby ekrany nie były
 puste), a Twoje i cudze ogłoszenia z okolicy dochodzą z bazy.
 
 ## Zasady pracy
@@ -51,12 +51,12 @@ puste), a Twoje i cudze ogłoszenia z okolicy dochodzą z bazy.
 ## Krok 0. Ścieżka deweloperska w GitHubie (Ty: 5 min, raz)
 
 Po co: osobne miejsce na nowe, niesprawdzone rzeczy. Na telefonie masz wtedy **dwie aplikacje obok siebie**:
-„Miliorbit” (stabilna, do pokazywania) i „Miliorbit DEV” (najnowsza, do sprawdzania).
+„Regioorbit” (stabilna, do pokazywania) i „Regioorbit DEV” (najnowsza, do sprawdzania).
 
 | Gałąź | Do czego | Gdzie APK |
 |---|---|---|
-| `claude/p2p-rental-marketplace-bimvf6` (domyślna) | wersja testowa, którą pokazujesz innym | Releases → **Miliorbit Android (test)** → `miliorbit-test.apk` |
-| `dev` | nowe funkcje, zanim trafią do testowej | Releases → **Miliorbit Android (DEV)** → `miliorbit-dev.apk` |
+| `claude/p2p-rental-marketplace-bimvf6` (domyślna) | wersja testowa, którą pokazujesz innym | Releases → **Regioorbit Android (test)** → `regioorbit-test.apk` |
+| `dev` | nowe funkcje, zanim trafią do testowej | Releases → **Regioorbit Android (DEV)** → `regioorbit-dev.apk` |
 
 **Ty:**
 1. GitHub → repozytorium → przycisk z nazwą gałęzi (nad listą plików) → wpisz `dev` → **Create branch dev from
@@ -73,7 +73,7 @@ Instalacja na telefonie i sposoby bez instalacji (emulator): [START.md](START.md
 ## Krok 1. Baza danych (Ty: ok. 30 min, raz)
 
 **1.1. Projekt Supabase** (supabase.com):
-1. **Start your project** → zaloguj się przez GitHub → **New project**: nazwa `miliorbit-test`, *Database Password*:
+1. **Start your project** → zaloguj się przez GitHub → **New project**: nazwa `regioorbit-test`, *Database Password*:
    **Generate a password** (zapisz w menedżerze haseł), *Region*: **Central EU (Frankfurt)**, plan **Free** → **Create**.
 2. **Database → Extensions**: włącz **postgis** i **pg_cron**.
 3. **SQL Editor → New query** → wklej i **Run** (tajny klucz do anonimowych kluczy; nikt go nie zna):
@@ -126,18 +126,18 @@ czyta go na głos. Koszt: ok. 1–3 grosze za zapytanie (podgląd w console.anth
 
 Po co: testerzy instalują ze Sklepu Play, także na Samsungach z „Automatyczną blokadą”, a aplikacja sama się aktualizuje.
 
-1. play.google.com/console → **Utwórz aplikację**: nazwa „Miliorbit”, język polski, aplikacja, bezpłatna → zaakceptuj.
+1. play.google.com/console → **Utwórz aplikację**: nazwa „Regioorbit”, język polski, aplikacja, bezpłatna → zaakceptuj.
 2. **Klucz do wysyłki (upload key)**, na komputerze z Javą (Android Studio ją ma), w terminalu:
    ```
-   keytool -genkeypair -v -keystore miliorbit-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
+   keytool -genkeypair -v -keystore regioorbit-upload.jks -alias upload -keyalg RSA -keysize 4096 -validity 10000
    ```
    Hasła zapisz w menedżerze haseł, plik `.jks` trzymaj poza repozytorium (i kopię w bezpiecznym miejscu).
 3. **Sekrety w GitHubie** (Settings → Secrets and variables → Actions → **Secrets**):
-   `ANDROID_UPLOAD_KEYSTORE_BASE64` (plik `.jks` zakodowany: `base64 -w0 miliorbit-upload.jks` na Linuksie,
-   `base64 -i miliorbit-upload.jks` na Macu), `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS` (`upload`),
+   `ANDROID_UPLOAD_KEYSTORE_BASE64` (plik `.jks` zakodowany: `base64 -w0 regioorbit-upload.jks` na Linuksie,
+   `base64 -i regioorbit-upload.jks` na Macu), `ANDROID_UPLOAD_KEYSTORE_PASSWORD`, `ANDROID_UPLOAD_KEY_ALIAS` (`upload`),
    `ANDROID_UPLOAD_KEY_PASSWORD`.
 4. **Pierwsza paczka ręcznie** (wymóg Google): GitHub → **Actions → Google Play → Run workflow** → zaznacz
-   **Tylko zbuduj plik .aab** → **Run** → po ok. 5 min w przebiegu **Artifacts → miliorbit-play-…** (rozpakuj zip).
+   **Tylko zbuduj plik .aab** → **Run** → po ok. 5 min w przebiegu **Artifacts → regioorbit-play-…** (rozpakuj zip).
    Play Console: **Testowanie → Test wewnętrzny → Utwórz wersję** → wgraj `app-release.aab` → zapisz.
    Zostaw włączone **Podpisywanie aplikacji przez Google Play**.
 5. **Konto usługi:** console.cloud.google.com → projekt → **IAM i administracja → Konta usługi → Utwórz** → **Klucze →
@@ -148,7 +148,7 @@ Po co: testerzy instalują ze Sklepu Play, także na Samsungach z „Automatyczn
 8. **Linki do aplikacji:** Play Console → **Integralność aplikacji → Podpisywanie** → odcisk SHA-256 klucza podpisywania
    podaj agentowi (dopisze go do `site/.well-known/assetlinks.json`).
 
-**Gotowe, gdy:** tester z linku instaluje „Miliorbit” ze Sklepu Play, a nowa wersja przychodzi po **Run workflow**.
+**Gotowe, gdy:** tester z linku instaluje „Regioorbit” ze Sklepu Play, a nowa wersja przychodzi po **Run workflow**.
 
 ---
 
@@ -156,7 +156,7 @@ Po co: testerzy instalują ze Sklepu Play, także na Samsungach z „Automatyczn
 
 Przejdź aplikację w 2–3 językach (zmiana: **Ja → Język**) i zgłoś agentowi według wzoru z START.md:
 zakładka, ekran, co jest źle, zrzut. Sprawdź jedną ręką: czy wszystko ważne jest w zasięgu kciuka.
-Agent poprawia na gałęzi `dev`, Ty sprawdzasz w „Miliorbit DEV”.
+Agent poprawia na gałęzi `dev`, Ty sprawdzasz w „Regioorbit DEV”.
 
 **Gotowe, gdy:** nie masz uwag do rejestracji, Okolicy, Dodaj i Czatów w żadnym z używanych języków.
 
@@ -191,8 +191,8 @@ z zielonym znaczkiem; zwykłe konto nie ma jak opublikować komunikatu (baza odr
 
 ## Krok 6. Czaty i powiadomienia (Ty: 20 min, Agent: 2–3 dni)
 
-**Ty:** console.firebase.google.com → projekt → dodaj aplikację Android `com.miliorbit.app` (i drugą:
-`com.miliorbit.app.dev`) → pobierz `google-services.json` → wyślij agentowi (plik nie jest tajny).
+**Ty:** console.firebase.google.com → projekt → dodaj aplikację Android `com.regioorbit.app` (i drugą:
+`com.regioorbit.app.dev`) → pobierz `google-services.json` → wyślij agentowi (plik nie jest tajny).
 **Agent:** czaty na żywo (Realtime), licznik nieprzeczytanych, push z serwera, cisza nocna.
 **Gotowe, gdy:** wiadomość dochodzi na drugi telefon w 2 s, a przy zamkniętej aplikacji przychodzi powiadomienie.
 
@@ -214,7 +214,7 @@ z zielonym znaczkiem; zwykłe konto nie ma jak opublikować komunikatu (baza odr
   wyłączasz logowanie anonimowe. Od teraz konto = numer telefonu z kodem.
 - **iPhone:** gdy Apple zatwierdzi konto (Apple Developer, firma z numerem D-U-N-S): agent dodaje projekt iOS
   i budowanie na macOS w GitHub Actions → TestFlight.
-- **Domena:** miliorbit.com (WDROZENIE.md, etap 2) i linki do aplikacji (etap 9).
+- **Domena:** regioorbit.com (WDROZENIE.md, etap 2) i linki do aplikacji (etap 9).
 - **Bezpieczeństwo:** wszystkie pola w BEZPIECZENSTWO.md na ✅, polityka prywatności i regulamin od prawnika.
 
 **Gotowe, gdy:** aplikacja jest w Google Play i App Store, a logowanie numerem z SMS działa.

@@ -4,4 +4,4 @@ Disallow: /app/
 Disallow: /l/
 Disallow: /u/
 Disallow: /z/
-Sitemap: https://miliorbit.com/sitemap.xml
+Sitemap: https://regioorbit.com/sitemap.xml

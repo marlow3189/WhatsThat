@@ -2,7 +2,7 @@ import { BRAND } from '../config'
 
 /**
  * Aplikacja jest przede wszystkim na telefon (Android i iOS przez Capacitor). Przeglądarka to dodatek:
- * ta sama aplikacja pod miliorbit.com/app/. Tu rozpoznajemy, gdzie działamy, i tłumaczymy linki na ekrany.
+ * ta sama aplikacja pod regioorbit.com/app/. Tu rozpoznajemy, gdzie działamy, i tłumaczymy linki na ekrany.
  */
 
 type Cap = { isNativePlatform?: () => boolean; getPlatform?: () => string }
@@ -33,11 +33,11 @@ export const isStandalone = () =>
 /**
  * Link → ekran aplikacji. Obsługuje linki udostępniane z aplikacji i otwierane w aplikacji natywnej
  * (App Links na Androidzie, Universal Links na iOS):
- *   https://miliorbit.com/l/abc → /l/abc (ogłoszenie)
- *   https://miliorbit.com/u/abc → /u/abc (profil)
- *   https://miliorbit.com/z/abc → /znajomi (zaproszenie od znajomego)
- *   https://miliorbit.com/sos → /sos
- *   https://miliorbit.com/app/#/czat/1 → /czat/1
+ *   https://regioorbit.com/l/abc → /l/abc (ogłoszenie)
+ *   https://regioorbit.com/u/abc → /u/abc (profil)
+ *   https://regioorbit.com/z/abc → /znajomi (zaproszenie od znajomego)
+ *   https://regioorbit.com/sos → /sos
+ *   https://regioorbit.com/app/#/czat/1 → /czat/1
  */
 export function routeFromLink(url: string): string | null {
   let u: URL

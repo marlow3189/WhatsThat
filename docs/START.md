@@ -1,4 +1,4 @@
-# Start: jak testować Miliorbit u siebie
+# Start: jak testować Regioorbit u siebie
 
 Ta instrukcja jest na teraz: chcesz klikać aplikację na swoim telefonie i komputerze, zgłaszać poprawki i widzieć je
 po kilku minutach. Bezpieczeństwo i start publiczny są w [WDROZENIE.md](WDROZENIE.md) i dopisujemy je po kolei.
@@ -32,7 +32,7 @@ Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 > nawet gdy dasz zgodę „Instaluj nieznane aplikacje”. **Nie musisz jej wyłączać.** Na telefonie testuj stronę (sposób 3),
 > a aplikację Android na emulatorze (2a–2c), aż będzie test w Google Play (2e), który blokada przepuszcza.
 
-W każdej wersji w zakładce **Ja** na samym dole jest napis typu `Miliorbit 0.8 · bb8137b · demo` (w wersji
+W każdej wersji w zakładce **Ja** na samym dole jest napis typu `Regioorbit 0.8 · bb8137b · demo` (w wersji
 deweloperskiej z dopiskiem `· DEV`). To numer wersji
 (skrót zmiany w GitHubie) i tryb: **demo** = dane przykładowe tylko na tym urządzeniu, **live** = baza danych.
 Podawaj go przy zgłaszaniu błędów.
@@ -53,8 +53,8 @@ Dwie aplikacje, każda zawsze pod tym samym adresem:
 
 | Aplikacja na telefonie | Z gałęzi | Plik APK | Strona z plikiem i zrzutami |
 |---|---|---|---|
-| **Miliorbit** (testowa, do pokazywania) | domyślnej | `https://github.com/marlow3189/WhatsThat/releases/download/android-test/miliorbit-test.apk` | `…/releases/tag/android-test` |
-| **Miliorbit DEV** (najnowsze zmiany) | `dev` ([PLAN.md](PLAN.md), krok 0) | `https://github.com/marlow3189/WhatsThat/releases/download/android-dev/miliorbit-dev.apk` | `…/releases/tag/android-dev` |
+| **Regioorbit** (testowa, do pokazywania) | domyślnej | `https://github.com/marlow3189/WhatsThat/releases/download/android-test/regioorbit-test.apk` | `…/releases/tag/android-test` |
+| **Regioorbit DEV** (najnowsze zmiany) | `dev` ([PLAN.md](PLAN.md), krok 0) | `https://github.com/marlow3189/WhatsThat/releases/download/android-dev/regioorbit-dev.apk` | `…/releases/tag/android-dev` |
 
 Obie instalują się obok siebie i mają osobne dane. Wersja DEV pojawi się, gdy założysz gałąź `dev`.
 
@@ -78,7 +78,7 @@ bo nic się nie instaluje).
 **Zrób:**
 1. Na komputerze pobierz plik APK (link na górze sekcji 2).
 2. **appetize.io** → **Sign Up** (darmowe konto, bez karty) → potwierdź e-mail.
-3. W panelu **Upload** (albo *New app*) → wybierz `miliorbit-test.apk` → platforma **Android** → **Upload**.
+3. W panelu **Upload** (albo *New app*) → wybierz `regioorbit-test.apk` → platforma **Android** → **Upload**.
 4. Na stronie aplikacji kliknij ekran telefonu (**Tap to play**). Możesz wybrać model (np. Pixel 7), wersję Androida
    i język (*Language: Polish*). Skopiuj link do aplikacji (`https://appetize.io/app/…`): otworzysz go też na telefonie.
 5. Nowa wersja: na stronie aplikacji w Appetize **Upload new version** (albo *Update*) z nowym plikiem APK. Link zostaje.
@@ -100,9 +100,9 @@ token API z Appetize zapisany przez Ciebie jako sekret w GitHubie).
 3. Przy nowym urządzeniu **▶** (Start). Po minucie pojawi się okno z telefonem.
 
 **Za każdym razem:**
-1. Pobierz na komputer najnowszy `miliorbit-test.apk` (link na górze sekcji 2).
+1. Pobierz na komputer najnowszy `regioorbit-test.apk` (link na górze sekcji 2).
 2. **Przeciągnij plik myszką na okno emulatora.** Instaluje się sam, na starszej wersji też (dane zostają).
-3. Na emulatorze przesuń palcem (myszą) w górę → ikona **Miliorbit**.
+3. Na emulatorze przesuń palcem (myszą) w górę → ikona **Regioorbit**.
 
 **Przydatne:** położenie ustawisz w oknie emulatora: **⋯** (*Extended controls*) → **Location** → wpisz miasto →
 **Set location**. Język telefonu: w emulatorze *Settings → System → Languages*.
@@ -133,8 +133,8 @@ paczka ręcznie). Potem każda nowa wersja to jedno kliknięcie: GitHub → **Ac
 ## 3. Strona testowa w internecie (Cloudflare Pages)
 
 **Gdzie jesteś:** komputer, przeglądarka, najpierw **dash.cloudflare.com**.
-**Po co:** stały adres typu `https://miliorbit.pages.dev`, który działa na każdym telefonie i komputerze. Każda zmiana
-w kodzie publikuje się sama w 1–2 minuty, a każda gałąź agenta dostaje osobny adres podglądu. Domena miliorbit.com
+**Po co:** stały adres typu `https://regioorbit.pages.dev`, który działa na każdym telefonie i komputerze. Każda zmiana
+w kodzie publikuje się sama w 1–2 minuty, a każda gałąź agenta dostaje osobny adres podglądu. Domena regioorbit.com
 nie jest do tego potrzebna (podłączysz ją później, etap 2 w [WDROZENIE.md](WDROZENIE.md)).
 
 **Zrób:**
@@ -146,22 +146,22 @@ nie jest do tego potrzebna (podłączysz ją później, etap 2 w [WDROZENIE.md](
 
    | Pole | Wartość |
    |---|---|
-   | *Project name* | `miliorbit` (jeśli zajęte: `miliorbit-test`) |
+   | *Project name* | `regioorbit` (jeśli zajęte: `regioorbit-test`) |
    | *Production branch* | `claude/p2p-rental-marketplace-bimvf6` (po utworzeniu `main` zmienisz na `main`) |
    | *Framework preset* | `None` |
    | *Build command* | `npm run build` |
    | *Build output directory* | `dist` |
    | *Environment variables* → **Add variable** | `NODE_VERSION` = `22` |
 
-5. **Save and Deploy**. Po 1–2 minutach zobaczysz **Success** i adres `https://miliorbit.pages.dev`.
+5. **Save and Deploy**. Po 1–2 minutach zobaczysz **Success** i adres `https://regioorbit.pages.dev`.
 6. **Settings → Builds** (albo *Builds & deployments*) → *Preview branches* / *Branch deployments*: **All non-Production branches**.
-   Każda gałąź agenta dostanie adres `https://<nazwa-gałęzi>.miliorbit.pages.dev`.
+   Każda gałąź agenta dostanie adres `https://<nazwa-gałęzi>.regioorbit.pages.dev`.
 
 **Sprawdź:**
-- `https://miliorbit.pages.dev` pokazuje stronę główną z przyciskami Google Play i App Store
+- `https://regioorbit.pages.dev` pokazuje stronę główną z przyciskami Google Play i App Store
   (Google Play pokaże „nie znaleziono”, dopóki aplikacji nie ma w sklepie, tak ma być).
-- `https://miliorbit.pages.dev/app/` otwiera aplikację.
-- Na iPhonie: `…/app/` w **Safari** → **Udostępnij** → **Do ekranu początkowego**. Ikona Miliorbit działa jak aplikacja.
+- `https://regioorbit.pages.dev/app/` otwiera aplikację.
+- Na iPhonie: `…/app/` w **Safari** → **Udostępnij** → **Do ekranu początkowego**. Ikona Regioorbit działa jak aplikacja.
 - Na Androidzie w Chrome: menu **⋮** → **Dodaj do ekranu głównego** (albo zainstaluj APK, sposób 2).
 - **Ja → Panel operatora (demo) → Baza danych**: tryb **demo** (do kroku 1 planu tak ma być).
 
@@ -199,7 +199,7 @@ Otwórz go w telefonie. Testy automatyczne: `npm test`. Zatrzymanie serwera: `Ct
 
 1. Testujesz (sposób 2 albo 3) i zapisujesz uwagi. Najlepiej w tym formacie:
    ```
-   Wersja: Miliorbit 0.8 · bb8137b · demo, telefon: Samsung A54 / iPhone 13, sposób: APK / strona
+   Wersja: Regioorbit 0.8 · bb8137b · demo, telefon: Samsung A54 / iPhone 13, sposób: APK / strona
    Ekran: Dodaj → Zapytaj sąsiadów
    Zrobiłem: wpisałem pytanie, stuknąłem Dalej
    Stało się: przycisk nic nie robi
@@ -224,5 +224,5 @@ Otwórz go w telefonie. Testy automatyczne: `npm test`. Zatrzymanie serwera: `Ct
 - Do testów używaj danych przykładowych albo swoich. Nie zapraszaj jeszcze obcych osób z prawdziwymi danymi.
 - Klucz **anon** Supabase może być w Cloudflare i GitHub Variables (jest publiczny z założenia). Klucza
   **service_role**, kluczy Stripe i Anthropic nigdy nie wklejaj do czatu, kodu ani zmiennych strony.
-- Plik `android/app/miliorbit-test.keystore` jest jawny celowo i służy tylko do APK testowych. Do Google Play
+- Plik `android/app/regioorbit-test.keystore` jest jawny celowo i służy tylko do APK testowych. Do Google Play
   używamy osobnego, tajnego klucza do wysyłki (PLAN.md, krok 3).

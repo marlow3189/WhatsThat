@@ -1,13 +1,13 @@
-# Regulamin serwisu Miliorbit (projekt do weryfikacji przez prawnika)
+# Regulamin serwisu Regioorbit (projekt do weryfikacji przez prawnika)
 
 Wersja robocza z października 2026. Wiążąca jest wersja polska. Nazwy w nawiasach kwadratowych do uzupełnienia.
 
 ## §1. Kto prowadzi serwis
-1. Serwis i aplikację Miliorbit prowadzi [nazwa spółki z o.o.], [adres], KRS [numer], NIP [numer] („Operator”).
-2. Punkt kontaktowy dla użytkowników i organów (DSA art. 11–12): hello@miliorbit.com, w językach: polskim, angielskim.
+1. Serwis i aplikację Regioorbit prowadzi [nazwa spółki z o.o.], [adres], KRS [numer], NIP [numer] („Operator”).
+2. Punkt kontaktowy dla użytkowników i organów (DSA art. 11–12): hello@regioorbit.com, w językach: polskim, angielskim.
 
-## §2. Czym jest Miliorbit
-1. Miliorbit to platforma ogłoszeń, która łączy użytkowników chcących sprzedać, kupić, wynająć, wymienić, oddać lub
+## §2. Czym jest Regioorbit
+1. Regioorbit to platforma ogłoszeń, która łączy użytkowników chcących sprzedać, kupić, wynająć, wymienić, oddać lub
    zaoferować usługę („Transakcja”).
 2. Celem serwisu jest ułatwienie organizacji codziennych spraw w okolicy (pożyczanie, wynajem, zakupy i usługi lokalne),
    w tym przez podpowiedzi planu generowane przy pomocy sztucznej inteligencji, które mają charakter wyłącznie pomocniczy.
@@ -21,7 +21,7 @@ Wersja robocza z października 2026. Wiążąca jest wersja polska. Nazwy w nawi
 ## §3. Konto
 1. Konto zakłada się numerem telefonu potwierdzonym kodem SMS. Użytkownik może podać adres e-mail.
 2. Jedna osoba może mieć jedno konto. Konto jest niezbywalne.
-3. Użytkownik może w każdej chwili **zastrzec konto** w aplikacji albo na stronie miliorbit.com/zastrzez. Zastrzeżenie
+3. Użytkownik może w każdej chwili **zastrzec konto** w aplikacji albo na stronie regioorbit.com/zastrzez. Zastrzeżenie
    ukrywa ogłoszenia oraz blokuje wiadomości i płatności z konta. Odblokowanie wymaga kodu SMS i potwierdzenia dwóch
    osób wskazanych przez użytkownika jako zaufane.
 4. Użytkownik może usunąć konto w ustawieniach. Dane przechowywane z mocy prawa (np. na potrzeby DAC7) usuwamy po upływie
@@ -79,7 +79,7 @@ pojawia się po wyczerpaniu zapasu.
    wybranymi osobami.
 
 ## §6. Zgłaszanie treści (DSA)
-1. Każdy może zgłosić ogłoszenie przyciskiem „Zgłoś ogłoszenie” albo na adres hello@miliorbit.com, podając powód.
+1. Każdy może zgłosić ogłoszenie przyciskiem „Zgłoś ogłoszenie” albo na adres hello@regioorbit.com, podając powód.
 2. Operator rozpatruje zgłoszenia bez zbędnej zwłoki i informuje zgłaszającego oraz wystawiającego o decyzji
    wraz z uzasadnieniem.
 3. Operator może usunąć ogłoszenie lub ograniczyć konto, gdy narusza ono prawo lub Regulamin.

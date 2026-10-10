@@ -1,5 +1,5 @@
 // Minimalny service worker: działa offline na ostatnio otwartych zasobach.
-const CACHE = 'miliorbit-v1'
+const CACHE = 'regioorbit-v1'
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html'])))
   self.skipWaiting()

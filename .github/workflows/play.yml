@@ -2,7 +2,7 @@
 # Dzięki temu testerzy (także z Samsungiem z blokadą „Auto Blocker”) instalują aplikację ze sklepu.
 #
 # Zanim zadziała (raz, opis krok po kroku w docs/PLAN.md, krok 3):
-#   1. W Play Console utwórz aplikację com.miliorbit.app i pierwszy plik .aab wgraj ręcznie
+#   1. W Play Console utwórz aplikację com.regioorbit.app i pierwszy plik .aab wgraj ręcznie
 #      (Run workflow z zaznaczonym „Tylko zbuduj plik .aab”, plik w Artifacts przebiegu).
 #   2. Sekrety repozytorium (Settings → Secrets and variables → Actions → Secrets):
 #        ANDROID_UPLOAD_KEYSTORE_BASE64   – plik klucza do wysyłki (upload key) zakodowany base64
@@ -74,7 +74,7 @@ jobs:
       - name: Plik .aab do pobrania (Artifacts)
         uses: actions/upload-artifact@v4
         with:
-          name: miliorbit-play-${{ github.run_number }}
+          name: regioorbit-play-${{ github.run_number }}
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 14
       - name: Wysyłka do Google Play
@@ -82,7 +82,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.miliorbit.app
+          packageName: com.regioorbit.app
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: ${{ inputs.track }}
           status: ${{ inputs.status }}

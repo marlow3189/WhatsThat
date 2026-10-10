@@ -1,11 +1,11 @@
 // Test APK na emulatorze Androida (GitHub Actions): instaluje aplikację, przechodzi rejestrację jak człowiek
-// i robi zrzuty ekranu prawdziwego telefonu. Użycie: node scripts/apk-smoke.cjs miliorbit-test.apk zrzuty/
+// i robi zrzuty ekranu prawdziwego telefonu. Użycie: node scripts/apk-smoke.cjs regioorbit-test.apk zrzuty/
 const { _android: android } = require('playwright-core')
 const fs = require('fs')
 const path = require('path')
 
 const [apk, out = 'zrzuty'] = process.argv.slice(2)
-const PKG = process.env.APP_PKG || 'com.miliorbit.app'
+const PKG = process.env.APP_PKG || 'com.regioorbit.app'
 fs.mkdirSync(out, { recursive: true })
 
 ;(async () => {
@@ -142,7 +142,7 @@ fs.mkdirSync(out, { recursive: true })
   })
   await step('ja', async () => {
     await tap('nav a[aria-label="Ja"]')
-    await page.waitForSelector('text=/Miliorbit 0\\.\\d/')
+    await page.waitForSelector('text=/Regioorbit 0\\.\\d/')
   })
 
   // Stuknięcie palcem w element (adb input tap) według położenia WebView ustalonego niżej.
@@ -229,7 +229,7 @@ fs.mkdirSync(out, { recursive: true })
     await tapTouch('kategoria', 'button:has-text("Narzędzia i maszyny")', 'text=Pomiń i przejdź dalej')
     await tapTouch('pomiń podkategorię', 'button:has-text("Pomiń i przejdź dalej")', '#title')
     await tapTouch('zakładka Czaty', 'nav a[aria-label="Czaty"]', 'h1')
-    await tapTouch('zakładka Ja', 'nav a[aria-label="Ja"]', 'text=/Miliorbit 0\\.\\d/')
+    await tapTouch('zakładka Ja', 'nav a[aria-label="Ja"]', 'text=/Regioorbit 0\\.\\d/')
     await tapTouch('zakładka Szukaj', 'nav a[aria-label="Szukaj"]', '#q')
   } catch (e) {
     touch.push(`✗ dotyk: ${e.message.split('\n')[0]}`)
@@ -290,7 +290,9 @@ fs.mkdirSync(out, { recursive: true })
   })
   // Kalendarz: termin na dziś, potem karta „Heute” na głównej.
   await step('de-kalender', async () => {
-    await tap('a[aria-label="Kalender"]')
+    // kalendarz jest w menu ☰ (lewy górny róg)
+    await tap('button[aria-label="Menü"]')
+    await tap('a[href="#/kalendarz"]')
     await tap('button[aria-label="Termin hinzufügen"]')
     await page.fill('#cal-title', 'Zahnarzt')
     await page.fill('#cal-time', '09:30')

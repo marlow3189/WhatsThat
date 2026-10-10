@@ -1,4 +1,4 @@
--- Miliorbit 0.8: zweryfikowane instytucje (gmina, spółdzielnia, sołectwo, szkoła, wodociągi…),
+-- Regioorbit 0.8: zweryfikowane instytucje (gmina, spółdzielnia, sołectwo, szkoła, wodociągi…),
 -- ich komunikaty i harmonogram wywozu śmieci, oraz język hindi.
 --
 -- Zasada: nikt nie może podszyć się pod gminę. Konto zwykłego użytkownika NIGDY nie publikuje komunikatu

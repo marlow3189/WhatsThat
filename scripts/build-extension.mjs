@@ -8,8 +8,8 @@ cpSync('dist/app', 'extension/app', { recursive: true })
 rmSync('extension/app/sw.js', { force: true }) // service worker strony nie jest potrzebny w rozszerzeniu
 mkdirSync('release', { recursive: true })
 try {
-  execSync('cd extension && zip -qr ../release/miliorbit-extension.zip .', { stdio: 'inherit' })
-  console.log('release/miliorbit-extension.zip gotowe (Chrome Web Store, Edge Add-ons)')
+  execSync('cd extension && zip -qr ../release/regioorbit-extension.zip .', { stdio: 'inherit' })
+  console.log('release/regioorbit-extension.zip gotowe (Chrome Web Store, Edge Add-ons)')
 } catch {
   console.log('Brak polecenia zip: załaduj folder extension/ jako rozszerzenie rozpakowane.')
 }

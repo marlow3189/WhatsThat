@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["TEAMID.com.miliorbit.app"],
+        "appIDs": ["TEAMID.com.regioorbit.app"],
         "components": [
           { "/": "/l/*", "comment": "ogłoszenie" },
           { "/": "/u/*", "comment": "profil" },
@@ -13,5 +13,5 @@
       }
     ]
   },
-  "webcredentials": { "apps": ["TEAMID.com.miliorbit.app"] }
+  "webcredentials": { "apps": ["TEAMID.com.regioorbit.app"] }
 }

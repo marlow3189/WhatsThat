@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <!-- app_name i title_activity_main ustawia android/app/build.gradle (Miliorbit albo Miliorbit DEV) -->
-    <string name="package_name">com.miliorbit.app</string>
-    <string name="custom_url_scheme">com.miliorbit.app</string>
+    <!-- app_name i title_activity_main ustawia android/app/build.gradle (Regioorbit albo Regioorbit DEV) -->
+    <string name="package_name">com.regioorbit.app</string>
+    <string name="custom_url_scheme">com.regioorbit.app</string>
 </resources>

@@ -1,4 +1,4 @@
-# Miliorbit: koncept, model biznesowy, koszty i prawo
+# Regioorbit: koncept, model biznesowy, koszty i prawo
 
 > **Twoja orbita: znajomi i sąsiedzi.** Aplikacja do ogarniania codziennych spraw z ludźmi obok:
 > potrzebujesz piasku, wpisujesz „piasek” i widzisz, kto w okolicy go ma; sąsiad wynajmuje kosiarkę za 20 zł za dzień.
@@ -7,7 +7,7 @@
 > potem okolica (promień w km, miejscowość, region, kraj). Konto to numer telefonu. Bez haseł, bez prowizji.
 > Startujemy w Polsce, aplikacja jest gotowa na 9 języków i 11 krajów.
 
-Kolejność priorytetów: **UX, potem UI, potem nazwa**. Marka siedzi w jednym pliku (`src/config.ts`): **Miliorbit**, `miliorbit.com`.
+Kolejność priorytetów: **UX, potem UI, potem nazwa**. Marka siedzi w jednym pliku (`src/config.ts`): **Regioorbit**, `regioorbit.com`.
 
 ---
 
@@ -26,18 +26,18 @@ Nie automatycznie. Aplikację o tej nazwie da się uruchomić. Problem pojawia s
 
 Do tego „what’s that” to zwykła fraza i nazwa wielu aplikacji, więc trudno wygrać w wyszukiwarce.
 
-### Decyzja: Miliorbit (domena `miliorbit.com` kupiona)
+### Decyzja: Regioorbit (domena `regioorbit.com` kupiona)
 **Mili** (po polsku: mili ludzie, sympatyczni sąsiedzi; w wielu językach brzmi jak „mile”, czyli bliska odległość)
 + **orbit** (krąg ludzi wokół Ciebie). Wymowa prosta w 9 językach („mi-li-or-bit”). Pasuje do mechaniki aplikacji:
 znajomi na bliskiej orbicie, ich znajomi na dalszej, sąsiedzi w promieniu kilku km. Hasło: *„Twoja orbita”*.
 
-Co sprawdziłem (wyszukiwarka, 7 października 2026): nie znalazłem firmy, aplikacji ani znaku o nazwie „Miliorbit”.
-Wyszukiwarka to nie baza znaków towarowych. **Do zrobienia przed wydaniem pieniędzy na reklamę:** wyszukanie „MILIORBIT”
+Co sprawdziłem (wyszukiwarka, 7 października 2026): nie znalazłem firmy, aplikacji ani znaku o nazwie „Regioorbit”.
+Wyszukiwarka to nie baza znaków towarowych. **Do zrobienia przed wydaniem pieniędzy na reklamę:** wyszukanie „REGIOORBIT”
 w EUIPO TMview i WIPO Global Brand Database (klasy 9, 35, 38, 42), sprawdzenie App Store i Google Play, rezerwacja
-`miliorbit.app`, `.pl`, `.eu` i nazw w social media (@miliorbit). Zgłoszenie znaku UE: 850 € za klasę 9 + 50 € za drugą
+`regioorbit.app`, `.pl`, `.eu` i nazw w social media (@regioorbit). Zgłoszenie znaku UE: 850 € za klasę 9 + 50 € za drugą
 + 150 € za każdą kolejną.
 
-Odrzucone wcześniej: Orbifolk (zastąpiony przez Miliorbit), Obok (znaczenie tylko po polsku), Neiby, Mamto (zostają jako zapas),
+Odrzucone wcześniej: Orbifolk (zastąpiony przez Regioorbit), Obok (znaczenie tylko po polsku), Neiby, Mamto (zostają jako zapas),
 Okolo, Blizo, Blisko, Krugo, Obbo (zajęte).
 
 ## 2. Konkurencja i co z niej bierzemy
@@ -280,16 +280,16 @@ układ ogranicza ją do minimum i zostawia Ci jeden obowiązek roczny (DAC7) ora
 
 ## 8. Telefon, strona i komputer
 
-- **Najpierw telefon: Google Play i App Store** (Capacitor, ten sam kod). Domena `miliorbit.com` to strona, która prowadzi
+- **Najpierw telefon: Google Play i App Store** (Capacitor, ten sam kod). Domena `regioorbit.com` to strona, która prowadzi
   do sklepów (Android → Google Play, iPhone → App Store, komputer → kod QR), a linki z aplikacji otwierają się w aplikacji.
-  Ta sama aplikacja działa w przeglądarce pod `miliorbit.com/app/` dla tych, którzy nie chcą instalować.
+  Ta sama aplikacja działa w przeglądarce pod `regioorbit.com/app/` dla tych, którzy nie chcą instalować.
 - **Prowizje sklepów:** płatności między ludźmi za rzeczy i usługi w realu (Bezpieczna płatność przez Stripe) **nie** idą
   przez sklepy. Plany (Roczny, Firma, odświeżenie) to usługa cyfrowa: kupione w aplikacji na iPhonie i z Google Play
   wymagają płatności sklepu (dla małych firm 15%, programy Apple Small Business i Google Play do 1 mln USD rocznie).
   Na stronie `/app/` plan kosztuje tyle samo bez prowizji sklepu. Czy w UE można w aplikacji podać link do zakupu na
   stronie (DMA) i na jakich warunkach, sprawdź z prawnikiem przed startem.
 - **Komputer: rozszerzenie** do Chrome i Edge (otwiera się w panelu bocznym) oraz Safari (konwersja `npm run safari:extension`,
-  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Miliorbit”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
+  wymaga Maca z Xcode). Menu pod prawym przyciskiem **„Wystaw na Regioorbit”** przenosi tytuł strony, zaznaczony tekst i zdjęcie
   do formularza: można wystawić coś, co oglądasz na OLX czy Allegro. Budowanie: `npm run build:extension`.
 - **Aplikacja w przeglądarce (PWA)** jako dodatek: iPhone Safari → Udostępnij → „Do ekranu początkowego”, Android Chrome →
   „Dodaj do ekranu głównego”.

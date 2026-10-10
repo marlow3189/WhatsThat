@@ -1,8 +1,8 @@
 # Aplikacja na Androida (APK do testów) budowana w chmurze GitHuba: nie potrzebujesz Android Studio.
 # Po każdej zmianie w kodzie: Actions → „Android APK” → plik do pobrania (Artifacts).
 # Stałe linki (Releases):
-#   - gałąź domyślna → „Miliorbit Android (test)”, plik miliorbit-test.apk (aplikacja „Miliorbit”),
-#   - gałąź dev      → „Miliorbit Android (DEV)”, plik miliorbit-dev.apk (osobna aplikacja „Miliorbit DEV”,
+#   - gałąź domyślna → „Regioorbit Android (test)”, plik regioorbit-test.apk (aplikacja „Regioorbit”),
+#   - gałąź dev      → „Regioorbit Android (DEV)”, plik regioorbit-dev.apk (osobna aplikacja „Regioorbit DEV”,
 #                      instaluje się obok testowej; tu sprawdzasz nowe rzeczy, zanim trafią dalej).
 name: Android APK
 on:
@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # gałąź dev = wersja deweloperska (osobna aplikacja na telefonie)
-      MILIORBIT_DEV: ${{ github.ref_name == 'dev' && '1' || '0' }}
+      REGIOORBIT_DEV: ${{ github.ref_name == 'dev' && '1' || '0' }}
       VITE_CHANNEL: ${{ github.ref_name == 'dev' && 'dev' || 'test' }}
     steps:
       - uses: actions/checkout@v4
@@ -46,11 +46,11 @@ jobs:
           VERSION_CODE: ${{ github.run_number }}
         run: ./gradlew assembleDebug --no-daemon --stacktrace
       - name: Nazwa pliku
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk miliorbit-test.apk
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk regioorbit-test.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: miliorbit-android-${{ github.run_number }}
-          path: miliorbit-test.apk
+          name: regioorbit-android-${{ github.run_number }}
+          path: regioorbit-test.apk
           retention-days: 30
       - name: Stały link do pobrania (gałąź domyślna)
         if: github.ref_name == github.event.repository.default_branch
@@ -58,21 +58,21 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete android-test --yes --cleanup-tag || true
-          gh release create android-test miliorbit-test.apk \
+          gh release create android-test regioorbit-test.apk \
             --prerelease --target "$GITHUB_SHA" \
-            --title "Miliorbit Android (test) #${{ github.run_number }}" \
+            --title "Regioorbit Android (test) #${{ github.run_number }}" \
             --notes "Wersja testowa z dnia $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Instalacja: docs/START.md."
       - name: Stały link do pobrania (gałąź dev)
         if: github.ref_name == 'dev'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp miliorbit-test.apk miliorbit-dev.apk
+          cp regioorbit-test.apk regioorbit-dev.apk
           gh release delete android-dev --yes --cleanup-tag || true
-          gh release create android-dev miliorbit-dev.apk \
+          gh release create android-dev regioorbit-dev.apk \
             --prerelease --target "$GITHUB_SHA" \
-            --title "Miliorbit Android (DEV) #${{ github.run_number }}" \
-            --notes "Wersja deweloperska z gałęzi dev, $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Osobna aplikacja „Miliorbit DEV”. Instalacja: docs/START.md."
+            --title "Regioorbit Android (DEV) #${{ github.run_number }}" \
+            --notes "Wersja deweloperska z gałęzi dev, $(date -u +%Y-%m-%d) (commit ${GITHUB_SHA::7}). Osobna aplikacja „Regioorbit DEV”. Instalacja: docs/START.md."
 
   # Emulator Androida w chmurze: instaluje APK, przechodzi rejestrację, stuka palcem i robi zrzuty ekranu.
   # Dwa telefony naraz: Android 14 i Android 16 (od Androida 15 aplikacja rysuje się pod paskami systemu,
@@ -90,7 +90,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: miliorbit-android-${{ github.run_number }}
+          name: regioorbit-android-${{ github.run_number }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -105,7 +105,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         env:
           NODE_PATH: ${{ runner.temp }}/pw/node_modules
-          APP_PKG: ${{ github.ref_name == 'dev' && 'com.miliorbit.app.dev' || 'com.miliorbit.app' }}
+          APP_PKG: ${{ github.ref_name == 'dev' && 'com.regioorbit.app.dev' || 'com.regioorbit.app' }}
         with:
           api-level: ${{ matrix.api }}
           target: google_apis
@@ -113,7 +113,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: node scripts/apk-smoke.cjs miliorbit-test.apk zrzuty
+          script: node scripts/apk-smoke.cjs regioorbit-test.apk zrzuty
       - name: Nazwy zrzutów z wersją Androida
         if: always()
         run: for f in zrzuty/*; do [ -e "$f" ] && mv "$f" "zrzuty/api${{ matrix.api }}-$(basename "$f")"; done; true

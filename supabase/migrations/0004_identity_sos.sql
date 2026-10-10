@@ -1,4 +1,4 @@
--- Miliorbit: tożsamość (płeć ustawiana raz, anonimowy klucz), dopasowanie kontaktów po skrótach,
+-- Regioorbit: tożsamość (płeć ustawiana raz, anonimowy klucz), dopasowanie kontaktów po skrótach,
 -- SOS i „Odprowadź mnie”, tablica okolicy (odpowiedzi, „Będę”). Uruchamiać po 0001–0003.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -40,7 +40,7 @@ declare
   attempt int := 0;
 begin
   if tg_op = 'UPDATE' and old.gender is not null and new.gender is distinct from old.gender and not support then
-    raise exception 'Płeć można zmienić tylko przez pomoc (%).', 'hello@miliorbit.com';
+    raise exception 'Płeć można zmienić tylko przez pomoc (%).', 'hello@regioorbit.com';
   end if;
   if new.gender is null then
     new.anon_key := null;

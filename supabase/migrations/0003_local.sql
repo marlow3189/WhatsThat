@@ -1,4 +1,4 @@
--- Miliorbit: orbita na mapie (prywatność), ulubieni, adresy do wysyłki, ceny paliw z API stacji, ostrzeżenia.
+-- Regioorbit: orbita na mapie (prywatność), ulubieni, adresy do wysyłki, ceny paliw z API stacji, ostrzeżenia.
 -- Uruchamiać po 0001_init.sql i 0002_safety.sql.
 
 -- 1. Profil: pseudonim dla osób spoza znajomych, godziny sprzedaży (piekarz), branża, wygląd, ostrzeżenia

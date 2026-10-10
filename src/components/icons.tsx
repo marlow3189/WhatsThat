@@ -60,6 +60,8 @@ const PATHS: Record<string, ReactNode> = {
   walk: <><circle cx="13" cy="4.5" r="1.8" /><path d="m9 21 2.2-6.2L13.5 17v4M7.5 11.5 10 8l3 1.2 2.2 3.3h2.3M11.2 14.8 12 10" /></>,
   star: <path d="m12 3.8 2.5 5.2 5.7.8-4.1 4 1 5.6L12 16.7l-5.1 2.7 1-5.6-4.1-4 5.7-.8Z" />,
   qr: <><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><path d="M14 14h2v2h-2zM18 14h2M14 18h2M18 18h2v2M16 16h2v2" /></>,
+  compass: <><circle cx="12" cy="12" r="8.5" /><path d="m15.2 8.8-1.9 4.5-4.5 1.9 1.9-4.5z" /></>,
+  menu: <path d="M4 7h16M4 12h16M4 17h11" />,
   bank: <><path d="M3.5 9.5 12 4.5l8.5 5z" /><path d="M5.5 10v7.5M9.5 10v7.5M14.5 10v7.5M18.5 10v7.5M3.5 20h17" /></>,
   trash: <><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13" /><path d="M10.5 11v5.5M13.5 11v5.5" /></>,
   speaker: <><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" /><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" /></>,
@@ -80,14 +82,19 @@ export function Icon({ name, size = 22, ...props }: { name: string; size?: numbe
   )
 }
 
-/** Znak: planeta (Ty) i ktoś na Twojej orbicie. */
+/** Znak Regioorbit: trzy splecione pierścienie (sąsiedzi wokół wspólnej sprawy) w kolorach palety marki. */
 export function Mark({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 96 96" aria-hidden>
-      <rect width="96" height="96" rx="24" fill="var(--mark-bg)" />
-      <ellipse cx="48" cy="48" rx="33" ry="15" fill="none" stroke="var(--mark-ink)" strokeWidth="5" transform="rotate(-28 48 48)" />
-      <circle cx="48" cy="48" r="14" fill="var(--mark-ink)" />
-      <circle cx="77" cy="32.5" r="8" fill="var(--mark-dot)" stroke="var(--mark-bg)" strokeWidth="3" />
+      <g fill="none" strokeWidth="10.5">
+        <circle cx="48" cy="40" r="18" stroke="#F5D061" />
+        <circle cx="34" cy="62" r="18" stroke="#95C17E" />
+        <circle cx="62" cy="62" r="18" stroke="#E88958" />
+        <path d="M30.7 45.6 A18 18 0 0 1 48 22" stroke="#F5D061" />
+      </g>
+      <circle cx="48" cy="9.5" r="7.5" fill="#F5D061" />
+      <circle cx="10.5" cy="78" r="7.5" fill="#95C17E" />
+      <circle cx="85.5" cy="78" r="7.5" fill="#E88958" />
     </svg>
   )
 }

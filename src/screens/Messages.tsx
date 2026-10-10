@@ -103,7 +103,7 @@ export function ChatScreen() {
             )
           }
           return (
-            <div key={m.id} className={cx('max-w-[78%] rounded-[20px] px-3.5 py-2', mine ? 'self-end rounded-br-[6px] bg-primary text-white' : 'self-start rounded-bl-[6px] bg-surface')}>
+            <div key={m.id} className={cx('max-w-[78%] rounded-[20px] px-3.5 py-2', mine ? 'self-end rounded-br-[6px] bg-primary text-primary-ink' : 'self-start rounded-bl-[6px] bg-surface')}>
               {m.photo && <img src={m.photo} alt={t('m.photo')} className="mb-1 max-h-60 rounded-[14px]" />}
               {m.text && <p className="break-words whitespace-pre-wrap">{m.text}</p>}
               <p className={cx('tnum text-right text-[11px]', mine ? 'text-white/70' : 'text-muted')}>{new Date(m.at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}</p>
@@ -125,7 +125,7 @@ export function ChatScreen() {
             }} />
           </label>
           <input id="chat-text" value={text} onChange={(e) => setText(e.target.value)} placeholder={t('m.ph')} className="min-h-10 min-w-0 flex-1 bg-transparent px-2 text-[17px] outline-none placeholder:text-muted" />
-          <button type="submit" disabled={!text.trim()} className="press grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white disabled:opacity-40" aria-label={t('m.send')}>
+          <button type="submit" disabled={!text.trim()} className="press grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-ink disabled:opacity-40" aria-label={t('m.send')}>
             <Icon name="send" size={18} />
           </button>
         </form>

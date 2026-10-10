@@ -6,6 +6,7 @@ import { Icon, Mark } from '../components/icons'
 import { deviceOs, isNative, isStandalone } from '../lib/platform'
 import { BRAND } from '../config'
 import { StoryViewer } from '../components/stories'
+import { MenuDrawer } from '../components/menu'
 import { OrbitSection } from '../components/orbit'
 import { useWarnings, providersFor } from '../lib/warnings'
 import { cheapest, formatFuel } from '../lib/fuel'
@@ -53,7 +54,7 @@ const boardTab = (l: Listing): BoardTab | null =>
  * „Twoja orbita”, relacje znajomych (stuknij, żeby obejrzeć), sąsiedzi, Twoje ogłoszenia, rzędy zainteresowań.
  */
 export function Home() {
-  const { t, locale, account, users, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings, nameOf, stations, checkInSafe, hideAppBanner } = useStore()
+  const { t, locale, account, users, shown, visibleListings, mine, notifications, reminder, daysLeft, plan, seen, markSeen, hideAd, listings, nameOf, stations, checkInSafe, hideAppBanner } = useStore()
   const [tab, setTab] = useState<BoardTab>('all')
   const warnings = useWarnings(account.place, account.country, account.warnings !== false)
   const weather = useWeather(account.place)
@@ -61,6 +62,7 @@ export function Home() {
   const council = useCouncil(account.place, { org: t('org.demoName', { town: account.place.town }), notice: t('org.demoNotice') })
   const [story, setStory] = useState<number | null>(null)
   const [why, setWhy] = useState(false)
+  const [menu, setMenu] = useState(false)
   const unread = notifications.filter((n) => !n.read).length
   const here = account.place
   const lang = account.lang
@@ -87,7 +89,6 @@ export function Home() {
   // Aplikacja jest głównie na telefon: w przeglądarce telefonu podpowiadamy pobranie (raz na 2 tygodnie, da się ukryć).
   const os = deviceOs()
   const appBanner = !isNative() && !isStandalone() && os !== 'desktop' && (!account.appBannerHiddenAt || now - account.appBannerHiddenAt > APP_BANNER_PAUSE)
-  const first = account.name.split(' ')[0]
   // Na co dzień: najtańsze paliwo, opał w okolicy, ulubieni dostawcy (piekarz…) z informacją, czy otwarte.
   const fuelNear = stations.map((s) => ({ ...s, km: distanceKm(here, s.place) }))
   const pb = cheapest(fuelNear, 'pb95')
@@ -109,36 +110,76 @@ export function Home() {
 
   return (
     <div className="flex flex-col gap-5 pb-4">
-      <header className="flex flex-col gap-3 px-4 pt-3">
-        <div className="flex min-h-12 items-center justify-between gap-2">
-          <p className="flex min-w-0 items-center gap-2 text-[20px] leading-none font-bold text-primary"><Mark size={26} /> <span className="truncate">{BRAND.name}</span></p>
-          <div className="flex shrink-0 items-center gap-1">
-            <Link to="/sos" className="press grid h-8 place-items-center rounded-full bg-danger px-3 text-[12.5px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
-            <Link to="/kalendarz" className="press grid size-10 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('cal.title')}>
-              <Icon name="calendar" size={22} />
-            </Link>
-            <Link to="/powiadomienia" className="press relative grid size-10 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
-              <Icon name="bell" size={23} />
-              {unread > 0 && <span className="tnum absolute top-1 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-white ring-2 ring-bg">{unread}</span>}
-            </Link>
-          </div>
+      <header className="flex flex-col gap-3 px-4 pt-2">
+        <div className="flex min-h-12 items-center gap-1">
+          <button type="button" onClick={() => setMenu(true)} className="press -ml-2 grid size-11 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('menu.title')}>
+            <Icon name="menu" size={23} />
+          </button>
+          <p className="flex min-w-0 flex-1 items-center gap-2 text-[21px] leading-none font-extrabold text-primary"><Mark size={30} /> <span className="truncate">{BRAND.name}</span></p>
+          <Link to="/sos" className="press grid h-8 shrink-0 place-items-center rounded-full bg-danger px-3 text-[12.5px] font-extrabold tracking-wide text-white" aria-label={t('sos.title')}>SOS</Link>
+          <Link to="/powiadomienia" className="press relative grid size-11 shrink-0 place-items-center rounded-full active:bg-fill" aria-label={t('home.notifications')}>
+            <Icon name="bell" size={23} />
+            {unread > 0 && <span className="tnum absolute top-1 right-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-primary px-1 text-[11px] font-bold text-primary-ink ring-2 ring-bg">{unread}</span>}
+          </Link>
         </div>
-        <p className="-mt-2 flex min-w-0 items-center gap-1 text-[13px] text-muted">
-          <Icon name="pin" size={14} className="shrink-0" /><span className="truncate">{here.town}</span>
-          {weather && <span className="flex shrink-0 items-center gap-1" title={t(`w.${weather.sky}`)}>· <Icon name={weather.sky} size={14} /> <span className="tnum">{weather.temp}°</span></span>}
-          <span className="truncate">· {t('home.hello', { name: first })}</span>
-        </p>
+        {/* Okrągłe skróty jak w relacjach: znajomi z nowościami, mapa okolicy, zaproszenie. */}
+        <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4" role="list" aria-label={t('home.friendsNew')}>
+          {storyOwners.map((o, i) => {
+            const fresh = o.items.some((l) => !seen.includes(l.id))
+            return (
+              <button key={o.id} type="button" role="listitem" onClick={() => setStory(i)} className="press flex w-[60px] shrink-0 flex-col items-center gap-1" aria-label={`${users[o.id].name}: ${o.items.length}`}>
+                <span className={cx('rounded-full p-[2.5px]', fresh ? 'ring-story' : 'bg-fill-strong')}>
+                  <span className="block rounded-full bg-bg p-[2px]"><Avatar user={users[o.id]} size={50} /></span>
+                </span>
+                <span className={cx('w-full truncate text-center text-[11.5px]', fresh ? 'font-bold' : 'text-muted')}>{users[o.id].name.split(' ')[0]}</span>
+              </button>
+            )
+          })}
+          <Link to="/szukaj?mapa=1" role="listitem" className="press flex w-[60px] shrink-0 flex-col items-center gap-1">
+            <span className="grid size-[59px] place-items-center rounded-full bg-sky text-[#3d6e93]"><Icon name="pin" size={24} /></span>
+            <span className="w-full truncate text-center text-[11.5px] text-muted">{t('home.map')}</span>
+          </Link>
+          <Link to="/znajomi" role="listitem" className="press flex w-[60px] shrink-0 flex-col items-center gap-1">
+            <span className="grid size-[59px] place-items-center rounded-full border-2 border-dashed border-primary/50 text-primary-strong"><Icon name="plus" size={24} /></span>
+            <span className="w-full truncate text-center text-[11.5px] text-muted">{t('home.inviteShort')}</span>
+          </Link>
+        </div>
         <div className="flex items-center gap-2">
-          <Link to="/szukaj" className="press flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-fill-strong/60 pr-2 pl-3.5">
-            <Icon name="sparkle" size={20} className="shrink-0 text-primary" />
+          <Link to="/szukaj" className="press flex min-h-11 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-surface pr-2 pl-3.5 shadow-[var(--shadow)]">
+            <Icon name="sparkle" size={20} className="shrink-0 text-primary-strong" />
             <span className="min-w-0 flex-1">
-              <h1 className="truncate text-[15px] leading-tight font-semibold">{t('home.title')}</h1>
+              <h1 className="truncate text-[15px] leading-tight font-bold">{t('home.title')}</h1>
               <span className="block truncate text-[11.5px] text-muted">{t('home.searchPh')}</span>
             </span>
           </Link>
           <Link to="/szukaj?mow=1" className="press grid size-11 shrink-0 place-items-center rounded-full bg-primary text-primary-ink" aria-label={t('voice.ask')}>
             <Icon name="mic" size={20} />
           </Link>
+        </div>
+        {/* Cztery kolorowe kafle jak w identyfikacji Regioorbit: najczęstsze sprawy sąsiedzkie jednym stuknięciem. */}
+        <div className="grid grid-cols-2 gap-2.5">
+          {[
+            { to: '/dodaj?c=help', title: t('a.c.help'), cta: t('board.post'), icon: 'hand', tone: 'tile-1', card: 'bg-peach' },
+            { to: '/szukaj?k=tools', title: t('home.tool'), cta: t('home.find'), icon: 'wrench', tone: 'tile-3', card: 'bg-sun' },
+            { to: '/dodaj?c=localevents', title: t('a.c.localevents'), cta: t('home.create'), icon: 'calendar', tone: 'tile-2', card: 'bg-mint' },
+            { to: '#tablica', title: t('board.title'), cta: t('home.see'), icon: 'users', tone: 'tile-4', card: 'bg-sky' },
+          ].map((c) => {
+            const body = (
+              <>
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-[15px] leading-tight font-extrabold">{c.title}</span>
+                  <span className={cx('grid size-9 shrink-0 place-items-center rounded-[12px] bg-surface/80', c.tone, '!bg-surface/80')}><Icon name={c.icon} size={19} /></span>
+                </span>
+                <span className="self-start rounded-full bg-primary px-3 py-1.5 text-[12.5px] font-bold text-primary-ink">{c.cta}</span>
+              </>
+            )
+            const cls = cx('press flex min-h-[104px] flex-col justify-between gap-2 rounded-[20px] p-3', c.card)
+            return c.to.startsWith('#') ? (
+              <button key={c.to} type="button" onClick={() => document.getElementById('tablica')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className={cx(cls, 'text-left')}>{body}</button>
+            ) : (
+              <Link key={c.to} to={c.to} className={cls}>{body}</Link>
+            )
+          })}
         </div>
       </header>
 
@@ -156,8 +197,8 @@ export function Home() {
         </div>
       )}
 
-      <section className="-mt-3 flex flex-col gap-1.5" aria-label={t('home.plan')}>
-        <p className="flex items-center gap-1 px-4 text-[12px] font-semibold text-muted"><Icon name="sparkle" size={13} className="text-primary" /> {t('home.plan')}</p>
+      <section className="flex flex-col gap-1.5" aria-label={t('home.plan')}>
+        <p className="flex items-center gap-1 px-4 text-[12px] font-semibold text-muted"><Icon name="sparkle" size={13} className="text-primary-strong" /> {t('home.plan')}</p>
         <Scroller label={t('home.plan')}>
           {ideas.map((x) => (
             <Link key={x.label} to={`/szukaj?q=${encodeURIComponent(x.q)}`} draggable={false} className="press flex w-[66px] shrink-0 flex-col items-center gap-1 text-center">
@@ -206,10 +247,10 @@ export function Home() {
         if (!soon.length) return null
         return (
           <Link to="/kalendarz" className="press mx-4 flex flex-col gap-1.5 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
-            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-muted"><Icon name="calendar" size={14} className="text-primary" /> {t('cal.title')}</span>
+            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-muted"><Icon name="calendar" size={14} className="text-primary-strong" /> {t('cal.title')}</span>
             {soon.map((i) => (
               <span key={i.id} className="flex items-center gap-2 text-[14px]">
-                <span className="w-14 shrink-0 text-[12px] font-bold text-primary">{i.date === today ? t('cal.today') : t('cal.tomorrow')}</span>
+                <span className="w-14 shrink-0 text-[12px] font-bold text-primary-strong">{i.date === today ? t('cal.today') : t('cal.tomorrow')}</span>
                 <span className="tnum shrink-0 text-[12px] text-muted">{i.time ?? ''}</span>
                 <span className="min-w-0 flex-1 truncate font-medium">{i.title}</span>
               </span>
@@ -269,35 +310,43 @@ export function Home() {
       )}
 
       {boardAll.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section id="tablica" className="flex scroll-mt-4 flex-col gap-3">
           <SectionTitle title={t('board.title')} sub={t('board.sub')} to="/dodaj" more={t('board.post')} />
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-4" role="tablist" aria-label={t('board.title')}>
             {BOARD.map((b) => (
-              <button key={b.id} type="button" role="tab" aria-selected={tab === b.id} onClick={() => setTab(b.id)} className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px]', tab === b.id ? 'bg-primary-soft font-semibold text-primary' : 'bg-fill-strong/60 font-medium')}>
+              <button key={b.id} type="button" role="tab" aria-selected={tab === b.id} onClick={() => setTab(b.id)} className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px]', tab === b.id ? 'bg-primary-soft font-bold text-primary-strong' : 'bg-surface font-medium shadow-[var(--shadow)]')}>
                 <Icon name={b.icon} size={15} /> {t(`board.tab.${b.id}`)}
               </button>
             ))}
           </div>
-          <Scroller label={t('board.title')}>
-            {board.length ? board.map(({ listing, km }) => {
+          {/* Wpisy jak posty w aplikacji sąsiedzkiej: kto, kiedy, tytuł, kilka słów i zdjęcie po prawej. */}
+          <div className="mx-4 flex flex-col gap-2.5">
+            {board.length ? board.slice(0, 4).map(({ listing, km }) => {
               const kind = boardTab(listing)!
               const icon = BOARD.find((b) => b.id === kind)!.icon
               const stat = kind === 'ask' ? t('board.answers', { n: listing.answers?.length ?? 0 }) : kind === 'events' ? t('board.going', { n: listing.going?.length ?? 0 }) : kind === 'jobs' ? priceText(listing, t, locale) : t('board.free')
               return (
-                <Link key={listing.id} to={`/l/${listing.id}`} draggable={false} className="press flex w-[236px] shrink-0 flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
-                  <span className="flex items-center gap-2">
-                    <span className={cx('grid size-8 shrink-0 place-items-center rounded-[10px]', ({ all: 'tile-4', help: 'tile-2', ask: 'tile-1', events: 'tile-3', jobs: 'tile-5' } as Record<BoardTab, string>)[kind])}><Icon name={icon} size={18} /></span>
-                    <span className="min-w-0 truncate text-[12px] font-bold tracking-wide text-muted uppercase">{t(`board.tab.${kind}`)}</span>
+                <Link key={listing.id} to={`/l/${listing.id}`} className="press flex flex-col gap-2 rounded-[18px] bg-surface p-3 shadow-[var(--shadow)]">
+                  <span className="flex items-center gap-2 text-[12.5px] text-muted">
+                    <Avatar user={shown(listing.ownerId)} size={26} />
+                    <span className="min-w-0 flex-1 truncate"><span className="font-bold text-ink">{nameOf(listing.ownerId, true)}</span> · {timeAgo(listing.createdAt, t)} · {formatDistance(km)}</span>
+                    <span className={cx('grid size-7 shrink-0 place-items-center rounded-[9px]', ({ all: 'tile-4', help: 'tile-1', ask: 'tile-4', events: 'tile-2', jobs: 'tile-3' } as Record<BoardTab, string>)[kind])}><Icon name={icon} size={15} /></span>
                   </span>
-                  <span className="line-clamp-2 min-h-[2.5em] text-[14px] leading-tight font-bold">{listing.title}</span>
-                  <span className="flex items-center justify-between gap-2 text-[13px]">
-                    <span className="min-w-0 truncate text-muted">{nameOf(listing.ownerId, true)} · {formatDistance(km)} · {timeAgo(listing.createdAt, t)}</span>
-                    <span className="tnum shrink-0 font-bold">{stat}</span>
+                  <span className="flex gap-3">
+                    <span className="min-w-0 flex-1">
+                      <span className="line-clamp-2 text-[15px] leading-tight font-extrabold">{listing.title}</span>
+                      {listing.description && <span className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-muted">{listing.description}</span>}
+                    </span>
+                    {listing.photo && <Thumb listing={listing} size={64} className="rounded-[12px]" />}
+                  </span>
+                  <span className="flex items-center justify-between text-[12.5px]">
+                    <span className="font-semibold text-muted">{t(`board.tab.${kind}`)}</span>
+                    <span className="tnum font-bold text-primary-strong">{stat}</span>
                   </span>
                 </Link>
               )
             }) : <p className="px-1 text-[15px] text-muted">{t('board.empty')}</p>}
-          </Scroller>
+          </div>
         </section>
       )}
 
@@ -385,7 +434,7 @@ export function Home() {
             <span className="min-w-0">
               <span className="flex items-center gap-1.5 text-[11px] font-bold tracking-wide text-muted uppercase">{t('ad.label')} · {users[ad.listing.ownerId].name}</span>
               <span className="line-clamp-1 text-[15px] font-bold">{ad.listing.title}</span>
-              <span className="tnum text-[14px] font-semibold text-primary">{priceText(ad.listing, t, locale)} · {formatDistance(ad.km)}</span>
+              <span className="tnum text-[14px] font-semibold text-primary-strong">{priceText(ad.listing, t, locale)} · {formatDistance(ad.km)}</span>
             </span>
           </Link>
           <button type="button" onClick={() => setWhy(true)} className="absolute right-11 bottom-2 text-[11px] font-semibold text-muted underline">{t('ad.why')}</button>
@@ -407,8 +456,8 @@ export function Home() {
       <section className="flex flex-col gap-3">
         <SectionTitle title={t('home.mine')} to="/moje" more={t('home.seeAll')} />
         <Scroller label={t('home.mine')}>
-          <Link to="/dodaj" draggable={false} className="press flex w-[132px] shrink-0 flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-primary/30 bg-surface text-primary" style={{ minHeight: 132 }}>
-            <span className="grid size-10 place-items-center rounded-full bg-primary text-white"><Icon name="plus" size={22} strokeWidth={2.4} /></span>
+          <Link to="/dodaj" draggable={false} className="press flex w-[132px] shrink-0 flex-col items-center justify-center gap-2 rounded-[16px] border-2 border-dashed border-primary/30 bg-surface text-primary-strong" style={{ minHeight: 132 }}>
+            <span className="grid size-10 place-items-center rounded-full bg-primary text-primary-ink"><Icon name="plus" size={22} strokeWidth={2.4} /></span>
             <span className="text-[14px] font-bold">{t('home.addNew')}</span>
           </Link>
           {myListings.map((l) => <Tile key={l.id} listing={l} t={t} locale={locale} width={132} meta={t('home.mineMeta', { n: viewsOf(l, listings) })} />)}
@@ -455,6 +504,7 @@ export function Home() {
 
       <Link to="/ja/zainteresowania" className="min-h-10 self-center text-[15px] font-semibold text-link">{t('home.interests')}</Link>
 
+      {menu && <MenuDrawer onClose={() => setMenu(false)} />}
       {story !== null && <StoryViewer owners={storyOwners} start={story} onSeen={markSeen} onClose={() => setStory(null)} />}
       {why && ad && (
         <Sheet title={t('ad.why')} onClose={() => setWhy(false)}>
@@ -483,7 +533,7 @@ function SectionTitle({ title, sub, to, more }: { title: string; sub?: string; t
         <h2 className="text-[17px] leading-tight font-bold">{title}</h2>
         {sub && <p className="text-[12.5px] text-muted">{sub}</p>}
       </div>
-      {to && more && <Link to={to} className="flex min-h-9 shrink-0 items-center text-[14px] font-semibold text-primary">{more}</Link>}
+      {to && more && <Link to={to} className="flex min-h-9 shrink-0 items-center text-[14px] font-semibold text-primary-strong">{more}</Link>}
     </div>
   )
 }

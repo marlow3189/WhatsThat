@@ -1,16 +1,18 @@
-/* Strona miliorbit.com: lekka (bez frameworka), te same kolory co aplikacja. */
+/* Strona regioorbit.com: lekka (bez frameworka), te same kolory co aplikacja. */
 :root {
   color-scheme: light;
-  --bg: #f1f2f4;
+  /* paleta Regioorbit: kremowe tło, brzoskwinia, żółty, zieleń, błękit */
+  --bg: #f7f3ec;
   --surface: #fff;
-  --ink: #121316;
-  --muted: #646a75;
-  --line: #e4e6ea;
-  --accent: #ff6b2c;
+  --ink: #2d2620;
+  --muted: #6e645a;
+  --line: #eae2d5;
+  --accent: #e88958;
+  --accent-ink: #2d1608;
   --danger: #d0311b;
-  --hero: linear-gradient(135deg, #e4400c, #ff7a32);
-  --shadow: 0 10px 30px rgb(18 19 22 / 0.08);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --hero: linear-gradient(135deg, #e88958, #f0a467 50%, #f5d061);
+  --shadow: 0 10px 30px rgb(68 48 28 / 0.09);
+  font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.45; -webkit-font-smoothing: antialiased; }
@@ -42,7 +44,7 @@ h1 { font-size: clamp(34px, 7vw, 60px); line-height: 1.02; letter-spacing: -0.03
 .chip { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: 14px; }
 .sos { background: var(--danger); color: #fff; border-radius: 999px; padding: 6px 12px; font-size: 12px; letter-spacing: 0.04em; }
 .card { background: var(--surface); border-radius: 20px; padding: 14px; box-shadow: var(--shadow); font-size: 13px; }
-.card.hot { background: var(--hero); color: #fff; }
+.card.hot { background: var(--hero); color: var(--accent-ink); }
 .card b { display: block; font-size: 15px; margin-bottom: 2px; }
 .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .tile { aspect-ratio: 1; border-radius: 16px; }

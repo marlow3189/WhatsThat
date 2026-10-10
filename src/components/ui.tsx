@@ -283,7 +283,7 @@ export function Chip({ active, children, onClick, icon }: { active?: boolean; ch
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] whitespace-nowrap', active ? 'bg-primary-soft font-semibold text-primary' : 'bg-fill text-ink')}
+      className={cx('press inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[14px] whitespace-nowrap', active ? 'bg-primary-soft font-semibold text-primary-strong' : 'bg-fill text-ink')}
     >
       {icon && <Icon name={icon} size={16} />}
       {children}

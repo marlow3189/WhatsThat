@@ -122,7 +122,7 @@ export function Search() {
         <label className="flex min-h-12 items-center gap-2 rounded-full bg-fill-strong/60 pr-1 pl-4 text-muted focus-within:ring-2 focus-within:ring-primary/25">
           <Icon name="search" size={19} />
           <input id="q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('home.searchPh')} className="min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-muted focus-visible:outline-none" />
-          {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[12px] font-bold text-primary"><Icon name="sparkle" size={13} /> AI</span>}
+          {recipe && <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-[12px] font-bold text-primary-strong"><Icon name="sparkle" size={13} /> AI</span>}
           {voice && (
             <button type="button" onClick={ask} aria-label={t('search.voice')} aria-pressed={listening} className={cx('press grid size-10 shrink-0 place-items-center rounded-full', listening ? 'bg-danger text-white' : 'bg-primary text-primary-ink')}>
               <Icon name="mic" size={19} />
@@ -190,7 +190,7 @@ export function Search() {
                 <p className="px-1 text-[14px] text-muted">{t('map.tap')}</p>
               )}
               {recipe && planStops.length > 1 && (
-                <a href={routeUrl(account.place, planStops.map((x) => x.hit.listing.place))} target="_blank" rel="noreferrer" className="press flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-primary text-[16px] font-bold text-white">
+                <a href={routeUrl(account.place, planStops.map((x) => x.hit.listing.place))} target="_blank" rel="noreferrer" className="press flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-primary text-[16px] font-bold text-primary-ink">
                   <Icon name="route" size={19} /> {t('map.routeAll', { n: planStops.length })}
                 </a>
               )}

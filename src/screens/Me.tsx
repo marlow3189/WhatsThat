@@ -153,7 +153,7 @@ export function Me() {
         <Row icon="info" title={t('diag.title')} onClick={() => setDiagOpen(true)} />
         <Row onClick={reset} title={<span className="text-danger">{t('me.logout')}</span>} chevron={false} />
       </Group>
-      <p className="tnum -mt-4 text-center text-[12px] text-muted">Miliorbit 0.8 · {__BUILD__} · {LIVE ? 'live' : 'demo'}{import.meta.env.VITE_CHANNEL === 'dev' ? ' · DEV' : ''}</p>
+      <p className="tnum -mt-4 text-center text-[12px] text-muted">Regioorbit 0.9 · {__BUILD__} · {LIVE ? 'live' : 'demo'}{import.meta.env.VITE_CHANNEL === 'dev' ? ' · DEV' : ''}</p>
       {orgOpen && (
         <Sheet title={t('org.apply')} onClose={() => setOrgOpen(false)}>
           <div className="flex flex-col gap-3">
@@ -176,7 +176,7 @@ export function Me() {
       )}
       {diagOpen && (() => {
         const errs = readErrors()
-        const text = [deviceSummary(`0.8 · ${__BUILD__}`), ...errs.map((e) => `${new Date(e.at).toISOString()} [${e.where}] ${e.message}\n${e.stack ?? ''}`)].join('\n\n')
+        const text = [deviceSummary(`0.9 · ${__BUILD__}`), ...errs.map((e) => `${new Date(e.at).toISOString()} [${e.where}] ${e.message}\n${e.stack ?? ''}`)].join('\n\n')
         return (
           <Sheet title={t('diag.title')} onClose={() => setDiagOpen(false)}>
             <div className="flex flex-col gap-3">

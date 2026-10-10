@@ -1,15 +1,15 @@
-# Miliorbit: wdrożenie krok po kroku (dla początkujących)
+# Regioorbit: wdrożenie krok po kroku (dla początkujących)
 
 Ta instrukcja prowadzi od zera do działającej aplikacji. Nie zakłada wiedzy programistycznej.
 
 > **Na teraz (testy u siebie):** zacznij od [START.md](START.md) i [PLAN.md](PLAN.md). Ta instrukcja to droga do startu
 > publicznego: domena, ochrona, płatności, sklepy.
 
-**Jak to jest ułożone:** Miliorbit to przede wszystkim **aplikacja na telefon** (Android z Google Play, iPhone z App
-Store). Domena **miliorbit.com** to strona, która prowadzi do instalacji: telefon z Androidem trafia do Google Play,
-iPhone do App Store, komputer widzi kod QR. Ta sama aplikacja działa też w przeglądarce pod **miliorbit.com/app/**
-(dla tych, którzy nie chcą instalować). Linki udostępniane z aplikacji (`miliorbit.com/l/…`, zaproszenia
-`miliorbit.com/z/…`) otwierają się od razu w aplikacji, jeśli jest zainstalowana, a jeśli nie, pokazują sklep.
+**Jak to jest ułożone:** Regioorbit to przede wszystkim **aplikacja na telefon** (Android z Google Play, iPhone z App
+Store). Domena **regioorbit.com** to strona, która prowadzi do instalacji: telefon z Androidem trafia do Google Play,
+iPhone do App Store, komputer widzi kod QR. Ta sama aplikacja działa też w przeglądarce pod **regioorbit.com/app/**
+(dla tych, którzy nie chcą instalować). Linki udostępniane z aplikacji (`regioorbit.com/l/…`, zaproszenia
+`regioorbit.com/z/…`) otwierają się od razu w aplikacji, jeśli jest zainstalowana, a jeśli nie, pokazują sklep.
 
 Każdy krok ma ten sam układ:
 
@@ -38,7 +38,7 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | **Pull request (PR)** | Wniosek „włącz zmiany z gałęzi A do gałęzi B”. Ma opis, listę zmian, komentarze i przycisk **Merge**. PR to *propozycja zmian*. |
 | **Build (budowanie)** | Zamiana kodu źródłowego na pliki, które rozumie przeglądarka. Robi to komenda `npm run build`. |
 | **Hosting** | Serwer, który pokazuje stronę ludziom. U nas **Cloudflare Pages** (darmowy). |
-| **Domena** | Adres strony: `miliorbit.com`. Kupiona u **rejestratora**, u Ciebie w **Hostingerze**. Rejestrator pobiera opłatę roczną; to, kto obsługuje DNS, można ustawić gdzie indziej. |
+| **Domena** | Adres strony: `regioorbit.com`. Kupiona u **rejestratora**, u Ciebie w **Hostingerze**. Rejestrator pobiera opłatę roczną; to, kto obsługuje DNS, można ustawić gdzie indziej. |
 | **DNS** | „Książka telefoniczna internetu”: mówi, na jaki serwer prowadzi domena. Wpisy w DNS to **rekordy** (A, CNAME, TXT). |
 | **Serwery nazw (nameservers)** | Kto zarządza DNS-em domeny. Przeniesiemy to do Cloudflare. |
 | **HTTPS / certyfikat** | Kłódka w przeglądarce: szyfrowane połączenie. Cloudflare robi je automatycznie. |
@@ -54,7 +54,7 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | **CI** | Automat, który przy każdej zmianie sprawdza kod: typy, testy, budowanie, audyt bezpieczeństwa. U nas GitHub Actions (`.github/workflows/ci.yml`). Zielony ✓ przy commicie = sprawdzenie przeszło, czerwony ✗ = coś jest zepsute. CI to *kontrola*, a nie PR: PR tylko pokazuje wynik CI. |
 | **PWA** | Strona, którą można dodać do ekranu telefonu jak aplikację. U nas to dodatek do aplikacji ze sklepu (`/app/`). |
 | **Capacitor** | Narzędzie, które z naszego kodu robi aplikację na Androida i iPhone'a (`npm run cap:android`, `cap:ios`). |
-| **App Links / Universal Links** | Link `https://miliorbit.com/l/…` otwiera się od razu w zainstalowanej aplikacji. Telefon sprawdza to w plikach `/.well-known/assetlinks.json` (Android) i `/.well-known/apple-app-site-association` (iPhone). |
+| **App Links / Universal Links** | Link `https://regioorbit.com/l/…` otwiera się od razu w zainstalowanej aplikacji. Telefon sprawdza to w plikach `/.well-known/assetlinks.json` (Android) i `/.well-known/apple-app-site-association` (iPhone). |
 | **Piksel / tag** | Kawałek kodu Google, Meta, TikTok, który liczy, skąd przyszli ludzie z reklam. U nas ładuje się dopiero po zgodzie. |
 | **UTM** | Dopisek do linku z kampanii, np. `?utm_source=tiktok&utm_campaign=opal`. Dzięki niemu wiesz, która reklama działa. |
 | **KYC** | Weryfikacja tożsamości sprzedającego. Robi ją operator płatności (Stripe), nie my. |
@@ -81,7 +81,7 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | Apple Developer | aplikacja na iPhone'a | 99 USD rocznie |
 | Claude Code (claude.ai/code) | agent, który pisze i poprawia kod | w ramach planu Claude |
 
-Na każdym koncie włącz **logowanie dwuetapowe (2FA)**. Używaj jednego firmowego e-maila, np. `hello@miliorbit.com`.
+Na każdym koncie włącz **logowanie dwuetapowe (2FA)**. Używaj jednego firmowego e-maila, np. `hello@regioorbit.com`.
 
 ---
 
@@ -95,8 +95,8 @@ Na każdym koncie włącz **logowanie dwuetapowe (2FA)**. Używaj jednego firmow
 2. Umów **biuro rachunkowe** (ok. 400 zł/mies.). Powiedz im: platforma internetowa, abonamenty, reklamy, raporty DAC7.
 3. Umów **prawnika**: regulamin (`docs/legal/`), polityka prywatności, zgody marketingowe, model „Bezpiecznej płatności”
    (czy wystarczy licencja operatora płatności), reklamy (DSA art. 26).
-4. **Znak towarowy** MILIORBIT w EUIPO (euipo.europa.eu): klasy 9, 35, 38, 42. Koszt: 850 € + 50 € + 150 € za każdą kolejną.
-5. Dokup domeny `miliorbit.app`, `miliorbit.pl`, `miliorbit.eu` (ochrona marki).
+4. **Znak towarowy** REGIOORBIT w EUIPO (euipo.europa.eu): klasy 9, 35, 38, 42. Koszt: 850 € + 50 € + 150 € za każdą kolejną.
+5. Dokup domeny `regioorbit.app`, `regioorbit.pl`, `regioorbit.eu` (ochrona marki).
 
 **Agent:** „Przygotuj listę pytań do prawnika na podstawie docs/legal, docs/BIZNES.md i docs/BEZPIECZENSTWO.md”.
 
@@ -135,7 +135,7 @@ przy zielonym ✓ Ty klikasz **Merge pull request** → Cloudflare sam publikuje
 | GitHub (repozytorium, historia zmian) | ✅ |
 | Claude Code (agent zapisuje zmiany na gałęzi) | ✅ |
 | CI (automatyczne testy przy każdej zmianie, zielony ✓) | ✅ |
-| Domena miliorbit.com (kupiona w Hostingerze) | ✅ kupiona, ☐ DNS do ustawienia (etap 2) |
+| Domena regioorbit.com (kupiona w Hostingerze) | ✅ kupiona, ☐ DNS do ustawienia (etap 2) |
 | Cloudflare (hosting strony, ochrona) | ☐ etapy 2–4 |
 | Supabase (baza, logowanie SMS), Stripe (płatności) | ☐ etapy 6–7 |
 | Sklepy Google Play i App Store | ☐ etap 9 |
@@ -166,12 +166,12 @@ Registrar (odnowienie po kosztach, bez marży) jest możliwe, ale nieobowiązkow
 
 ### Wariant A (zalecany): serwery nazw Cloudflare, domena zostaje w Hostingerze
 
-1. **Cloudflare** → **Add a domain** → `miliorbit.com` → plan **Free** → Cloudflare przejrzy obecne rekordy DNS.
-2. Sprawdź listę rekordów. Jeśli masz pocztę w Hostingerze (np. `hello@miliorbit.com`), muszą być rekordy **MX**,
+1. **Cloudflare** → **Add a domain** → `regioorbit.com` → plan **Free** → Cloudflare przejrzy obecne rekordy DNS.
+2. Sprawdź listę rekordów. Jeśli masz pocztę w Hostingerze (np. `hello@regioorbit.com`), muszą być rekordy **MX**,
    **TXT** z `v=spf1…` i rekordy DKIM. Brakujące dopisz (skopiuj z hPanel → *Domeny* → *DNS / Serwery nazw* →
    *Rekordy DNS*). Bez nich poczta przestanie działać.
 3. Cloudflare pokaże dwa **serwery nazw** (np. `ada.ns.cloudflare.com`, `bob.ns.cloudflare.com`). Skopiuj je.
-4. **Hostinger hPanel** → **Domeny** → **Portfolio domen** → przy `miliorbit.com` **Zarządzaj** → przy *DNS / Serwery nazw*
+4. **Hostinger hPanel** → **Domeny** → **Portfolio domen** → przy `regioorbit.com` **Zarządzaj** → przy *DNS / Serwery nazw*
    **Edytuj** → **Zmień serwery nazw** → wklej oba adresy z Cloudflare (pozostałe pola puste) → **Zapisz**.
    Jeśli w Hostingerze był włączony **DNSSEC**, najpierw go wyłącz.
 5. Cloudflare → **Check nameservers**. Zmiana trwa od kilku minut do 24 h; dostaniesz e-mail, gdy domena będzie *Active*.
@@ -180,18 +180,18 @@ Registrar (odnowienie po kosztach, bez marży) jest możliwe, ale nieobowiązkow
 
 ### Wariant B: DNS zostaje w Hostingerze
 
-1. Strona działa tylko pod **`www.miliorbit.com`** (Cloudflare Pages podłącza domenę główną bez `www` wyłącznie wtedy,
+1. Strona działa tylko pod **`www.regioorbit.com`** (Cloudflare Pages podłącza domenę główną bez `www` wyłącznie wtedy,
    gdy DNS jest w Cloudflare).
 2. hPanel → *DNS* → dodaj rekord **CNAME**: nazwa `www`, cel `<twój-projekt>.pages.dev` (adres z etapu 3).
-3. hPanel → *Domeny* → **Przekierowania** → `miliorbit.com` → **301** na `https://www.miliorbit.com`.
-4. W kodzie zmień domenę na `www.miliorbit.com` (`src/config.ts`, `site/`; poproś agenta), bo linki do aplikacji
+3. hPanel → *Domeny* → **Przekierowania** → `regioorbit.com` → **301** na `https://www.regioorbit.com`.
+4. W kodzie zmień domenę na `www.regioorbit.com` (`src/config.ts`, `site/`; poproś agenta), bo linki do aplikacji
    muszą prowadzić dokładnie na adres z plikami `/.well-known`.
 
 ### Który lepszy i szybszy?
 
 | | A: serwery nazw Cloudflare | B: DNS w Hostingerze |
 |---|---|---|
-| Szybkość strony | taka sama sieć Cloudflare | to samo, ale `miliorbit.com` robi dodatkowe przekierowanie |
+| Szybkość strony | taka sama sieć Cloudflare | to samo, ale `regioorbit.com` robi dodatkowe przekierowanie |
 | Ochrona przed atakami (WAF, boty, Turnstile) | ✅ pełna | ❌ tylko podstawowa |
 | Adres bez `www` i linki do aplikacji | ✅ | ⚠️ tylko `www` |
 | DNSSEC, szybkie odpowiedzi DNS | ✅ | zależnie od Hostingera |
@@ -206,7 +206,7 @@ Registrar (odnowienie po kosztach, bez marży) jest możliwe, ale nieobowiązkow
 ## Etap 3. Strona i aplikacja w internecie (30 minut, 0 zł)
 
 **Gdzie jesteś:** Cloudflare → **Workers & Pages**.
-**Po co:** po tym kroku `https://miliorbit.com` pokazuje stronę z linkami do sklepów, `https://miliorbit.com/app/`
+**Po co:** po tym kroku `https://regioorbit.com` pokazuje stronę z linkami do sklepów, `https://regioorbit.com/app/`
 otwiera aplikację w przeglądarce, a każda zmiana w gałęzi produkcyjnej sama się publikuje.
 
 **Zrób:**
@@ -219,15 +219,15 @@ otwiera aplikację w przeglądarce, a każda zmiana w gałęzi produkcyjnej sama
    - *Build output directory:* `dist` (w środku: strona główna, `app/` z aplikacją i `.well-known/`)
    - *Environment variables:* dodaj `NODE_VERSION` = `22`
 4. **Save and Deploy**. Po 1–2 minutach dostaniesz adres `…pages.dev`.
-5. W projekcie → **Custom domains** → **Set up a custom domain** → `miliorbit.com`, potem drugi raz `www.miliorbit.com`
-   (w wariancie B z etapu 2 tylko `www.miliorbit.com`).
+5. W projekcie → **Custom domains** → **Set up a custom domain** → `regioorbit.com`, potem drugi raz `www.regioorbit.com`
+   (w wariancie B z etapu 2 tylko `www.regioorbit.com`).
 
 **Sprawdź:**
-- `https://miliorbit.com`: strona „Wszystko obok. Najpierw znajomi.” z przyciskami Google Play i App Store, kłódka w pasku.
-- `https://miliorbit.com/app/`: aplikacja w przeglądarce.
-- `https://miliorbit.com/pobierz`: na telefonie z Androidem od razu otwiera Google Play (cel kodów QR).
-- `https://miliorbit.com/l/test`: strona „Otwórz w Miliorbit” (tak wygląda link do ogłoszenia bez aplikacji).
-- `https://miliorbit.com/.well-known/apple-app-site-association`: pokazuje JSON (bez przekierowania).
+- `https://regioorbit.com`: strona „Wszystko obok. Najpierw znajomi.” z przyciskami Google Play i App Store, kłódka w pasku.
+- `https://regioorbit.com/app/`: aplikacja w przeglądarce.
+- `https://regioorbit.com/pobierz`: na telefonie z Androidem od razu otwiera Google Play (cel kodów QR).
+- `https://regioorbit.com/l/test`: strona „Otwórz w Regioorbit” (tak wygląda link do ogłoszenia bez aplikacji).
+- `https://regioorbit.com/.well-known/apple-app-site-association`: pokazuje JSON (bez przekierowania).
 - Na securityheaders.com wpisz adres: wynik **A** (nagłówki są w `site/_headers`).
 
 **Agent:** „Każdy push na main ma przechodzić CI; jeśli nie przechodzi, napraw i zrób PR”.
@@ -243,7 +243,7 @@ otwiera aplikację w przeglądarce, a każda zmiana w gałęzi produkcyjnej sama
 1. **Security → Bots** → włącz **Bot Fight Mode**.
 2. **Security → WAF** → włącz dostępne **zarządzane reguły** (managed rules).
 3. **SSL/TLS** → tryb **Full (strict)**; **Edge Certificates** → włącz **Always Use HTTPS** i **HSTS**.
-4. **Turnstile** (w menu Cloudflare) → **Add site** → `miliorbit.com` → zapisz **Site key** i **Secret key**
+4. **Turnstile** (w menu Cloudflare) → **Add site** → `regioorbit.com` → zapisz **Site key** i **Secret key**
    (użyjesz ich w Supabase przy logowaniu numerem, żeby nikt nie wysyłał masowo SMS-ów na Twój koszt).
 5. GitHub → repozytorium → **Settings → Code security** → włącz **Secret scanning** i **Push protection**.
 
@@ -258,16 +258,16 @@ otwiera aplikację w przeglądarce, a każda zmiana w gałęzi produkcyjnej sama
 (dwa równe przyciski) i bez zgody nic nie wyśle (`src/lib/analytics.ts`).
 
 **Zrób:**
-1. **Google Analytics:** *Administracja* → *Utwórz* → *Usługa* → nazwa „Miliorbit” → *Strumień danych* → *Witryna* →
-   `https://miliorbit.com` → skopiuj **Identyfikator pomiaru** (`G-…`).
+1. **Google Analytics:** *Administracja* → *Utwórz* → *Usługa* → nazwa „Regioorbit” → *Strumień danych* → *Witryna* →
+   `https://regioorbit.com` → skopiuj **Identyfikator pomiaru** (`G-…`).
 2. **Meta:** business.facebook.com → **Menedżer zdarzeń** → *Połącz źródła danych* → *Internet* → *Piksel Meta* →
    nazwa → skopiuj **Identyfikator piksela** (same cyfry). Potem *Ustawienia firmy* → *Bezpieczeństwo marki* →
-   *Domeny* → dodaj `miliorbit.com` i zweryfikuj rekordem **TXT** (dodajesz go w Cloudflare → DNS → *Add record*).
+   *Domeny* → dodaj `regioorbit.com` i zweryfikuj rekordem **TXT** (dodajesz go w Cloudflare → DNS → *Add record*).
 3. **TikTok:** ads.tiktok.com → *Tools* → *Events* → *Web Events* → *Set up web events* → *Manual setup* → skopiuj **Pixel ID**.
 4. **Cloudflare** → Workers & Pages → projekt → **Settings → Variables and Secrets** (zmienne środowiskowe) → dodaj:
    `VITE_GA4_ID`, `VITE_META_PIXEL_ID`, `VITE_TIKTOK_PIXEL_ID` (wzór w pliku `.env.example`) → **Save** →
    **Deployments → Retry deployment** (zmienne `VITE_…` działają dopiero po ponownym zbudowaniu).
-5. W każdej kampanii używaj linków z UTM, np. `https://miliorbit.com/?utm_source=tiktok&utm_campaign=opal`.
+5. W każdej kampanii używaj linków z UTM, np. `https://regioorbit.com/?utm_source=tiktok&utm_campaign=opal`.
    Strona główna przekazuje źródło do Google Play (*Install Referrer*), więc wiesz, z której reklamy jest instalacja.
    Zdarzenia z aplikacji ze sklepu mierzysz w Firebase / Google Analytics for Firebase (agent podłączy przy etapie 9).
 
@@ -284,8 +284,8 @@ Meta → *Testuj zdarzenia*; TikTok → *Test events*. Zdarzenia: `sign_up`, `li
 **Po co:** prawdziwe konta, ogłoszenia, czaty i zamówienia na serwerze w UE.
 
 **Zrób:**
-1. **New project** → nazwa `miliorbit` → mocne hasło do bazy (zapisz w menedżerze haseł) → region
-   **Central EU (Frankfurt)**. Najpierw zrób drugi projekt `miliorbit-test` i na nim ćwicz.
+1. **New project** → nazwa `regioorbit` → mocne hasło do bazy (zapisz w menedżerze haseł) → region
+   **Central EU (Frankfurt)**. Najpierw zrób drugi projekt `regioorbit-test` i na nim ćwicz.
 2. **Database → Extensions** → włącz `postgis` i `pg_cron`.
 3. **SQL Editor** → **New query** → wklej całą zawartość `supabase/migrations/0001_init.sql` → **Run**.
    Potem tak samo `0002_safety.sql`, `0003_local.sql` i `0004_identity_sos.sql`. Kolejność jest ważna.
@@ -295,8 +295,8 @@ Meta → *Testuj zdarzenia*; TikTok → *Test events*. Zdarzenia: `sign_up`, `li
    **Auth Hooks → Send SMS hook**.
 5. **Authentication → Attack Protection** (albo *Bot and Abuse Protection*) → **CAPTCHA** → **Cloudflare Turnstile** →
    wklej **Secret key** z etapu 4. Ustaw limit SMS na godzinę.
-6. **Authentication → URL Configuration** → *Site URL:* `https://miliorbit.com/app/`; w *Redirect URLs* dodaj też
-   `https://miliorbit.com/**` i `capacitor://localhost` (aplikacja na iPhonie) oraz `https://localhost` (Android).
+6. **Authentication → URL Configuration** → *Site URL:* `https://regioorbit.com/app/`; w *Redirect URLs* dodaj też
+   `https://regioorbit.com/**` i `capacitor://localhost` (aplikacja na iPhonie) oraz `https://localhost` (Android).
 7. **Advisors → Security Advisor** → ma być zero ostrzeżeń (każda tabela ma RLS).
 8. **Project Settings → API** → skopiuj **Project URL** i klucz **anon public**. W Cloudflare Pages dodaj zmienne
    `VITE_SUPABASE_URL` i `VITE_SUPABASE_ANON_KEY`. Klucza **service_role** nigdy nie dawaj do aplikacji.
@@ -384,27 +384,27 @@ ulubieni, orbita (`orbit_people`). Tryb demo ma zostać w podglądzie”. To naj
    ```
 4. **Uprawnienia i opisy** (agent dopisze je do projektów `android/` i `ios/`):
    - Kontakty: wtyczka `@capacitor-community/contacts`; na iPhonie `NSContactsUsageDescription` = tekst z okna zgody
-     („Sprawdzamy, kto z Twoich kontaktów jest w Miliorbit. Numery zamieniamy w telefonie na skróty i nie zapisujemy
+     („Sprawdzamy, kto z Twoich kontaktów jest w Regioorbit. Numery zamieniamy w telefonie na skróty i nie zapisujemy
      książki adresowej.”), na Androidzie `READ_CONTACTS`.
    - Położenie (SOS, okolica): `NSLocationWhenInUseUsageDescription`, `ACCESS_FINE_LOCATION`.
    - Powiadomienia push: `@capacitor/push-notifications` (Firebase dla Androida, klucz APNs dla iPhone'a).
-5. **Linki do aplikacji** (otwieranie `miliorbit.com/l/…` w aplikacji):
+5. **Linki do aplikacji** (otwieranie `regioorbit.com/l/…` w aplikacji):
    - Android: Play Console → *Integralność aplikacji* → *Podpisywanie aplikacji* → skopiuj **SHA-256** certyfikatu
      → wpisz do `site/.well-known/assetlinks.json`. W `android/app/src/main/AndroidManifest.xml` dodaj `intent-filter`
-     z `android:autoVerify="true"` dla `https://miliorbit.com` i ścieżek `/l/`, `/u/`, `/z/`, `/sos`, `/zastrzez`.
+     z `android:autoVerify="true"` dla `https://regioorbit.com` i ścieżek `/l/`, `/u/`, `/z/`, `/sos`, `/zastrzez`.
    - iPhone: w `site/.well-known/apple-app-site-association` zamień `TEAMID` na swój *Team ID* (Apple Developer →
-     *Membership*). W Xcode → *Signing & Capabilities* → **Associated Domains** → `applinks:miliorbit.com`.
+     *Membership*). W Xcode → *Signing & Capabilities* → **Associated Domains** → `applinks:regioorbit.com`.
    - Aplikacja odbiera link sama (`src/App.tsx`, `useDeepLinks`) i otwiera właściwy ekran.
-6. **Sklepy wymagają:** adresu polityki prywatności `https://miliorbit.com/prywatnosc` (wersja robocza w `site/prywatnosc.html`,
-   uzupełnij dane firmy i daj prawnikowi), adresu do usuwania konta `https://miliorbit.com/prywatnosc#usun-konto`
+6. **Sklepy wymagają:** adresu polityki prywatności `https://regioorbit.com/prywatnosc` (wersja robocza w `site/prywatnosc.html`,
+   uzupełnij dane firmy i daj prawnikowi), adresu do usuwania konta `https://regioorbit.com/prywatnosc#usun-konto`
    (Google Play), formularza **Data safety** (Google) i **App Privacy** (Apple): telefon, imię, przybliżone i dokładne
    położenie (SOS), kontakty (tylko do dopasowania, nie zapisywane), wiadomości, zakupy.
 7. **Po publikacji** wpisz adresy sklepów w **`site/stores.json`** (jedno miejsce dla strony, kodu QR i aplikacji):
-   `"android"` jest już wpisany (adres znany z nazwy pakietu `com.miliorbit.app`), `"ios"` uzupełnij adresem
+   `"android"` jest już wpisany (adres znany z nazwy pakietu `com.regioorbit.app`), `"ios"` uzupełnij adresem
    `https://apps.apple.com/app/id…` z App Store Connect. Od tej chwili przyciski i kod QR prowadzą do obu sklepów,
    a Safari na iPhonie pokazuje systemowy pasek „Otwórz w App Store”.
 
-**Sprawdź:** na telefonie z zainstalowaną aplikacją link `https://miliorbit.com/l/…` z SMS-a otwiera aplikację, nie
+**Sprawdź:** na telefonie z zainstalowaną aplikacją link `https://regioorbit.com/l/…` z SMS-a otwiera aplikację, nie
 przeglądarkę. Kod QR z **Ja → Kod QR aplikacji** na Androidzie otwiera Google Play.
 **Agent:** „Dodaj projekty Capacitor dla Androida i iOS z uprawnieniami, App Links i Universal Links według etapu 9”.
 
@@ -441,7 +441,7 @@ na produkcji, zmian regulaminu bez prawnika, wysyłki reklam bez zgody użytkown
 |---|---|---|
 | Strona nie otwiera się pod domeną | DNS jeszcze się nie przeniósł | sprawdź status domeny w Cloudflare (*Active*), poczekaj do 24 h |
 | Po zmianie serwerów nazw nie działa poczta | brak rekordów MX/SPF/DKIM w Cloudflare | przepisz je z Hostingera (etap 2, krok 2) |
-| Link `miliorbit.com/l/…` otwiera przeglądarkę zamiast aplikacji | zły SHA-256 / Team ID w `site/.well-known` albo brak `autoVerify` | sprawdź pliki z etapu 9, zainstaluj aplikację ponownie |
+| Link `regioorbit.com/l/…` otwiera przeglądarkę zamiast aplikacji | zły SHA-256 / Team ID w `site/.well-known` albo brak `autoVerify` | sprawdź pliki z etapu 9, zainstaluj aplikację ponownie |
 | Build w Cloudflare jest czerwony | błąd w kodzie albo brak `NODE_VERSION=22` | otwórz log builda, wklej agentowi: „napraw build” |
 | Piksele nic nie liczą | brak zgody albo zmienne bez ponownego wdrożenia | kliknij „Zgadzam się”, zrób *Retry deployment* |
 | SMS nie przychodzi | brak środków u dostawcy SMS albo limit | Supabase → *Auth → Logs*; doładuj konto SMS |

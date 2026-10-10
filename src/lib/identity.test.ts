@@ -45,13 +45,13 @@ describe('kontakty: tylko skróty numerów', () => {
 
 describe('linki do aplikacji', () => {
   it('zamienia adresy strony na ekrany', () => {
-    expect(routeFromLink('https://miliorbit.com/l/l12')).toBe('/l/l12')
-    expect(routeFromLink('https://miliorbit.com/u/kasia/')).toBe('/u/kasia')
-    expect(routeFromLink('https://miliorbit.com/z/me')).toBe('/znajomi')
-    expect(routeFromLink('https://miliorbit.com/sos')).toBe('/sos')
-    expect(routeFromLink('https://miliorbit.com/app/#/czat/c1')).toBe('/czat/c1')
-    expect(routeFromLink('https://miliorbit.com/')).toBe('/')
-    expect(routeFromLink('https://miliorbit.com/l/../../etc')).toBeNull()
+    expect(routeFromLink('https://regioorbit.com/l/l12')).toBe('/l/l12')
+    expect(routeFromLink('https://regioorbit.com/u/kasia/')).toBe('/u/kasia')
+    expect(routeFromLink('https://regioorbit.com/z/me')).toBe('/znajomi')
+    expect(routeFromLink('https://regioorbit.com/sos')).toBe('/sos')
+    expect(routeFromLink('https://regioorbit.com/app/#/czat/c1')).toBe('/czat/c1')
+    expect(routeFromLink('https://regioorbit.com/')).toBe('/')
+    expect(routeFromLink('https://regioorbit.com/l/../../etc')).toBeNull()
   })
   it('rozpoznaje telefon', () => {
     expect(osOf('Mozilla/5.0 (Linux; Android 15; Pixel 9)')).toBe('android')

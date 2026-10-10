@@ -1,4 +1,4 @@
-// miliorbit.com: strona z linkami do aplikacji. Rozpoznaje telefon i prowadzi do właściwego sklepu.
+// regioorbit.com: strona z linkami do aplikacji. Rozpoznaje telefon i prowadzi do właściwego sklepu.
 // Linki do sklepów są w site/stores.json (build zapisuje je do /stores.js jako window.STORES).
 ;(function () {
   var S = window.STORES || { android: '', ios: '' }
@@ -75,10 +75,10 @@
     var title = $('#title')
     var lead = $('#lead')
     if (m[1] === 'z') {
-      title.textContent = en ? 'A friend invites you' : 'Znajomy zaprasza Cię do Miliorbit'
+      title.textContent = en ? 'A friend invites you' : 'Znajomy zaprasza Cię do Regioorbit'
       lead.textContent = en ? 'Install the app: you will see what your friends lend, sell and need, and who lives nearby.' : 'Zainstaluj aplikację: zobaczysz, co pożyczają, sprzedają i czego szukają Twoi znajomi oraz kto mieszka obok.'
     } else if (m[1] === 'u') {
-      title.textContent = en ? 'Profile on Miliorbit' : 'Profil w Miliorbit'
+      title.textContent = en ? 'Profile on Regioorbit' : 'Profil w Regioorbit'
     }
     var browser = $('#browser')
     if (browser) browser.href = web

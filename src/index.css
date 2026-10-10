@@ -1,52 +1,64 @@
 @import 'tailwindcss';
 
 :root {
-  /* Motyw „Miliorbit” (domyślny, od wersji 8): jasne tło jak w WhatsAppie, białe powierzchnie, jeden mocny
-     indygo (marka, aktywna zakładka, główne przyciski), pomarańcz jako akcent i kolorowe kwadraty ikon. */
-  --bg: #f4f5f7;
+  /*
+   * Motyw „Regioorbit” (domyślny, od wersji 0.9), paleta z identyfikacji marki:
+   *   kremowo-beżowe tło #F7F3EC · jasny błękit #D3E6F3 · słoneczny żółty #F5D061
+   *   przyjazna zieleń #95C17E · ciepły pomarańcz / brzoskwinia #E88958 (akcent główny).
+   * Tekst na kolorach jest ciemny (biały na #E88958 ma kontrast 2,6:1, za mało do czytania; norma WCAG AA: 4,5:1).
+   * Odcienie „-ink” to ciemniejsze wersje tych samych barw do tekstu i ikon na jasnym tle.
+   */
+  --bg: #f7f3ec;
   --surface: #ffffff;
-  --fill: #eff1f4;
-  --fill-strong: #dfe3e8;
-  --ink: #111b21;
-  --muted: #5f6b76;
-  --line: #e8ebef;
-  --primary: #3a43e0;
-  --primary-ink: #ffffff;
-  --primary-soft: #e4e6ff;
-  --accent: #ff6b2c;
-  --accent-ink: #111b21;
-  --link: #2f37c9;
-  --ok: #128040;
-  --ok-soft: #dff5e6;
-  --warn: #93470a;
-  --warn-soft: #fff0dc;
+  --fill: #f0eae0;
+  --fill-strong: #e3dacb;
+  --ink: #2d2620;
+  --muted: #6e645a;
+  --line: #eae2d5;
+  --primary: #e88958;
+  --primary-ink: #2d1608;
+  --primary-soft: #fbe1d2;
+  --primary-strong: #a84f25;
+  --accent: #f5d061;
+  --accent-ink: #2d2620;
+  --link: #a84f25;
+  --ok: #3f7a2b;
+  --ok-soft: #e3f0da;
+  --warn: #8a5a06;
+  --warn-soft: #fcefc4;
   --danger: #d0311b;
-  --danger-soft: #ffe7e2;
-  --switch: #3a43e0;
-  --sky: #e8eaff;
-  --mint: #dff5e6;
-  --lilac: #eeeaff;
-  --peach: #ffeadf;
-  --sun: #fff2d9;
-  --shadow: 0 1px 2px rgb(17 27 33 / 0.05), 0 4px 14px rgb(17 27 33 / 0.05);
-  --hero: linear-gradient(135deg, #e4400c 0%, #f4561a 55%, #ff7a32 100%);
-  --hero-ink: #ffffff;
-  --glow: 0 10px 26px rgb(255 98 38 / 0.28);
-  --ring: conic-gradient(#3a43e0, #1aa34a, #ff6b2c, #ff9f1c, #3a43e0);
-  --tile-1: #3a43e0;
-  --tile-2: #16a34a;
-  --tile-3: #ef4423;
-  --tile-4: #ff8a1f;
-  --tile-5: #8b3fd9;
-  --tile-ink: #ffffff;
-  --mark-bg: #3a43e0;
+  --danger-soft: #fde3dc;
+  --switch: #95c17e;
+  --sky: #d3e6f3;
+  --mint: #e3f0da;
+  --lilac: #ebe4f3;
+  --peach: #fbe1d2;
+  --sun: #fcefc4;
+  --shadow: 0 1px 2px rgb(68 48 28 / 0.06), 0 6px 18px rgb(68 48 28 / 0.07);
+  --hero: linear-gradient(135deg, #e88958 0%, #f0a467 50%, #f5d061 100%);
+  --hero-ink: #2d1608;
+  --glow: 0 10px 26px rgb(232 137 88 / 0.3);
+  --ring: conic-gradient(#e88958, #f5d061, #95c17e, #d3e6f3, #e88958);
+  /* kwadraty ikon: pastel z palety + ciemniejsza ikona tej samej barwy */
+  --tile-1: #fbe1d2;
+  --tile-1-ink: #b4542a;
+  --tile-2: #e3f0da;
+  --tile-2-ink: #4c7f35;
+  --tile-3: #fcefc4;
+  --tile-3-ink: #8a6d0b;
+  --tile-4: #d3e6f3;
+  --tile-4-ink: #3d6e93;
+  --tile-5: #efe6d8;
+  --tile-5-ink: #6e5b45;
+  --tile-ink: #2d2620;
+  --mark-bg: #e88958;
   --mark-ink: #ffffff;
-  --mark-dot: #ff8a1f;
-  --tint-l: 93%;
-  --tint-s: 70%;
-  --tint-icon-l: 36%;
-  /* Czcionka systemu jak w WhatsAppie: Roboto na Androidzie, SF Pro na iPhonie; Noto dla hindi (dewanagari). */
-  --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', 'Helvetica Neue', Arial, sans-serif;
+  --mark-dot: #f5d061;
+  --tint-l: 92%;
+  --tint-s: 62%;
+  --tint-icon-l: 34%;
+  /* Nunito: zaokrąglona, przyjazna czcionka z identyfikacji marki (we własnych plikach, bez Google Fonts). */
+  --font: 'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
   color-scheme: light;
 }
 
@@ -59,6 +71,7 @@
   --muted: #64708a;
   --line: #e8edf5;
   --primary: #2e5bff;
+  --primary-ink: #ffffff;
   --primary-soft: #e3ecff;
   --accent: #ffd66b;
   --accent-ink: #141b2d;
@@ -85,6 +98,12 @@
   --tile-4: #ebe8ff;
   --tile-5: #fff3c9;
   --tile-ink: #141b2d;
+  --tile-1-ink: #141b2d;
+  --tile-2-ink: #141b2d;
+  --tile-3-ink: #141b2d;
+  --tile-4-ink: #141b2d;
+  --tile-5-ink: #141b2d;
+  --primary-strong: #2449d8;
   --mark-bg: #ffd66b;
   --mark-ink: #141b2d;
   --mark-dot: #2e5bff;
@@ -103,6 +122,7 @@
   --color-primary: var(--primary);
   --color-primary-ink: var(--primary-ink);
   --color-primary-soft: var(--primary-soft);
+  --color-primary-strong: var(--primary-strong);
   --color-accent: var(--accent);
   --color-accent-ink: var(--accent-ink);
   --color-link: var(--link);
@@ -243,6 +263,14 @@ textarea:focus-visible {
 .sheet-in {
   animation: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+.drawer-in {
+  animation: drawer-in 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
@@ -285,11 +313,11 @@ textarea:focus-visible {
 .ring-story {
   background: var(--ring);
 }
-.tile-1 { background: var(--tile-1); color: var(--tile-ink); }
-.tile-2 { background: var(--tile-2); color: var(--tile-ink); }
-.tile-3 { background: var(--tile-3); color: var(--tile-ink); }
-.tile-4 { background: var(--tile-4); color: var(--tile-ink); }
-.tile-5 { background: var(--tile-5); color: var(--tile-ink); }
+.tile-1 { background: var(--tile-1); color: var(--tile-1-ink); }
+.tile-2 { background: var(--tile-2); color: var(--tile-2-ink); }
+.tile-3 { background: var(--tile-3); color: var(--tile-3-ink); }
+.tile-4 { background: var(--tile-4); color: var(--tile-4-ink); }
+.tile-5 { background: var(--tile-5); color: var(--tile-5-ink); }
 
 
 /* Krótki wskaźnik pracy (np. porównywanie kontaktów). */

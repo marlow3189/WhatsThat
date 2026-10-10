@@ -1,11 +1,11 @@
-# Analiza: Co Jest Sąsiad a Miliorbit (od ogółu do szczegółu)
+# Analiza: Co Jest Sąsiad a Regioorbit (od ogółu do szczegółu)
 
 Źródła: opis aplikacji w Google Play (`pl.cojestsasiad.app`) i artykuł zlotowskie.pl „Co jest, sąsiad? Używam!”.
 Stan: październik 2026. Wnioski i to, co z nich wdrożyliśmy w wersji 7.
 
 ## 1. Pozycjonowanie
 
-| | Co Jest Sąsiad | Miliorbit |
+| | Co Jest Sąsiad | Regioorbit |
 |---|---|---|
 | Obietnica | darmowa tablica dla osiedla, miasta, gminy | „wszystko obok, najpierw znajomi” |
 | Kategorie | Praca, Pożyczę, Oddam, Pomoc, Handel, Zamiana, Usługi, Zaginione, Forum, Wydarzenia | sprzedaż, wynajem, usługi, szukam, oddam / pożyczę, wymiana, wyprzedaż garażowa + sąsiedzi (pomoc, pytania, wydarzenia, zaginione) |
@@ -15,7 +15,7 @@ Stan: październik 2026. Wnioski i to, co z nich wdrożyliśmy w wersji 7.
 | Codzienność | ogłoszenia i forum | paliwa, opał, piekarz z godzinami, rolnik, planer AI, ostrzeżenia IMGW/RCB |
 
 **Wniosek:** Co Jest Sąsiad wygrywa prostotą i „sąsiedzkością” (pomoc, forum, wydarzenia, praca z jawną stawką).
-Miliorbit wygrywa zaufaniem, pieniędzmi i codziennymi sprawami. Brakowało nam warstwy sąsiedzkiej i SOS.
+Regioorbit wygrywa zaufaniem, pieniędzmi i codziennymi sprawami. Brakowało nam warstwy sąsiedzkiej i SOS.
 
 ## 2. Co przejęliśmy i zrobiliśmy lepiej (wersja 7)
 
@@ -55,7 +55,7 @@ Miliorbit wygrywa zaufaniem, pieniędzmi i codziennymi sprawami. Brakowało nam 
 ## 5. Telefon przede wszystkim
 
 - Domena prowadzi do instalacji: Android → Google Play, iPhone → App Store, komputer → kod QR i wersja w przeglądarce.
-- Linki z aplikacji (`miliorbit.com/l/…`, zaproszenia `/z/…`) otwierają się w aplikacji (App Links / Universal Links),
+- Linki z aplikacji (`regioorbit.com/l/…`, zaproszenia `/z/…`) otwierają się w aplikacji (App Links / Universal Links),
   a bez aplikacji pokazują sklep i podgląd w przeglądarce. `/sos` i `/zastrzez` otwierają się od razu, bez pytań.
 - W przeglądarce na telefonie aplikacja podpowiada pobranie wersji ze sklepu (pasek, który da się ukryć na 2 tygodnie).
 - **Szybkość:** języki inne niż polski i pełny regulamin doładowują się dopiero, gdy są potrzebne. Paczka startowa

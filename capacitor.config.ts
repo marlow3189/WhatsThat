@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.miliorbit.app',
-  appName: 'Miliorbit',
+  appId: 'com.regioorbit.app',
+  appName: 'Regioorbit',
   // Aplikacja ze sklepu to ta sama aplikacja co /app/ w przeglądarce (bez strony głównej).
   webDir: 'dist/app',
   plugins: {

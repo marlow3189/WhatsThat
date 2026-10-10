@@ -35,13 +35,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Linki https://miliorbit.com/l/…, /u/…, /z/…, /sos, /zastrzez otwierają aplikację (App Links).
+            <!-- Linki https://regioorbit.com/l/…, /u/…, /z/…, /sos, /zastrzez otwierają aplikację (App Links).
                  Weryfikacja: site/.well-known/assetlinks.json z odciskiem certyfikatu. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="miliorbit.com" />
+                <data android:scheme="https" android:host="regioorbit.com" />
                 <data android:pathPrefix="/l/" />
                 <data android:pathPrefix="/u/" />
                 <data android:pathPrefix="/z/" />
