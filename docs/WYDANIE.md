@@ -295,7 +295,7 @@ z kopiami zapasowymi. Baza testowa zostaje do dalszych testów, więc nowe funkc
  Google Play ─┐
  App Store   ─┼─► regioorbit.com/app/ ─► Supabase „regioorbit-prod” (Pro, kopie zapasowe, SMS)
  PWA          ┘      (gałąź main)
- Testy dalej: regioorbit.vercel.app (podgląd) ─► Supabase „regioorbit-test”
+ Testy dalej: regioorbit-test.vercel.app (gałąź agenta) ─► Supabase „regioorbit-test”
 ```
 
 🧰 **Części na cały etap 2 (zbierz przed startem):**
@@ -385,7 +385,14 @@ to sekrety), adres `https://regioorbit.com`. **Zaloguj się:** `supabase.com`, `
    *compare*: `claude/p2p-rental-marketplace-bimvf6` → **Create pull request** → zielony ✓ → **Merge pull request**.
    Od teraz: agent pracuje na swojej gałęzi, a do ludzi trafia to, co Ty scalisz do `main`.
 7. Vercel → **Settings** → **Environments** → **Production** → *Branch Tracking*: `main` → **Save**.
-8. Vercel → **Settings** → **Environment Variables**. Ustaw osobne wartości dla środowisk (przy edycji zmiennej
+   Od tej chwili adres `regioorbit.vercel.app` pokazuje wersję produkcyjną. Testy przenosimy pod osobny adres (krok 8).
+8. **Osobny adres testowy:** Vercel → **Settings** → **Domains** → **Add Domain** → `regioorbit-test.vercel.app`
+   (zajęty: dopisz końcówkę, np. `regioorbit-test-mk.vercel.app`) → *Environment*: **Preview**, *Git Branch*:
+   `claude/p2p-rental-marketplace-bimvf6` → **Save**. Potem **Settings** → **Deployment Protection** →
+   *Vercel Authentication*: **Disabled** → **Save** (inaczej testerzy musieliby mieć konto w Vercel).
+   To jest nowy **adres testowy**: wpisz go w GitHub → **Variables** → `VITE_SITE_URL` i wyślij testerom (wersję
+   z przeglądarki instalują jeszcze raz z nowego adresu).
+9. Vercel → **Settings** → **Environment Variables**. Ustaw osobne wartości dla środowisk (przy edycji zmiennej
    odznaczasz/zaznaczasz *Production* i *Preview*):
    | Key | Production | Preview (testy) |
    |---|---|---|
@@ -394,8 +401,8 @@ to sekrety), adres `https://regioorbit.com`. **Zaloguj się:** `supabase.com`, `
    | `VITE_SITE_URL` | `https://regioorbit.com` | adres testowy |
    | `VITE_AUTH` | `sms` | (puste) |
    | `SITE_ANDROID_URL` | usuń, gdy aplikacja jest w Google Play | link do APK |
-9. Vercel → **Deployments** → najnowsze z gałęzi `main` → **⋯** → **Redeploy**.
-10. GitHub → **Settings → Secrets and variables → Actions → Variables** → dodaj (dla sklepów; APK testowe dalej używa
+10. Vercel → **Deployments** → najnowsze z gałęzi `main` → **⋯** → **Redeploy**; to samo dla najnowszego z gałęzi agenta.
+11. GitHub → **Settings → Secrets and variables → Actions → Variables** → dodaj (dla sklepów; APK testowe dalej używa
     bazy testowej):
     | Name | Value |
     |---|---|
@@ -484,7 +491,7 @@ Teraz sklepy.
 aplikację można znaleźć w Sklepie Play po nazwie.
 
 📦 **Gotowe:** Android ze sklepu, z automatycznymi aktualizacjami. Agent wpisze link do Google Play na stronę
-(`site/stores.json`), a w Vercel usuń `SITE_ANDROID_URL` (część 2C, krok 8).
+(`site/stores.json`), a w Vercel usuń `SITE_ANDROID_URL` dla *Production* (część 2C, krok 9).
 
 > Od 2027 roku Google wymaga, żeby także pliki APK instalowane spoza sklepu pochodziły od zweryfikowanego dewelopera.
 > Konto z tej części to załatwia.
@@ -592,7 +599,7 @@ urządzeniach dokładnie jak w części 1D.
 
 📦 **Podsumowanie etapu 2.** Gotowe: domena `regioorbit.com`, baza produkcyjna z kopiami i SMS-em, aplikacja w Google
 Play i w App Store, PWA. Dalej pracujesz w pętli: agent robi zmianę na swojej gałęzi → sprawdzasz na wersji testowej
-(`regioorbit.vercel.app`, APK testowe) → scalasz do `main` (strona aktualizuje się sama) → **Actions → Google Play** i
+(`regioorbit-test.vercel.app`, APK testowe) → scalasz do `main` (strona aktualizuje się sama) → **Actions → Google Play** i
 **Actions → iOS** wysyłają nowe wersje do sklepów.
 
 ---
@@ -603,7 +610,7 @@ Play i w App Store, PWA. Dalej pracujesz w pętli: agent robi zmianę na swojej 
 |---|---|
 | Kod, przepływy, APK | `github.com/marlow3189/WhatsThat` → **Actions**, **Releases** |
 | APK testowe (zawsze najnowsze) | `github.com/marlow3189/WhatsThat/releases/tag/android-test` |
-| Strona testowa | `regioorbit.vercel.app` (dokładny adres: Vercel → projekt → *Domains*) |
+| Strona testowa | etap 1: `regioorbit.vercel.app`; od części 2C: `regioorbit-test.vercel.app` (dokładne adresy: Vercel → projekt → *Domains*) |
 | Strona produkcyjna | `regioorbit.com` |
 | Bazy | supabase.com → `regioorbit-test`, `regioorbit-prod` |
 | Google Play | play.google.com/console |
