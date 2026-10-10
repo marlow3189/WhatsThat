@@ -19,7 +19,8 @@ on:
         description: Ścieżka w Google Play
         type: choice
         default: internal
-        options: [internal, alpha, beta]
+        # internal = test wewnętrzny, alpha = test zamknięty, beta = test otwarty, production = sklep dla wszystkich
+        options: [internal, alpha, beta, production]
       status:
         description: Status wydania (pierwszy raz, zanim aplikacja przejdzie przegląd, wybierz draft)
         type: choice
@@ -50,9 +51,12 @@ jobs:
           cache: gradle
       - run: npm ci
       - name: Aplikacja (web) do środka
+        # Baza produkcyjna (zmienne PROD_…), a dopóki jej nie ma: testowa (docs/WYDANIE.md, etap 2).
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.PROD_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SITE_URL: ${{ vars.PROD_SITE_URL || vars.VITE_SITE_URL }}
+          VITE_AUTH: ${{ vars.PROD_AUTH || vars.VITE_AUTH }}
           VITE_CHANNEL: play
         run: npm run build && npx cap sync android
       - name: Klucz do wysyłki z sekretów

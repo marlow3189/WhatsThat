@@ -14,11 +14,16 @@ cpSync('public/icon.svg', 'dist/icon.svg')
 cpSync('site/open.html', 'dist/404.html')
 
 const stores = JSON.parse(readFileSync('site/stores.json', 'utf8'))
-writeFileSync('dist/stores.js', `window.STORES = ${JSON.stringify({ android: stores.android ?? '', ios: stores.ios ?? '' })}\n`)
+// Strona testowa: SITE_ANDROID_URL może wskazać plik APK z GitHuba, zanim aplikacja trafi do Google Play.
+const android = process.env.SITE_ANDROID_URL || stores.android || ''
+const ios = process.env.SITE_IOS_URL || stores.ios || ''
+writeFileSync('dist/stores.js', `window.STORES = ${JSON.stringify({ android, ios })}\n`)
 
 // Kod QR na stronę główną i /pobierz (komputer): prowadzi na /pobierz, która na telefonie wybiera sklep.
+// Na stronie testowej (np. Vercel) adres bierze się z VITE_SITE_URL, na produkcji to regioorbit.com.
+const site = (process.env.VITE_SITE_URL || 'https://regioorbit.com').trim().replace(/\/+$/, '')
 const qr = qrcode(0, 'M')
-qr.addData('https://regioorbit.com/pobierz?utm_source=site&utm_medium=qr')
+qr.addData(`${site}/pobierz?utm_source=site&utm_medium=qr`)
 qr.make()
 writeFileSync('dist/qr.svg', qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }))
 

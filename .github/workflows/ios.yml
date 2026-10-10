@@ -1,0 +1,131 @@
+# iPhone w chmurze GitHuba (Mac): nie potrzebujesz własnego Maca.
+#   - po każdej zmianie: budowanie i uruchomienie na symulatorze iPhone'a, zrzut ekranu w Artifacts (ios-start),
+#   - na żądanie (Actions → „iOS” → Run workflow → zaznacz „Wyślij do TestFlight”): podpisana paczka trafia do
+#     App Store Connect → TestFlight. Wymaga sekretów Apple (docs/WYDANIE.md, etap 2, część D):
+#        APPLE_TEAM_ID            – identyfikator zespołu (10 znaków, developer.apple.com → Membership)
+#        APPSTORE_API_KEY_ID      – Key ID klucza API App Store Connect (rola Admin)
+#        APPSTORE_API_ISSUER_ID   – Issuer ID z tej samej strony
+#        APPSTORE_API_KEY_P8      – cała zawartość pliku AuthKey_XXXX.p8 (razem z liniami BEGIN/END)
+#   Sekretów nie wklejaj nigdzie indziej (ani do repozytorium, ani do czatu).
+name: iOS
+on:
+  push:
+    paths-ignore: ['docs/**', '**/*.md', 'site/**', 'extension/**', 'android/**']
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Wyślij do TestFlight (wymaga sekretów Apple)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  simulator:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Aplikacja (web) do środka
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          VITE_AUTH: ${{ vars.VITE_AUTH }}
+          VITE_CHANNEL: test
+        run: npm run build && npx cap sync ios
+      - name: Budowanie na symulator (bez podpisu)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO -quiet build
+      - name: Uruchomienie na symulatorze iPhone'a i zrzut ekranu
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          d = json.load(sys.stdin)["devices"]
+          ios = sorted(k for k in d if ".iOS-" in k)[-1]
+          print(next(x["udid"] for x in d[ios] if x["name"].startswith("iPhone")))')
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/App.app
+          xcrun simctl launch "$UDID" com.regioorbit.app
+          sleep 30
+          xcrun simctl io "$UDID" screenshot ios-start.png
+          # aplikacja nadal działa (nie zamknęła się po starcie)
+          xcrun simctl spawn "$UDID" launchctl list | grep -q com.regioorbit.app
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-start
+          path: ios-start.png
+          if-no-files-found: ignore
+          retention-days: 14
+
+  testflight:
+    if: github.event_name == 'workflow_dispatch' && inputs.upload
+    needs: simulator
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Aplikacja (web) do środka
+        # Baza produkcyjna (zmienne PROD_…), a dopóki jej nie ma: testowa.
+        env:
+          VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.PROD_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SITE_URL: ${{ vars.PROD_SITE_URL || vars.VITE_SITE_URL }}
+          VITE_AUTH: ${{ vars.PROD_AUTH || vars.VITE_AUTH }}
+          VITE_CHANNEL: appstore
+        run: npm run build && npx cap sync ios
+      - name: Klucz App Store Connect z sekretów
+        env:
+          KEY_P8: ${{ secrets.APPSTORE_API_KEY_P8 }}
+          KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for v in KEY_P8 KEY_ID ISSUER_ID TEAM_ID; do
+            if [ -z "${!v}" ]; then echo "Brak sekretu dla $v (docs/WYDANIE.md, etap 2, część D)"; exit 1; fi
+          done
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$KEY_P8" > "$RUNNER_TEMP/keys/AuthKey.p8"
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict></plist>
+          EOF
+      - name: Archiwum i wysyłka do TestFlight (podpis automatyczny przez klucz API)
+        env:
+          KEY_ID: ${{ secrets.APPSTORE_API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APPSTORE_API_ISSUER_ID }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          AUTH="-allowProvisioningUpdates -authenticationKeyPath $RUNNER_TEMP/keys/AuthKey.p8 -authenticationKeyID $KEY_ID -authenticationKeyIssuerID $ISSUER_ID"
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/Regioorbit.xcarchive" \
+            $AUTH DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" -quiet archive
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/Regioorbit.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist" -exportPath "$RUNNER_TEMP/export" $AUTH
+      - name: Sprzątanie klucza
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"

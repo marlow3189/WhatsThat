@@ -7,7 +7,7 @@
 name: Android APK
 on:
   push:
-    paths-ignore: ['docs/**', '**/*.md', 'site/**', 'extension/**']
+    paths-ignore: ['docs/**', '**/*.md', 'site/**', 'extension/**', 'ios/**']
   workflow_dispatch:
 permissions:
   contents: write
@@ -35,10 +35,13 @@ jobs:
           cache: gradle
       - run: npm ci
       - name: Aplikacja (web) do środka APK
-        # Tryb na żywo, gdy w Settings → Secrets and variables → Actions → Variables są adres i klucz anon Supabase.
+        # Tryb na żywo, gdy w Settings → Secrets and variables → Actions → Variables są adres i klucz anon Supabase
+        # (baza testowa). VITE_SITE_URL = adres strony testowej (np. https://regioorbit.vercel.app), docs/WYDANIE.md.
         env:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL }}
+          VITE_AUTH: ${{ vars.VITE_AUTH }}
         run: npm run build && npx cap sync android
       - name: Budowanie APK (wersja testowa)
         working-directory: android

@@ -5,6 +5,8 @@ const config: CapacitorConfig = {
   appName: 'Regioorbit',
   // Aplikacja ze sklepu to ta sama aplikacja co /app/ w przeglądarce (bez strony głównej).
   webDir: 'dist/app',
+  // Kolor tła pod stroną (kremowy z palety), żeby przy starcie nie mignęło białe albo czarne tło.
+  backgroundColor: '#F7F3EC',
   plugins: {
     SystemBars: {
       // Jasna aplikacja: ciemne ikony na pasku stanu i nawigacji, także gdy telefon ma tryb ciemny.
