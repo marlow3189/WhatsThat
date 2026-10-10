@@ -107,8 +107,13 @@ fs.mkdirSync(out, { recursive: true })
     await tap('button:has-text("Zaczynamy")')
     await page.waitForSelector('text=Co dziś załatwiamy?')
   })
+  // Kafel „Tablica okolicy” (2×2 na górze) przewija do wpisów z okolicy.
   await step('tablica-okolicy', async () => {
-    await page.locator('text=Tablica okolicy').scrollIntoViewIfNeeded()
+    await tap('button:has-text("Tablica okolicy")')
+    await page.waitForFunction(() => {
+      const r = document.getElementById('tablica')?.getBoundingClientRect()
+      return !!r && r.top >= -2 && r.top < window.innerHeight / 2
+    }, null, { timeout: 5_000 })
   })
   await step('sos', async () => {
     await page.evaluate(() => window.scrollTo(0, 0))

@@ -4,6 +4,9 @@ Ta instrukcja jest na teraz: chcesz klikać aplikację na swoim telefonie i komp
 po kilku minutach. Bezpieczeństwo i start publiczny są w [WDROZENIE.md](WDROZENIE.md) i dopisujemy je po kolei.
 Plan łączenia aplikacji z bazą danych: [PLAN.md](PLAN.md).
 
+> **Wydanie dla testerów i sklepów** (Vercel + wspólna baza testowa, potem Google Play, App Store i PWA) krok po kroku,
+> jak instrukcja montażu: **[WYDANIE.md](WYDANIE.md)**.
+
 ## Czy robimy aplikację na Androida i iPhone'a od razu?
 
 | | Odpowiedź | Co masz |

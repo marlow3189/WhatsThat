@@ -2,7 +2,8 @@
 
 Ta instrukcja prowadzi od zera do działającej aplikacji. Nie zakłada wiedzy programistycznej.
 
-> **Na teraz (testy u siebie):** zacznij od [START.md](START.md) i [PLAN.md](PLAN.md). Ta instrukcja to droga do startu
+> **Najkrótsza droga do testów z ludźmi i do sklepów:** [WYDANIE.md](WYDANIE.md) (etap 1: Vercel i wspólna baza testowa,
+> etap 2: domena, Google Play, App Store). **Na teraz (testy u siebie):** [START.md](START.md) i [PLAN.md](PLAN.md). Ta instrukcja to droga do startu
 > publicznego: domena, ochrona, płatności, sklepy.
 
 **Jak to jest ułożone:** Regioorbit to przede wszystkim **aplikacja na telefon** (Android z Google Play, iPhone z App
@@ -38,7 +39,7 @@ szukaj podobnej nazwy albo zapytaj agenta: „gdzie teraz w Cloudflare jest …?
 | **Pull request (PR)** | Wniosek „włącz zmiany z gałęzi A do gałęzi B”. Ma opis, listę zmian, komentarze i przycisk **Merge**. PR to *propozycja zmian*. |
 | **Build (budowanie)** | Zamiana kodu źródłowego na pliki, które rozumie przeglądarka. Robi to komenda `npm run build`. |
 | **Hosting** | Serwer, który pokazuje stronę ludziom. U nas **Cloudflare Pages** (darmowy). |
-| **Domena** | Adres strony: `regioorbit.com`. Kupiona u **rejestratora**, u Ciebie w **Hostingerze**. Rejestrator pobiera opłatę roczną; to, kto obsługuje DNS, można ustawić gdzie indziej. |
+| **Domena** | Adres strony: `regioorbit.com`. Kupujesz ją u **rejestratora**, np. w **Hostingerze**, gdzie masz już `miliorbit.com`. Rejestrator pobiera opłatę roczną; to, kto obsługuje DNS, można ustawić gdzie indziej. |
 | **DNS** | „Książka telefoniczna internetu”: mówi, na jaki serwer prowadzi domena. Wpisy w DNS to **rekordy** (A, CNAME, TXT). |
 | **Serwery nazw (nameservers)** | Kto zarządza DNS-em domeny. Przeniesiemy to do Cloudflare. |
 | **HTTPS / certyfikat** | Kłódka w przeglądarce: szyfrowane połączenie. Cloudflare robi je automatycznie. |
@@ -135,7 +136,7 @@ przy zielonym ✓ Ty klikasz **Merge pull request** → Cloudflare sam publikuje
 | GitHub (repozytorium, historia zmian) | ✅ |
 | Claude Code (agent zapisuje zmiany na gałęzi) | ✅ |
 | CI (automatyczne testy przy każdej zmianie, zielony ✓) | ✅ |
-| Domena regioorbit.com (kupiona w Hostingerze) | ✅ kupiona, ☐ DNS do ustawienia (etap 2) |
+| Domena regioorbit.com | ☐ do kupienia (WYDANIE.md, część 2B); `miliorbit.com` z Hostingera może na nią przekierowywać |
 | Cloudflare (hosting strony, ochrona) | ☐ etapy 2–4 |
 | Supabase (baza, logowanie SMS), Stripe (płatności) | ☐ etapy 6–7 |
 | Sklepy Google Play i App Store | ☐ etap 9 |

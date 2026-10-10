@@ -1,7 +1,10 @@
-# Master plan Regioorbit (wersja 0.8, październik 2026)
+# Master plan Regioorbit (wersja 0.9, październik 2026)
 
 Plan krok po kroku, od aplikacji testowej do startu w sklepach. Każdy krok ma: **kto** (Ty albo agent), **co dokładnie
 kliknąć**, **ile to trwa** i **„Gotowe, gdy”**, czyli test, po którym wiadomo, że można iść dalej.
+
+> **Wydanie w dwóch etapach** (wersja testowa na Vercel z prawdziwymi ludźmi, potem Google Play, App Store i PWA),
+> instrukcja montażu krok po kroku: **[WYDANIE.md](WYDANIE.md)**. Kroki 1, 3 i 9 poniżej są tam rozpisane dokładniej.
 Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA.md](MAPA.md). Formalności i bezpieczeństwo przed startem:
 [WDROZENIE.md](WDROZENIE.md), [BEZPIECZENSTWO.md](BEZPIECZENSTWO.md).
 
@@ -10,7 +13,7 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA
 | Obszar | Stan | Co to znaczy dla Ciebie |
 |---|---|---|
 | Aplikacja Android (APK) | ✅ budowana w GitHubie po każdej zmianie, testowana na emulatorach Android 14 i 16 | instalujesz plik z Releases (START.md, 2d) |
-| Wygląd | ✅ menu jak w WhatsAppie: 5 zakładek (Okolica, Szukaj, Dodaj, Czaty, Ja), czcionka systemu | zgłaszaj, co Ci nie pasuje |
+| Wygląd | ✅ identyfikacja Regioorbit: kremowe tło, pomarańcz, żółty, zieleń, błękit; menu ☰, 4 kolorowe kafle, duże „+” na środku dolnego paska (DESIGN.md) | zgłaszaj, co Ci nie pasuje |
 | Rejestracja | ✅ 4 ekrany: numer + zgoda, kod, profil (imię, płeć raz, region), znajomi | |
 | Języki | ✅ 10: polski, angielski, niemiecki, ukraiński, czeski, słowacki, węgierski, włoski, hiszpański, **hindi** | |
 | Regiony | ✅ 12 krajów (województwa, Bundesländer, kraje, vármegye, obwody, stany Indii i USA…) | |
@@ -20,7 +23,9 @@ Testowanie na telefonie i emulatorze: [START.md](START.md). Mapa ekranów: [MAPA
 | Kalendarz prywatny | ✅ własne terminy, „Będę”, odbiory i zwroty, wywóz śmieci, przypomnienie; w bazie po kroku 1 | |
 | Zgłaszanie błędów | ✅ zamiast białego ekranu komunikat z opisem; **Ja → Diagnostyka → Kopiuj** | wklej opis agentowi |
 | Google Play | 🟡 przepływ „Google Play” w GitHubie gotowy, czeka na konto i klucze | **krok 3** |
-| Czaty, push, SOS na żywo, płatności, iPhone | ⬜ kolejne kroki | kroki 6–9 |
+| iPhone | 🟡 projekt gotowy, GitHub buduje go i uruchamia na symulatorze; TestFlight po założeniu konta Apple | WYDANIE.md, część 2E |
+| Strona testowa | 🟡 `vercel.json` gotowy | WYDANIE.md, część 1B |
+| Czaty, push, SOS na żywo, płatności | ⬜ kolejne kroki | kroki 6–8 |
 
 ```
  Telefon (APK, później iPhone) ──┐
@@ -212,8 +217,8 @@ z zielonym znaczkiem; zwykłe konto nie ma jak opublikować komunikatu (baza odr
 - **Firma:** po założeniu zmień w Play Console dane konta na firmowe; uzupełnij dane w regulaminie (WDROZENIE.md).
 - **SMS:** konto SMSAPI albo Twilio → agent podłącza je w Supabase → w GitHubie zmienna `VITE_AUTH` = `sms` →
   wyłączasz logowanie anonimowe. Od teraz konto = numer telefonu z kodem.
-- **iPhone:** gdy Apple zatwierdzi konto (Apple Developer, firma z numerem D-U-N-S): agent dodaje projekt iOS
-  i budowanie na macOS w GitHub Actions → TestFlight.
+- **iPhone:** projekt iOS i budowanie na Macu w GitHub Actions są gotowe; po zatwierdzeniu konta Apple Developer
+  wysyłka do TestFlight i App Store według WYDANIE.md, część 2E.
 - **Domena:** regioorbit.com (WDROZENIE.md, etap 2) i linki do aplikacji (etap 9).
 - **Bezpieczeństwo:** wszystkie pola w BEZPIECZENSTWO.md na ✅, polityka prywatności i regulamin od prawnika.
 

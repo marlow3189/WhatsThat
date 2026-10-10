@@ -33,7 +33,7 @@ bez haseł i bez prowizji. Marka jest w `src/config.ts` (regioorbit.com).
 - **Nowoczesne API przeglądarki:** licznik na ikonie (Badging), wyszukiwanie głosem (Web Speech).
 - **Komputer:** rozszerzenie do Chrome, Edge i Safari z menu „Wystaw na Regioorbit”.
 
-**Testowanie u siebie (APK, strona testowa): [docs/START.md](docs/START.md)** · Master plan krok po kroku: **[docs/PLAN.md](docs/PLAN.md)** · Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Analiza konkurencji: **[docs/ANALIZA.md](docs/ANALIZA.md)** · Wdrożenie krok po kroku: **[docs/WDROZENIE.md](docs/WDROZENIE.md)** · Bezpieczeństwo: **[docs/BEZPIECZENSTWO.md](docs/BEZPIECZENSTWO.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
+**Wydanie krok po kroku (wersja testowa na Vercel, potem Google Play, App Store i PWA): [docs/WYDANIE.md](docs/WYDANIE.md)** · **Testowanie u siebie (APK, strona testowa): [docs/START.md](docs/START.md)** · Master plan krok po kroku: **[docs/PLAN.md](docs/PLAN.md)** · Strategia, nazwa, koszty, prawo: **[docs/BIZNES.md](docs/BIZNES.md)** · Analiza konkurencji: **[docs/ANALIZA.md](docs/ANALIZA.md)** · Wdrożenie krok po kroku: **[docs/WDROZENIE.md](docs/WDROZENIE.md)** · Bezpieczeństwo: **[docs/BEZPIECZENSTWO.md](docs/BEZPIECZENSTWO.md)** · Marketing i filmy: **[docs/MARKETING.md](docs/MARKETING.md)** · Regulamin: **[docs/legal/](docs/legal/)**
 
 ## Uruchomienie
 
@@ -62,7 +62,8 @@ Wersje do sklepów z tego samego kodu (szczegóły, uprawnienia i linki do aplik
   aplikacja „Regioorbit DEV” (`android-dev`). Google Play: `.github/workflows/play.yml` (docs/PLAN.md, krok 3).
   Własne wtyczki: mikrofon (`VoicePlugin.java`) i numery z kontaktów bez imion (`PhoneNumbersPlugin.java`).
   Lokalnie: `npm run cap:android` (Android Studio).
-- **iPhone:** projekt iOS dodamy z kontem Apple Developer (TestFlight, budowanie na macOS w GitHub Actions), docs/PLAN.md krok 9.
+- **iPhone:** projekt `ios/` (Capacitor, Swift Package Manager). `.github/workflows/ios.yml` po każdej zmianie buduje i uruchamia
+  aplikację na symulatorze iPhone'a (zrzut w Artifacts), a na żądanie wysyła ją do TestFlight (docs/WYDANIE.md, część 2E).
 
 ## Struktura
 
