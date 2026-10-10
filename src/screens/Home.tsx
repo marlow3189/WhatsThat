@@ -167,7 +167,7 @@ export function Home() {
             const body = (
               <>
                 <span className="flex items-start justify-between gap-2">
-                  <span className="text-[15px] leading-tight font-extrabold">{c.title}</span>
+                  <span className="min-w-0 text-[15px] leading-tight font-extrabold [hyphens:auto] [overflow-wrap:anywhere]">{c.title}</span>
                   <span className={cx('grid size-9 shrink-0 place-items-center rounded-[12px] bg-surface/80', c.tone, '!bg-surface/80')}><Icon name={c.icon} size={19} /></span>
                 </span>
                 <span className="self-start rounded-full bg-primary px-3 py-1.5 text-[12.5px] font-bold text-primary-ink">{c.cta}</span>

@@ -712,7 +712,7 @@ export const de: Dict = {
   'share.on': 'Standort geteilt mit: {names}. Noch {n} Min.',
   'share.stop': 'Beenden',
   'share.banner': 'Standort für deine Leute geteilt · {n} Min.',
-  'board.title': 'Nachbarschaftsbrett',
+  'board.title': 'Schwarzes Brett',
   'board.sub': 'Hilfe, Fragen, Veranstaltungen und Arbeit in der Nähe',
   'board.post': 'Neuer Eintrag',
   'board.tab.all': 'Alles',
