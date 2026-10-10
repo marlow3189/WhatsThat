@@ -1,5 +1,5 @@
 # iPhone w chmurze GitHuba (Mac): nie potrzebujesz własnego Maca.
-#   - po każdej zmianie: budowanie i uruchomienie na symulatorze iPhone'a, zrzut ekranu w Artifacts (ios-start),
+#   - po każdej zmianie: budowanie i uruchomienie na symulatorze iPhone'a, zrzut ekranu w Releases (ios-test),
 #   - na żądanie (Actions → „iOS” → Run workflow → zaznacz „Wyślij do TestFlight”): podpisana paczka trafia do
 #     App Store Connect → TestFlight. Wymaga sekretów Apple (docs/WYDANIE.md, etap 2, część D):
 #        APPLE_TEAM_ID            – identyfikator zespołu (10 znaków, developer.apple.com → Membership)
@@ -18,7 +18,7 @@ on:
         type: boolean
         default: false
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: ios-${{ github.ref }}
   cancel-in-progress: true
@@ -68,6 +68,16 @@ jobs:
           path: ios-start.png
           if-no-files-found: ignore
           retention-days: 14
+      - name: Zrzut z iPhone'a w Releases (gałąź domyślna)
+        if: always() && github.ref_name == github.event.repository.default_branch && hashFiles('ios-start.png') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete ios-test --yes --cleanup-tag || true
+          gh release create ios-test ios-start.png \
+            --prerelease --target "$GITHUB_SHA" \
+            --title "Regioorbit iPhone (symulator) #${{ github.run_number }}" \
+            --notes "Zrzut ekranu z symulatora iPhone'a po starcie aplikacji (commit ${GITHUB_SHA::7}). Instalacja na iPhonie: TestFlight, docs/WYDANIE.md część 2E."
 
   testflight:
     if: github.event_name == 'workflow_dispatch' && inputs.upload
